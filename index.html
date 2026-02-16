@@ -18,7 +18,10 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo">
   <meta property="og:description" content="El pulso informativo de Corrientes y el mundo. Noticias en tiempo real, tendencias y más.">
-  <meta property="og:image" content="https://quesedice.com.ar/Logo_qsd.png">
+  <meta property="og:image" content="/api/og">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/svg+xml">
   <meta property="og:locale" content="es_AR">
   <meta property="og:site_name" content="Qué Se Dice">
 
@@ -26,7 +29,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Qué Se Dice — Noticias">
   <meta name="twitter:description" content="El pulso informativo de Corrientes y el mundo.">
-  <meta name="twitter:image" content="https://quesedice.com.ar/Logo_qsd.png">
+  <meta name="twitter:image" content="/api/og">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -830,20 +833,36 @@
     }
 
     // ── Share Functions ──
-    function shareWhatsApp(title, url) {
-      window.open(`https://wa.me/?text=${encodeURIComponent(title + ' — ' + url)}`, '_blank');
+    const SITE_DOMAIN = window.location.origin;
+
+    function shareUrl(title, originalUrl, source, description) {
+      const params = new URLSearchParams();
+      params.set('title', title);
+      params.set('url', originalUrl);
+      if (source) params.set('source', source);
+      if (currentCategory) params.set('cat', currentCategory);
+      if (description) params.set('desc', description.substring(0, 150));
+      return `${SITE_DOMAIN}/api/share?${params.toString()}`;
     }
 
-    function shareTwitter(title, url) {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=quesedice`, '_blank');
+    function shareWhatsApp(title, url, source, description) {
+      const sUrl = shareUrl(title, url, source, description);
+      window.open(`https://wa.me/?text=${encodeURIComponent(title + '\n\n' + sUrl)}`, '_blank');
     }
 
-    function shareFacebook(url) {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    function shareTwitter(title, url, source, description) {
+      const sUrl = shareUrl(title, url, source, description);
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(sUrl)}`, '_blank');
     }
 
-    function copyLink(url) {
-      navigator.clipboard.writeText(url).then(() => showToast('Enlace copiado'));
+    function shareFacebook(url, title, source, description) {
+      const sUrl = shareUrl(title || '', url, source, description);
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sUrl)}`, '_blank');
+    }
+
+    function copyLink(url, title, source, description) {
+      const sUrl = shareUrl(title || '', url, source, description);
+      navigator.clipboard.writeText(sUrl).then(() => showToast('Enlace copiado'));
     }
 
     function showToast(msg) {
@@ -851,6 +870,45 @@
       toast.textContent = msg;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ── URL Resolver ──
+    async function resolveItemUrls(items) {
+      // Solo resolver URLs de Google News
+      const googleItems = items.filter(item =>
+        item.link && item.link.includes('news.google.com')
+      );
+
+      if (googleItems.length === 0) return;
+
+      try {
+        const response = await fetch('/api/resolve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            urls: googleItems.map(item => item.link)
+          }),
+        });
+
+        if (!response.ok) return;
+        const { results } = await response.json();
+
+        // Actualizar los links en el DOM
+        results.forEach((result, i) => {
+          if (result.resolved && !result.resolved.includes('news.google.com')) {
+            const item = googleItems[i];
+            item.resolvedLink = result.resolved;
+
+            // Actualizar todos los links en el DOM que apunten a esta URL
+            document.querySelectorAll(`a[href="${CSS.escape(item.link)}"]`).forEach(a => {
+              a.href = result.resolved;
+            });
+          }
+        });
+      } catch (err) {
+        console.warn('URL resolve failed:', err);
+        // No es crítico, los links de Google News siguen funcionando
+      }
     }
 
     // ── SVG Icons ──
@@ -861,12 +919,16 @@
       copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>',
     };
 
-    function shareButtons(title, url, size = '') {
+    function shareButtons(title, url, source, description) {
+      const t = escapeAttr(title);
+      const u = escapeAttr(url);
+      const s = escapeAttr(source || '');
+      const d = escapeAttr((description || '').substring(0, 150));
       return `
-        <button class="share-btn whatsapp" onclick="event.preventDefault();event.stopPropagation();shareWhatsApp('${escapeAttr(title)}','${escapeAttr(url)}')" title="Compartir en WhatsApp">${ICONS.whatsapp}</button>
-        <button class="share-btn twitter" onclick="event.preventDefault();event.stopPropagation();shareTwitter('${escapeAttr(title)}','${escapeAttr(url)}')" title="Compartir en X">${ICONS.twitter}</button>
-        <button class="share-btn facebook" onclick="event.preventDefault();event.stopPropagation();shareFacebook('${escapeAttr(url)}')" title="Compartir en Facebook">${ICONS.facebook}</button>
-        <button class="share-btn copy" onclick="event.preventDefault();event.stopPropagation();copyLink('${escapeAttr(url)}')" title="Copiar enlace">${ICONS.copy}</button>
+        <button class="share-btn whatsapp" onclick="event.preventDefault();event.stopPropagation();shareWhatsApp('${t}','${u}','${s}','${d}')" title="Compartir en WhatsApp">${ICONS.whatsapp}</button>
+        <button class="share-btn twitter" onclick="event.preventDefault();event.stopPropagation();shareTwitter('${t}','${u}','${s}','${d}')" title="Compartir en X">${ICONS.twitter}</button>
+        <button class="share-btn facebook" onclick="event.preventDefault();event.stopPropagation();shareFacebook('${u}','${t}','${s}','${d}')" title="Compartir en Facebook">${ICONS.facebook}</button>
+        <button class="share-btn copy" onclick="event.preventDefault();event.stopPropagation();copyLink('${u}','${t}','${s}','${d}')" title="Copiar enlace">${ICONS.copy}</button>
       `;
     }
 
@@ -942,7 +1004,7 @@
             <span class="hero-source">${escapeHtml(hero.source)}</span>
             <span>${timeAgo(hero.pubDate)}</span>
             <div class="hero-share">
-              ${shareButtons(hero.title, hero.link)}
+              ${shareButtons(hero.title, hero.link, hero.source, hero.description)}
             </div>
           </div>
         </a>
@@ -962,7 +1024,7 @@
               <div class="news-card-footer">
                 <span class="news-card-time">${timeAgo(item.pubDate)}</span>
                 <div class="news-card-actions">
-                  ${shareButtons(item.title, item.link)}
+                  ${shareButtons(item.title, item.link, item.source, item.description)}
                 </div>
               </div>
             </a>
@@ -997,6 +1059,7 @@
 
         renderTrending(data.trending);
         renderFeed(data);
+        resolveItemUrls(data.items); // Background URL resolve
       } catch (err) {
         console.error('Feed load error:', err);
         main.innerHTML = `

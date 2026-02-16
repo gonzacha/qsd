@@ -21,7 +21,13 @@
 
 export const config = { runtime: 'edge' };
 
-const DOMAIN = 'https://quesedice.com.ar';
+// Domain is detected dynamically from the request
+// Works on qsd-seven.vercel.app, localhost, or quesedice.com.ar
+
+function getDomain(req) {
+  const url = new URL(req.url);
+  return `${url.protocol}//${url.host}`;
+}
 
 function escapeHtml(str) {
   return str
@@ -33,6 +39,7 @@ function escapeHtml(str) {
 }
 
 export default async function handler(req) {
+  const DOMAIN = getDomain(req);
   const { searchParams } = new URL(req.url);
   
   const title = searchParams.get('title') || 'Qué Se Dice — Noticias';
