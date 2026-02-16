@@ -15,7 +15,7 @@
  * INTEGRACIÓN:
  * En index.html, las meta tags og:image deben apuntar a este endpoint.
  * Para share dinámico por noticia, el JS puede generar URLs tipo:
- *   https://quesedice.com.ar/api/og?title=...&source=...&cat=...
+ *   https://tu-dominio.com/api/og?title=...&source=...&cat=...
  */
 
 export const config = { runtime: 'edge' };
@@ -100,7 +100,7 @@ function wrapDesc(text, maxCharsPerLine = 65) {
 }
 
 // ── SVG Generator ─────────────────────────────────────────────
-function generateOG({ title, source, category, description }) {
+function generateOG({ title, source, category, description, host }) {
   const cat = CATEGORIES[category] || CATEGORIES.portada;
   const accent = cat.accent;
   const catLabel = cat.label;
@@ -108,6 +108,7 @@ function generateOG({ title, source, category, description }) {
     day: 'numeric', month: 'long', year: 'numeric' 
   });
   const hasTitle = title && title.length > 0;
+  const siteHost = host || 'localhost';
 
   // Title lines
   const titleLines = hasTitle
@@ -123,7 +124,7 @@ function generateOG({ title, source, category, description }) {
   const descStartY = titleStartY + (titleLines.length * titleLineHeight) + 20;
 
   // Source display
-  const sourceText = source || 'quesedice.com.ar';
+  const sourceText = source || siteHost;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
@@ -289,7 +290,7 @@ function generateOG({ title, source, category, description }) {
   <text x="60" y="618" 
     font-family="system-ui, sans-serif" 
     font-size="13" fill="#444"
-    >quesedice.com.ar · Desde 2004 · Antonio &amp; Gonzalo Haedo</text>
+    >${escapeXml(siteHost)} · Desde 2004 · Antonio &amp; Gonzalo Haedo</text>
 </svg>`;
 }
 
@@ -300,12 +301,14 @@ export default async function handler(req) {
   const source = url.searchParams.get('source') || '';
   const category = url.searchParams.get('cat') || 'portada';
   const description = url.searchParams.get('desc') || '';
+  const host = req.headers.get('host');
 
   const svg = generateOG({
     title: decodeURIComponent(title),
     source: decodeURIComponent(source),
     category,
     description: decodeURIComponent(description),
+    host,
   });
 
   return new Response(svg, {
