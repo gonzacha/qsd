@@ -203,6 +203,17 @@
       filter: drop-shadow(0 6px 16px rgba(201, 149, 58, 0.35));
     }
 
+    .logo-wave {
+      animation: qsdWave 3s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    @keyframes qsdWave {
+      0% { opacity: 0.85; }
+      50% { opacity: 1; }
+      100% { opacity: 0.85; }
+    }
+
     .masthead-title {
       font-family: var(--font-display);
       font-size: clamp(2.2rem, 6vw, 3.8rem);
@@ -345,6 +356,19 @@
       background: var(--gold-glow);
     }
 
+    .trend-item {
+      opacity: 0;
+      transform: translateY(6px);
+      animation: trendIn 200ms ease-out forwards;
+    }
+
+    @keyframes trendIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* ═══════════════════════════════════════════
        MAIN CONTENT
        ═══════════════════════════════════════════ */
@@ -439,6 +463,17 @@
       display: flex;
       gap: var(--space-sm);
       margin-left: auto;
+    }
+
+    .feed-enter {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .feed-enter-active {
+      opacity: 1;
+      transform: translateY(0);
+      transition: all 220ms ease-out;
     }
 
     /* ═══════════════════════════════════════════
@@ -735,6 +770,13 @@
     }
 
     .scroll-top svg { width: 18px; height: 18px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -750,7 +792,7 @@
 
   <!-- Masthead -->
   <header class="masthead">
-    <img src="Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo">
+    <img src="Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo logo-wave">
     <h1 class="masthead-title">Qué Se Dice</h1>
     <p class="masthead-tagline">El pulso informativo de Corrientes y el mundo</p>
     <hr class="masthead-rule">
@@ -990,8 +1032,8 @@
       }
 
       bar.style.display = 'flex';
-      tags.innerHTML = trending.map(t =>
-        `<span class="trending-tag" title="${t.count} menciones">${escapeHtml(t.word)}</span>`
+      tags.innerHTML = trending.map((t, i) =>
+        `<span class="trending-tag trend-item" style="animation-delay: ${i * 40}ms" title="${t.count} menciones">${escapeHtml(t.word)}</span>`
       ).join('');
     }
 
@@ -1058,6 +1100,11 @@
       }
 
       main.innerHTML = html;
+      main.classList.remove('feed-enter', 'feed-enter-active');
+      main.classList.add('feed-enter');
+      requestAnimationFrame(() => {
+        main.classList.add('feed-enter-active');
+      });
     }
 
     // ── Data Loading ──
