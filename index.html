@@ -903,6 +903,10 @@
             document.querySelectorAll(`a[href="${CSS.escape(item.link)}"]`).forEach(a => {
               a.href = result.resolved;
             });
+            document.querySelectorAll(`[data-link="${CSS.escape(item.link)}"]`).forEach(el => {
+              el.innerHTML = shareButtons(item.title, item.resolvedLink, item.source, item.description);
+              el.setAttribute('data-link', item.resolvedLink);
+            });
           }
         });
       } catch (err) {
@@ -988,12 +992,13 @@
 
       const hero = items[0];
       const rest = items.slice(1);
+      const heroUrl = hero.resolvedLink || hero.link;
 
       let html = '';
 
       // Hero card
       html += `
-        <a class="hero-card" href="${escapeAttr(hero.link)}" target="_blank" rel="noopener noreferrer">
+        <a class="hero-card" href="${escapeAttr(heroUrl)}" target="_blank" rel="noopener noreferrer">
           <div class="hero-badge">
             <span class="hero-badge-dot"></span>
             Última hora
@@ -1003,8 +1008,8 @@
           <div class="hero-meta">
             <span class="hero-source">${escapeHtml(hero.source)}</span>
             <span>${timeAgo(hero.pubDate)}</span>
-            <div class="hero-share">
-              ${shareButtons(hero.title, hero.link, hero.source, hero.description)}
+            <div class="hero-share" data-link="${escapeAttr(hero.link)}">
+              ${shareButtons(hero.title, heroUrl, hero.source, hero.description)}
             </div>
           </div>
         </a>
@@ -1016,15 +1021,16 @@
         html += `<div class="news-grid">`;
 
         rest.forEach((item, i) => {
+          const finalUrl = item.resolvedLink || item.link;
           html += `
-            <a class="news-card" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer" style="animation-delay: ${i * 0.04}s">
+            <a class="news-card" href="${escapeAttr(finalUrl)}" target="_blank" rel="noopener noreferrer" style="animation-delay: ${i * 0.04}s">
               <div class="news-card-source">${escapeHtml(item.source)}</div>
               <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
               ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
               <div class="news-card-footer">
                 <span class="news-card-time">${timeAgo(item.pubDate)}</span>
-                <div class="news-card-actions">
-                  ${shareButtons(item.title, item.link, item.source, item.description)}
+                <div class="news-card-actions" data-link="${escapeAttr(item.link)}">
+                  ${shareButtons(item.title, finalUrl, item.source, item.description)}
                 </div>
               </div>
             </a>
