@@ -10,10 +10,15 @@
   <meta name="theme-color" content="#0b0e1a">
   <meta name="robots" content="index, follow">
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/Logo_qsd.png">
+  <link rel="apple-touch-icon" href="assets/Logo_qsd.png">
+
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo">
   <meta property="og:description" content="El pulso informativo de Corrientes y el mundo. Noticias en tiempo real, tendencias y más.">
+  <meta property="og:image" content="https://quesedice.com.ar/assets/Logo_qsd.png">
   <meta property="og:locale" content="es_AR">
   <meta property="og:site_name" content="Qué Se Dice">
 
@@ -21,6 +26,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Qué Se Dice — Noticias">
   <meta name="twitter:description" content="El pulso informativo de Corrientes y el mundo.">
+  <meta name="twitter:image" content="https://quesedice.com.ar/assets/Logo_qsd.png">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -178,6 +184,19 @@
       padding: var(--space-xl) var(--space-lg) var(--space-lg);
       border-bottom: 1px solid var(--border-subtle);
       background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-deep) 100%);
+    }
+
+    .masthead-logo {
+      width: clamp(80px, 15vw, 140px);
+      height: auto;
+      margin: 0 auto var(--space-md);
+      filter: drop-shadow(0 4px 12px rgba(201, 149, 58, 0.2));
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    .masthead-logo:hover {
+      transform: scale(1.05);
+      filter: drop-shadow(0 6px 16px rgba(201, 149, 58, 0.35));
     }
 
     .masthead-title {
@@ -727,6 +746,7 @@
 
   <!-- Masthead -->
   <header class="masthead">
+    <img src="assets/Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo">
     <h1 class="masthead-title">Qué Se Dice</h1>
     <p class="masthead-tagline">El pulso informativo de Corrientes y el mundo</p>
     <hr class="masthead-rule">
