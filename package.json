@@ -1,0 +1,10 @@
+{
+  "name": "quesedice",
+  "version": "1.0.0",
+  "description": "Qué Se Dice — Portal informativo de Corrientes y el mundo",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  }
+}

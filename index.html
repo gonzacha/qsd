@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Portal informativo con las últimas noticias de Corrientes, Argentina y el mundo. Actualización automática en tiempo real.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+  <meta name="author" content="Antonio y Gonzalo Haedo">
+  <meta name="theme-color" content="#0b0e1a">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo">
+  <meta property="og:description" content="El pulso informativo de Corrientes y el mundo. Noticias en tiempo real, tendencias y más.">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="Qué Se Dice">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Qué Se Dice — Noticias">
+  <meta name="twitter:description" content="El pulso informativo de Corrientes y el mundo.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Qué Se Dice",
+    "url": "https://quesedice.com.ar",
+    "description": "Portal informativo con noticias de Corrientes, Argentina y el mundo",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Qué Se Dice",
+      "foundingDate": "2004"
+    }
+  }
+  </script>
+
+  <style>
+    /* ═══════════════════════════════════════════
+       CSS RESET & VARIABLES
+       ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Palette — inspired by Corrientes nights & Paraná gold */
+      --bg-deep: #080a12;
+      --bg-primary: #0b0e1a;
+      --bg-card: #111627;
+      --bg-card-hover: #161c33;
+      --bg-elevated: #1a2040;
+      --bg-glass: rgba(17, 22, 39, 0.85);
+      
+      --gold-primary: #c9953a;
+      --gold-light: #e4b65c;
+      --gold-dim: #8a6828;
+      --gold-glow: rgba(201, 149, 58, 0.15);
+      
+      --text-primary: #e8e4dc;
+      --text-secondary: #9a968e;
+      --text-muted: #5c5850;
+      --text-bright: #f5f2ec;
+      
+      --accent-red: #c43e3e;
+      --accent-blue: #3e7cc4;
+      --accent-green: #3ec470;
+      
+      --border-subtle: rgba(201, 149, 58, 0.08);
+      --border-light: rgba(201, 149, 58, 0.15);
+      
+      /* Typography */
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-headline: 'Libre Baskerville', Georgia, serif;
+      --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+      
+      /* Spacing */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      --space-3xl: 4rem;
+      
+      /* Layout */
+      --max-width: 1280px;
+      --header-height: 3.5rem;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 20% 0%, rgba(201, 149, 58, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(62, 124, 196, 0.02) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ═══════════════════════════════════════════
+       TOP BAR
+       ═══════════════════════════════════════════ */
+    .topbar {
+      position: relative;
+      z-index: 10;
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-xs) var(--space-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .topbar-date { text-transform: uppercase; font-weight: 500; }
+
+    .topbar-live {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      color: var(--gold-primary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.65rem;
+    }
+
+    .pulse-dot {
+      width: 6px; height: 6px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(62, 196, 112, 0.5); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(62, 196, 112, 0); }
+    }
+
+    /* ═══════════════════════════════════════════
+       MASTHEAD
+       ═══════════════════════════════════════════ */
+    .masthead {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: var(--space-xl) var(--space-lg) var(--space-lg);
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-deep) 100%);
+    }
+
+    .masthead-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--text-bright);
+      line-height: 1.1;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, var(--text-bright) 0%, var(--gold-light) 50%, var(--text-bright) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 8s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .masthead-tagline {
+      font-family: var(--font-headline);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-xs);
+      letter-spacing: 0.02em;
+    }
+
+    .masthead-rule {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+      margin: var(--space-md) auto 0;
+      border: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════ */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 var(--space-lg);
+    }
+
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+
+    .nav-btn {
+      flex-shrink: 0;
+      padding: var(--space-md) var(--space-lg);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover { color: var(--text-primary); }
+
+    .nav-btn.active {
+      color: var(--gold-light);
+      border-bottom-color: var(--gold-primary);
+    }
+
+    /* ═══════════════════════════════════════════
+       TRENDING BAR
+       ═══════════════════════════════════════════ */
+    .trending-bar {
+      position: relative;
+      z-index: 10;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-sm) var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      overflow: hidden;
+    }
+
+    .trending-label {
+      flex-shrink: 0;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .trending-label svg { width: 12px; height: 12px; }
+
+    .trending-tags {
+      display: flex;
+      gap: var(--space-sm);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .trending-tags::-webkit-scrollbar { display: none; }
+
+    .trending-tag {
+      flex-shrink: 0;
+      padding: 3px 10px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .trending-tag:hover {
+      color: var(--gold-light);
+      border-color: var(--gold-dim);
+      background: var(--gold-glow);
+    }
+
+    /* ═══════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════ */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-lg);
+    }
+
+    /* ═══════════════════════════════════════════
+       HERO CARD
+       ═══════════════════════════════════════════ */
+    .hero-card {
+      display: block;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: var(--space-2xl);
+      margin-bottom: var(--space-2xl);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold-primary), var(--gold-light), var(--gold-primary));
+    }
+
+    .hero-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent-red);
+      margin-bottom: var(--space-md);
+    }
+
+    .hero-badge-dot {
+      width: 5px; height: 5px;
+      background: var(--accent-red);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .hero-title {
+      font-family: var(--font-headline);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text-bright);
+      margin-bottom: var(--space-md);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 700px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .hero-source {
+      font-weight: 600;
+      color: var(--gold-primary);
+    }
+
+    .hero-share {
+      display: flex;
+      gap: var(--space-sm);
+      margin-left: auto;
+    }
+
+    /* ═══════════════════════════════════════════
+       NEWS GRID
+       ═══════════════════════════════════════════ */
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .news-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: var(--space-lg);
+      transition: all 0.25s ease;
+      text-decoration: none;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .news-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .news-card-source {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .news-card-title {
+      font-family: var(--font-headline);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--text-bright);
+      margin-bottom: var(--space-sm);
+      flex-grow: 1;
+    }
+
+    .news-card-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: var(--space-md);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .news-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .news-card-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .news-card-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* ═══════════════════════════════════════════
+       SHARE BUTTONS
+       ═══════════════════════════════════════════ */
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+      font-size: 0.75rem;
+    }
+
+    .share-btn:hover { color: var(--text-primary); background: var(--bg-elevated); }
+    .share-btn.whatsapp:hover { color: #25d366; }
+    .share-btn.twitter:hover { color: #1da1f2; }
+    .share-btn.facebook:hover { color: #4267b2; }
+    .share-btn.copy:hover { color: var(--gold-light); }
+
+    .share-btn svg { width: 14px; height: 14px; }
+
+    /* ═══════════════════════════════════════════
+       LOADING & EMPTY STATES
+       ═══════════════════════════════════════════ */
+    .loading-state {
+      text-align: center;
+      padding: var(--space-3xl);
+      color: var(--text-muted);
+    }
+
+    .loading-spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border-subtle);
+      border-top-color: var(--gold-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto var(--space-md);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ */
+    .site-footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: var(--space-3xl) var(--space-lg) var(--space-2xl);
+      border-top: 1px solid var(--border-subtle);
+      margin-top: var(--space-3xl);
+    }
+
+    .footer-rule {
+      width: 40px;
+      height: 1px;
+      background: var(--gold-dim);
+      margin: 0 auto var(--space-xl);
+      border: none;
+    }
+
+    .footer-legacy {
+      font-family: var(--font-headline);
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .footer-names {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold-primary);
+      letter-spacing: 0.03em;
+      margin-bottom: var(--space-md);
+    }
+
+    .footer-since {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .footer-location {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: var(--space-xs);
+    }
+
+    .footer-tech {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-top: var(--space-lg);
+      opacity: 0.5;
+    }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .news-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        padding: var(--space-lg);
+      }
+
+      .container {
+        padding: var(--space-lg) var(--space-md);
+      }
+
+      .hero-share { display: none; }
+
+      .nav-btn {
+        padding: var(--space-sm) var(--space-md);
+        font-size: 0.7rem;
+      }
+
+      .masthead {
+        padding: var(--space-lg) var(--space-md) var(--space-md);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .news-grid {
+        gap: var(--space-md);
+      }
+
+      .hero-title {
+        font-size: 1.2rem;
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       TOAST NOTIFICATION
+       ═══════════════════════════════════════════ */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      padding: var(--space-sm) var(--space-lg);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ═══════════════════════════════════════════
+       SCROLL-TO-TOP
+       ═══════════════════════════════════════════ */
+    .scroll-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      width: 40px; height: 40px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: 50%;
+      color: var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    .scroll-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .scroll-top:hover {
+      background: var(--gold-primary);
+      color: var(--bg-deep);
+    }
+
+    .scroll-top svg { width: 18px; height: 18px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-date" id="currentDate"></div>
+    <div class="topbar-live">
+      <span class="pulse-dot"></span>
+      En vivo — Actualización automática
+    </div>
+  </div>
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <h1 class="masthead-title">Qué Se Dice</h1>
+    <p class="masthead-tagline">El pulso informativo de Corrientes y el mundo</p>
+    <hr class="masthead-rule">
+  </header>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner" id="navInner">
+      <!-- Populated by JS -->
+    </div>
+  </nav>
+
+  <!-- Trending -->
+  <div class="trending-bar" id="trendingBar" style="display:none;">
+    <span class="trending-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Tendencias
+    </span>
+    <div class="trending-tags" id="trendingTags"></div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container" id="mainContent">
+    <div class="loading-state" id="loadingState">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Cargando noticias...</div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <hr class="footer-rule">
+    <p class="footer-legacy">Un proyecto de</p>
+    <p class="footer-names">Antonio & Gonzalo Haedo</p>
+    <p class="footer-since">Desde 2004 · Corrientes, Argentina</p>
+    <p class="footer-location">Taetanoticias → Corrientes Dice → Qué Se Dice</p>
+    <p class="footer-tech">Actualización automática cada 10 minutos</p>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Scroll to top -->
+  <button class="scroll-top" id="scrollTop" aria-label="Volver arriba">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+
+  <script>
+    // ═══════════════════════════════════════════
+    // QUÉ SE DICE — Portal Engine
+    // ═══════════════════════════════════════════
+
+    const API_BASE = '/api/feeds';
+    const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    let currentCategory = 'portada';
+    let categories = [];
+    let refreshTimer = null;
+
+    // ── Date Formatting ──
+    function formatDate() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('es-AR', options);
+      return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+    }
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return '';
+      const now = new Date();
+      const date = new Date(dateStr);
+      const diffMs = now - date;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffHr = Math.floor(diffMs / 3600000);
+      const diffDay = Math.floor(diffMs / 86400000);
+
+      if (diffMin < 1) return 'Ahora';
+      if (diffMin < 60) return `Hace ${diffMin} min`;
+      if (diffHr < 24) return `Hace ${diffHr}h`;
+      if (diffDay < 7) return `Hace ${diffDay}d`;
+      return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+    }
+
+    // ── Share Functions ──
+    function shareWhatsApp(title, url) {
+      window.open(`https://wa.me/?text=${encodeURIComponent(title + ' — ' + url)}`, '_blank');
+    }
+
+    function shareTwitter(title, url) {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=quesedice`, '_blank');
+    }
+
+    function shareFacebook(url) {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    }
+
+    function copyLink(url) {
+      navigator.clipboard.writeText(url).then(() => showToast('Enlace copiado'));
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ── SVG Icons ──
+    const ICONS = {
+      whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>',
+      twitter: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+      facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+      copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>',
+    };
+
+    function shareButtons(title, url, size = '') {
+      return `
+        <button class="share-btn whatsapp" onclick="event.preventDefault();event.stopPropagation();shareWhatsApp('${escapeAttr(title)}','${escapeAttr(url)}')" title="Compartir en WhatsApp">${ICONS.whatsapp}</button>
+        <button class="share-btn twitter" onclick="event.preventDefault();event.stopPropagation();shareTwitter('${escapeAttr(title)}','${escapeAttr(url)}')" title="Compartir en X">${ICONS.twitter}</button>
+        <button class="share-btn facebook" onclick="event.preventDefault();event.stopPropagation();shareFacebook('${escapeAttr(url)}')" title="Compartir en Facebook">${ICONS.facebook}</button>
+        <button class="share-btn copy" onclick="event.preventDefault();event.stopPropagation();copyLink('${escapeAttr(url)}')" title="Copiar enlace">${ICONS.copy}</button>
+      `;
+    }
+
+    function escapeAttr(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ── Render Functions ──
+    function renderNav(cats) {
+      const inner = document.getElementById('navInner');
+      inner.innerHTML = cats.map(c => 
+        `<button class="nav-btn ${c.key === currentCategory ? 'active' : ''}" data-cat="${c.key}">${escapeHtml(c.label)}</button>`
+      ).join('');
+
+      inner.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentCategory = btn.dataset.cat;
+          inner.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          loadFeed(currentCategory);
+        });
+      });
+    }
+
+    function renderTrending(trending) {
+      const bar = document.getElementById('trendingBar');
+      const tags = document.getElementById('trendingTags');
+
+      if (!trending || trending.length === 0) {
+        bar.style.display = 'none';
+        return;
+      }
+
+      bar.style.display = 'flex';
+      tags.innerHTML = trending.map(t =>
+        `<span class="trending-tag" title="${t.count} menciones">${escapeHtml(t.word)}</span>`
+      ).join('');
+    }
+
+    function renderFeed(data) {
+      const main = document.getElementById('mainContent');
+      const items = data.items || [];
+
+      if (items.length === 0) {
+        main.innerHTML = `
+          <div class="loading-state">
+            <div class="loading-text">No hay noticias disponibles en este momento</div>
+          </div>`;
+        return;
+      }
+
+      const hero = items[0];
+      const rest = items.slice(1);
+
+      let html = '';
+
+      // Hero card
+      html += `
+        <a class="hero-card" href="${escapeAttr(hero.link)}" target="_blank" rel="noopener noreferrer">
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            Última hora
+          </div>
+          <h2 class="hero-title">${escapeHtml(hero.title)}</h2>
+          ${hero.description ? `<p class="hero-desc">${escapeHtml(hero.description)}</p>` : ''}
+          <div class="hero-meta">
+            <span class="hero-source">${escapeHtml(hero.source)}</span>
+            <span>${timeAgo(hero.pubDate)}</span>
+            <div class="hero-share">
+              ${shareButtons(hero.title, hero.link)}
+            </div>
+          </div>
+        </a>
+      `;
+
+      // News grid
+      if (rest.length > 0) {
+        html += `<div class="section-label">Más noticias</div>`;
+        html += `<div class="news-grid">`;
+
+        rest.forEach((item, i) => {
+          html += `
+            <a class="news-card" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer" style="animation-delay: ${i * 0.04}s">
+              <div class="news-card-source">${escapeHtml(item.source)}</div>
+              <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
+              ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
+              <div class="news-card-footer">
+                <span class="news-card-time">${timeAgo(item.pubDate)}</span>
+                <div class="news-card-actions">
+                  ${shareButtons(item.title, item.link)}
+                </div>
+              </div>
+            </a>
+          `;
+        });
+
+        html += `</div>`;
+      }
+
+      main.innerHTML = html;
+    }
+
+    // ── Data Loading ──
+    async function loadFeed(category) {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Cargando noticias...</div>
+        </div>`;
+
+      try {
+        const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Store categories for nav
+        if (data.categories && categories.length === 0) {
+          categories = data.categories;
+          renderNav(categories);
+        }
+
+        renderTrending(data.trending);
+        renderFeed(data);
+      } catch (err) {
+        console.error('Feed load error:', err);
+        main.innerHTML = `
+          <div class="loading-state">
+            <div class="loading-text">Error al cargar noticias. Reintentando...</div>
+          </div>`;
+        // Retry after 15 seconds
+        setTimeout(() => loadFeed(category), 15000);
+      }
+    }
+
+    // ── Auto-refresh ──
+    function startAutoRefresh() {
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(() => {
+        loadFeed(currentCategory);
+      }, REFRESH_INTERVAL);
+    }
+
+    // ── Scroll to top ──
+    const scrollTopBtn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+    });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ── Init ──
+    document.getElementById('currentDate').textContent = formatDate();
+
+    // Default nav before API responds
+    const defaultCats = [
+      { key: 'portada', label: 'Portada' },
+      { key: 'argentina', label: 'Argentina' },
+      { key: 'corrientes', label: 'Corrientes' },
+      { key: 'mundo', label: 'Mundo' },
+      { key: 'deportes', label: 'Deportes' },
+      { key: 'economia', label: 'Economía' },
+      { key: 'tecnologia', label: 'Tecnología' },
+      { key: 'espectaculos', label: 'Espectáculos' },
+    ];
+    renderNav(defaultCats);
+    loadFeed(currentCategory);
+    startAutoRefresh();
+
+    // Update date every minute
+    setInterval(() => {
+      document.getElementById('currentDate').textContent = formatDate();
+    }, 60000);
+  </script>
+</body>
+</html>
