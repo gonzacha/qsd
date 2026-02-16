@@ -78,8 +78,9 @@ function parseRSSItems(xml) {
     const sourceUrl = extractAttr(block, 'source', 'url');
 
     if (title && link) {
+      const normalizedTitle = normalizeTitle(decodeEntities(title));
       items.push({
-        title: decodeEntities(title),
+        title: normalizedTitle,
         link,
         pubDate: pubDate || null,
         timestamp: pubDate ? new Date(pubDate).getTime() : 0,
@@ -90,7 +91,7 @@ function parseRSSItems(xml) {
     }
   }
 
-  return items;
+  return items.filter(item => validateItem(item));
 }
 
 function extractTag(xml, tag) {
@@ -120,6 +121,45 @@ function decodeEntities(str) {
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, '/')
     .replace(/&apos;/g, "'");
+}
+
+function normalizeTitle(title) {
+  if (!title) return '';
+  let cleaned = title
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const pipeCount = (cleaned.match(/\|/g) || []).length;
+  if (pipeCount > 2) {
+    cleaned = cleaned.split('|')[0].trim();
+  }
+
+  cleaned = cleaned.replace(/\s[-|]\s[^-|]+$/, '').trim();
+  return cleaned;
+}
+
+function isRepeatedTitle(title) {
+  const normalized = title.toLowerCase().trim();
+  const separators = [' - ', ' | ', ' — ', ' – ', ' · '];
+  for (const sep of separators) {
+    if (!normalized.includes(sep)) continue;
+    const parts = normalized.split(sep).map(p => p.trim()).filter(Boolean);
+    if (parts.length === 2 && parts[0] === parts[1]) return true;
+  }
+  return false;
+}
+
+function validateItem(item) {
+  const title = item && item.title ? item.title.trim() : '';
+  if (title.length < 25) return false;
+  if (!/(abre|anuncia|investiga|sube|baja|confirma|dice|advierte|impacta|lanza)/i.test(title)) {
+    return false;
+  }
+  if (/portal del ciudadano|\.gov|\.gob/i.test(title)) return false;
+  if (isRepeatedTitle(title)) return false;
+  return true;
 }
 
 function stripHtml(str) {
