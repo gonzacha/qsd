@@ -326,7 +326,7 @@ export default async function handler(req) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=600, s-maxage=600, stale-while-revalidate=120',
+        'Cache-Control': 'no-store',
         ...corsHeaders,
       },
     });
