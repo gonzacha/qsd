@@ -297,11 +297,32 @@ function generateOG({ title, source, category, description, host }) {
 // ── Handler ───────────────────────────────────────────────────
 export default async function handler(req) {
   const url = new URL(req.url);
+  const format = url.searchParams.get('format') || '';
   const title = url.searchParams.get('title') || '';
   const source = url.searchParams.get('source') || '';
   const category = url.searchParams.get('cat') || 'portada';
   const description = url.searchParams.get('desc') || '';
   const host = req.headers.get('host');
+
+  if (format.toLowerCase() === 'png') {
+    try {
+      const logoUrl = new URL('/Logo_qsd.png', url);
+      const logoResponse = await fetch(logoUrl);
+      if (logoResponse.ok) {
+        const body = await logoResponse.arrayBuffer();
+        return new Response(body, {
+          status: 200,
+          headers: {
+            'Content-Type': 'image/png',
+            'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=3600',
+            'Access-Control-Allow-Origin': '*',
+          },
+        });
+      }
+    } catch {
+      // Fall back to SVG response below
+    }
+  }
 
   const svg = generateOG({
     title: decodeURIComponent(title),

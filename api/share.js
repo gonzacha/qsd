@@ -38,15 +38,69 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function safeDecode(value) {
+  if (!value) return '';
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function normalizeText(value, maxLen) {
+  const text = (value || '').replace(/\s+/g, ' ').trim();
+  if (!maxLen) return text;
+  return text.length > maxLen ? text.slice(0, maxLen) : text;
+}
+
+function isGoogleNewsUrl(value) {
+  return /news\.google\.com\/rss\/articles\//i.test(value || '');
+}
+
+function isSafeHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req) {
   const DOMAIN = getDomain(req);
   const { searchParams } = new URL(req.url);
-  
-  const title = searchParams.get('title') || 'Qué Se Dice — Noticias';
-  const source = searchParams.get('source') || '';
-  const cat = searchParams.get('cat') || 'portada';
-  const desc = searchParams.get('desc') || 'Noticias de Corrientes, Argentina y el mundo';
-  const url = searchParams.get('url') || DOMAIN;
+
+  const rawTitle = searchParams.get('t') || searchParams.get('title') || 'Qué Se Dice — Noticias';
+  const rawSource = searchParams.get('s') || searchParams.get('source') || '';
+  const rawCat = searchParams.get('cat') || 'portada';
+  const rawDesc = searchParams.get('d') || searchParams.get('desc') || 'Noticias de Corrientes, Argentina y el mundo';
+  const rawUrl = searchParams.get('u') || searchParams.get('url') || DOMAIN;
+  const rawVersion = searchParams.get('v') || '';
+
+  const title = normalizeText(safeDecode(rawTitle), 140);
+  const source = normalizeText(safeDecode(rawSource), 80);
+  const cat = normalizeText(safeDecode(rawCat), 40) || 'portada';
+  const desc = normalizeText(safeDecode(rawDesc), 200);
+  let finalUrl = normalizeText(safeDecode(rawUrl), 2048) || DOMAIN;
+
+  if (isGoogleNewsUrl(finalUrl)) {
+    try {
+      const resolveUrl = `${DOMAIN}/api/resolve?url=${encodeURIComponent(finalUrl)}`;
+      const resolvedResponse = await fetch(resolveUrl, { signal: AbortSignal.timeout(6000) });
+      if (resolvedResponse.ok) {
+        const resolvedPayload = await resolvedResponse.json();
+        if (resolvedPayload && resolvedPayload.resolved) {
+          finalUrl = resolvedPayload.resolved;
+        }
+      }
+    } catch {
+      // Keep original URL if resolution fails
+    }
+  }
+
+  if (!isSafeHttpUrl(finalUrl)) {
+    finalUrl = DOMAIN;
+  }
 
   // Build OG image URL
   const ogParams = new URLSearchParams();
@@ -54,11 +108,13 @@ export default async function handler(req) {
   if (source) ogParams.set('source', source);
   if (cat) ogParams.set('cat', cat);
   if (desc) ogParams.set('desc', desc);
+  if (rawVersion) ogParams.set('v', rawVersion);
+  ogParams.set('format', 'png');
   const ogImageUrl = `${DOMAIN}/api/og?${ogParams.toString()}`;
 
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(desc);
-  const safeUrl = escapeHtml(url);
+  const safeUrl = escapeHtml(finalUrl);
   const safeOgImage = escapeHtml(ogImageUrl);
   const safeSource = source ? ` — ${escapeHtml(source)}` : '';
 
@@ -113,7 +169,7 @@ export default async function handler(req) {
     <p class="loading">Redirigiendo a la nota...</p>
     <p><a href="${safeUrl}">Click aquí si no redirige automáticamente</a></p>
   </div>
-  <script>window.location.replace(${JSON.stringify(url)});</script>
+  <script>window.location.replace(${JSON.stringify(finalUrl)});</script>
 </body>
 </html>`;
 
@@ -121,7 +177,7 @@ export default async function handler(req) {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      'Cache-Control': 'no-store',
       'Access-Control-Allow-Origin': '*',
     },
   });
