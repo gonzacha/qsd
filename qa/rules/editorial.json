@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "max_source_dominance_pct": 60,
+  "min_items_per_category": 3,
+  "max_title_truncated_pct": 30,
+  "freshness_max_hours": 12,
+  "max_category_dominance_pct": 40,
+  "duplicate_similarity_threshold": 0.8,
+  "integrity_score_threshold": 90,
+  "max_response_time_ms": 3000,
+  "known_categories": [
+    "portada",
+    "argentina",
+    "corrientes",
+    "mundo",
+    "deportes",
+    "economia",
+    "tecnologia",
+    "espectaculos"
+  ]
+}

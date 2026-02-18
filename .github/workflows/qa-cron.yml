@@ -1,83 +1,89 @@
-name: QA Cron
+name: QSD Editorial QA
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
-  workflow_dispatch:
+    - cron: '0 */6 * * *'  # Cada 6 horas
+  workflow_dispatch:         # Manual trigger
+    inputs:
+      base_url:
+        description: 'Target URL'
+        default: 'https://qsd-seven.vercel.app'
+
+env:
+  BASE_URL: ${{ github.event.inputs.base_url || 'https://qsd-seven.vercel.app' }}
 
 jobs:
-  qa:
+  editorial-qa:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
     steps:
       - uses: actions/checkout@v4
-      - name: Run QA
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bc
+
+      - name: Make scripts executable
+        run: chmod +x qa/*.sh qa/lib/*.sh
+
+      - name: Run Editorial Quality Factory
         id: qa
         run: |
           set +e
-          BASE_URL="https://qsd-seven.vercel.app" ./qa.sh
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
-      - name: Ensure qa-failure label
-        if: steps.qa.outputs.exit_code != '0'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set +e
-          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/labels/qa-failure"
-          code=$(curl -sS -o /tmp/label.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "$api")
-          if [ "$code" = "404" ]; then
-            curl -sS -o /tmp/label_create.json -w "%{http_code}" \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              -X POST \
-              -d '{"name":"qa-failure","color":"d73a4a","description":"Automated QA failures"}' \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/labels" \
-              > /tmp/label_create_status
-          fi
-      - name: Create or update issue
-        if: steps.qa.outputs.exit_code != '0'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -e
-          title="QA failure: qsd healthcheck"
-          issues=$(curl -sS \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues?state=open&labels=qa-failure")
-          number=$(printf '%s' "$issues" | grep -m1 '"number":' | sed -E 's/[^0-9]*([0-9]+).*/\1/')
-          if [ -z "$number" ]; then
-            search=$(curl -sS \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/search/issues?q=repo:${GITHUB_REPOSITORY}+state:open+in:title+\"${title}\"")
-            number=$(printf '%s' "$search" | grep -m1 '"number":' | sed -E 's/[^0-9]*([0-9]+).*/\1/')
-          fi
-          if [ -n "$number" ]; then
-            echo "Existing issue #$number"
-            exit 0
-          fi
-          body="Automated QA check failed at $(date -u +"%Y-%m-%dT%H:%M:%SZ").\n\nRun: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          body_json=${body//$'\n'/\\n}
-          payload=$(printf '{"title":"%s","body":"%s","labels":["qa-failure"]}' "$title" "$body_json")
-          status=$(curl -sS -o /tmp/issue.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            -X POST \
-            -d "$payload" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues")
-          if [ "$status" != "201" ]; then
-            payload=$(printf '{"title":"%s","body":"%s"}' "$title" "$body_json")
-            curl -sS \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              -X POST \
-              -d "$payload" \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues" \
-              > /tmp/issue_fallback.json
-          fi
+          output=$(bash qa/run-all.sh 2>&1)
+          exit_code=$?
+          echo "$output"
+          
+          # Save for issue creation
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          
+          # Escape multiline for GitHub
+          {
+            echo 'qa_output<<EOF'
+            echo "$output"
+            echo 'EOF'
+          } >> $GITHUB_OUTPUT
+          
+          exit $exit_code
+
+      - name: Create Issue on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `${{ steps.qa.outputs.qa_output }}`;
+            const title = `🔴 QSD QA Failed — ${new Date().toISOString().split('T')[0]}`;
+            
+            // Check if there's already an open issue
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'qa-alert'
+            });
+            
+            const body = `## Editorial Quality Factory Report\n\n` +
+              `**Target:** \`${process.env.BASE_URL}\`\n` +
+              `**Time:** ${new Date().toISOString()}\n` +
+              `**Trigger:** ${context.eventName}\n\n` +
+              `\`\`\`\n${output}\n\`\`\`\n\n` +
+              `---\n*Auto-generated by QSD QA cron*`;
+            
+            if (issues.data.length > 0) {
+              // Add comment to existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues.data[0].number,
+                body: body
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['qa-alert']
+              });
+            }
