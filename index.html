@@ -214,6 +214,27 @@
       cursor: not-allowed;
     }
 
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      background: transparent;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .tool-btn:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      background: rgba(201, 149, 58, 0.08);
+    }
+
     .install-tooltip {
       position: fixed;
       top: 4rem;
@@ -674,6 +695,105 @@
       gap: 4px;
     }
 
+    .save-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .save-btn:hover {
+      color: var(--gold-light);
+      border-color: var(--border-light);
+      background: var(--bg-elevated);
+    }
+
+    .save-btn.active {
+      color: var(--gold-primary);
+      border-color: var(--border-light);
+    }
+
+    .panel {
+      position: fixed;
+      top: 4rem;
+      right: 1rem;
+      z-index: 50;
+      width: min(360px, 90vw);
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      display: none;
+    }
+
+    .panel header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .panel header button {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .panel-body {
+      padding: var(--space-md);
+      max-height: 60vh;
+      overflow: auto;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .saved-item {
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .saved-item a {
+      color: var(--text-bright);
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .saved-item-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .backup-actions {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-sm);
+    }
+
+    .backup-actions button {
+      border: 1px solid var(--border-light);
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .backup-actions button:hover {
+      border-color: var(--gold-primary);
+      background: rgba(201, 149, 58, 0.08);
+    }
+
     /* ═══════════════════════════════════════════
        SHARE BUTTONS
        ═══════════════════════════════════════════ */
@@ -695,6 +815,7 @@
     .share-btn.copy:hover { color: var(--gold-light); }
 
     .share-btn svg { width: 14px; height: 14px; }
+    .save-btn svg { width: 14px; height: 14px; }
 
     /* ═══════════════════════════════════════════
        LOADING & EMPTY STATES
@@ -891,6 +1012,8 @@
         En vivo — Actualización automática
       </div>
       <div class="topbar-actions" id="installArea">
+        <button class="tool-btn" id="savedBtn" type="button">Guardados</button>
+        <button class="tool-btn" id="backupBtn" type="button">Backup</button>
         <button class="install-btn" id="installBtn" type="button">Instalar QSD</button>
         <button class="install-help" id="installHelpBtn" type="button">Cómo instalar</button>
       </div>
@@ -950,6 +1073,31 @@
   <div class="install-tooltip" id="installTooltip" role="dialog" aria-live="polite">
     En Chrome: tocá ⋮ y elegí "Instalar app" / "Agregar a pantalla principal".
     <button type="button" id="installTooltipClose" aria-label="Cerrar">×</button>
+  </div>
+
+  <div class="panel" id="savedPanel" role="dialog" aria-live="polite">
+    <header>
+      Guardados
+      <button type="button" id="savedClose" aria-label="Cerrar">×</button>
+    </header>
+    <div class="panel-body" id="savedList">
+      Aún no hay guardados.
+    </div>
+  </div>
+
+  <div class="panel" id="backupPanel" role="dialog" aria-live="polite">
+    <header>
+      Backup
+      <button type="button" id="backupClose" aria-label="Cerrar">×</button>
+    </header>
+    <div class="panel-body">
+      <div class="backup-actions">
+        <button type="button" id="exportBtn">Exportar</button>
+        <button type="button" id="importBtn">Importar</button>
+      </div>
+      <input type="file" id="importFile" accept=".jsonl" style="display:none;">
+      <div id="backupStatus"></div>
+    </div>
   </div>
 
   <div class="update-toast" id="updateToast" aria-live="polite">
@@ -1048,8 +1196,261 @@
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
+    // ── Ledger + Device ID ──
+    const DEVICE_ID_KEY = 'qsd_device_id';
+    let ledgerDbPromise = null;
+    const sessionSeen = new Set();
+
+    function getDeviceId() {
+      let id = localStorage.getItem(DEVICE_ID_KEY);
+      if (id) return id;
+      if (crypto && typeof crypto.randomUUID === 'function') {
+        id = crypto.randomUUID();
+      } else {
+        const bytes = new Uint8Array(16);
+        if (crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+        id = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      localStorage.setItem(DEVICE_ID_KEY, id);
+      return id;
+    }
+
+    function normalizeTitleText(title) {
+      if (!title) return '';
+      return title.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeUrl(raw) {
+      try {
+        const url = new URL(raw);
+        url.hash = '';
+        url.protocol = url.protocol.toLowerCase();
+        url.hostname = url.hostname.toLowerCase();
+        const params = url.searchParams;
+        [...params.keys()].forEach(key => {
+          if (key.startsWith('utm_') || key === 'fbclid' || key === 'gclid') {
+            params.delete(key);
+          }
+        });
+        const path = url.pathname;
+        if (path.length > 1 && path.endsWith('/')) {
+          url.pathname = path.slice(0, -1);
+        }
+        return url.toString();
+      } catch {
+        return (raw || '').trim();
+      }
+    }
+
+    function extractDomain(url) {
+      try {
+        return new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        return '';
+      }
+    }
+
+    async function sha256Hex(str) {
+      try {
+        if (crypto && crypto.subtle) {
+          const data = new TextEncoder().encode(str);
+          const hash = await crypto.subtle.digest('SHA-256', data);
+          return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+      } catch {}
+      let h = 0;
+      for (let i = 0; i < str.length; i++) {
+        h = (h << 5) - h + str.charCodeAt(i);
+        h |= 0;
+      }
+      return Math.abs(h).toString(16);
+    }
+
+    function toIsoMinute(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toISOString().slice(0, 16) + 'Z';
+    }
+
+    function requestToPromise(req) {
+      return new Promise((resolve, reject) => {
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function txDone(tx) {
+      return new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    }
+
+    function ledgerInit() {
+      if (ledgerDbPromise) return ledgerDbPromise;
+      ledgerDbPromise = new Promise((resolve, reject) => {
+        const req = indexedDB.open('qsd_ledger', 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          const events = db.createObjectStore('events', { keyPath: 'id', autoIncrement: true });
+          events.createIndex('by_ts', 'ts');
+          events.createIndex('by_event', 'event');
+          events.createIndex('by_item_id', 'item_id');
+          db.createObjectStore('seen_hashes', { keyPath: 'hash' });
+          const saved = db.createObjectStore('saved', { keyPath: 'item_id' });
+          saved.createIndex('by_saved_at', 'saved_at');
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      return ledgerDbPromise;
+    }
+
+    async function computeEventHash(eventObj) {
+      const key = [
+        eventObj.device_id,
+        eventObj.event,
+        eventObj.item_id || '',
+        toIsoMinute(eventObj.ts),
+      ].join('|');
+      return sha256Hex(key);
+    }
+
+    async function ledgerAppend(eventObj) {
+      const db = await ledgerInit();
+      const event = { ...eventObj };
+      event.event_hash = await computeEventHash(event);
+      const tx = db.transaction(['events', 'seen_hashes'], 'readwrite');
+      const seenStore = tx.objectStore('seen_hashes');
+      const existing = await requestToPromise(seenStore.get(event.event_hash));
+      if (existing) {
+        await txDone(tx);
+        return { skipped: true };
+      }
+      seenStore.put({ hash: event.event_hash, ts: event.ts });
+      tx.objectStore('events').add(event);
+      await txDone(tx);
+      return { skipped: false };
+    }
+
+    async function ledgerQuery({ last = 50, event = null, item_id = null } = {}) {
+      const db = await ledgerInit();
+      const store = db.transaction('events', 'readonly').objectStore('events');
+      let source = store;
+      let query = null;
+      if (event) {
+        source = store.index('by_event');
+        query = event;
+      } else if (item_id) {
+        source = store.index('by_item_id');
+        query = item_id;
+      }
+      const results = [];
+      return new Promise((resolve, reject) => {
+        const req = source.openCursor(query, 'prev');
+        req.onsuccess = e => {
+          const cursor = e.target.result;
+          if (!cursor || results.length >= last) return resolve(results);
+          results.push(cursor.value);
+          cursor.continue();
+        };
+        req.onerror = () => reject(source.error);
+      });
+    }
+
+    async function ledgerExportJSONL() {
+      const db = await ledgerInit();
+      const store = db.transaction('events', 'readonly').objectStore('events').index('by_ts');
+      const lines = [];
+      return new Promise((resolve, reject) => {
+        const req = store.openCursor();
+        req.onsuccess = e => {
+          const cursor = e.target.result;
+          if (!cursor) return resolve(lines.join('\n'));
+          lines.push(JSON.stringify(cursor.value));
+          cursor.continue();
+        };
+        req.onerror = () => reject(store.error);
+      });
+    }
+
+    async function ledgerImportJSONL(text) {
+      const db = await ledgerInit();
+      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let imported = 0;
+      let skipped = 0;
+      for (const line of lines) {
+        let event;
+        try { event = JSON.parse(line); } catch { skipped += 1; continue; }
+        if (!event || !event.ts || !event.event || !event.device_id) { skipped += 1; continue; }
+        event.event_hash = await computeEventHash(event);
+        const tx = db.transaction(['events', 'seen_hashes'], 'readwrite');
+        const seenStore = tx.objectStore('seen_hashes');
+        const existing = await requestToPromise(seenStore.get(event.event_hash));
+        if (existing) {
+          skipped += 1;
+          await txDone(tx);
+          continue;
+        }
+        seenStore.put({ hash: event.event_hash, ts: event.ts });
+        tx.objectStore('events').add(event);
+        await txDone(tx);
+        imported += 1;
+      }
+      return { imported, skipped };
+    }
+
+    async function savedUpsert(item) {
+      const db = await ledgerInit();
+      const tx = db.transaction('saved', 'readwrite');
+      tx.objectStore('saved').put(item);
+      await txDone(tx);
+    }
+
+    async function savedHas(itemId) {
+      const db = await ledgerInit();
+      const store = db.transaction('saved', 'readonly').objectStore('saved');
+      const res = await requestToPromise(store.get(itemId));
+      return Boolean(res);
+    }
+
+    async function savedList() {
+      const db = await ledgerInit();
+      const store = db.transaction('saved', 'readonly').objectStore('saved').index('by_saved_at');
+      const items = [];
+      return new Promise((resolve, reject) => {
+        const req = store.openCursor(null, 'prev');
+        req.onsuccess = e => {
+          const cursor = e.target.result;
+          if (!cursor) return resolve(items);
+          items.push(cursor.value);
+          cursor.continue();
+        };
+        req.onerror = () => reject(store.error);
+      });
+    }
+
+    function buildEvent(eventName, item, meta = {}) {
+      const ts = new Date().toISOString();
+      return {
+        ts,
+        device_id: getDeviceId(),
+        event: eventName,
+        item_id: item ? item.item_id : null,
+        title: item ? item.title : null,
+        title_norm: item ? item.title_norm : null,
+        url: item ? item.link : null,
+        url_final: item ? item.resolvedLink || null : null,
+        factos_final: item ? (item.factos_final ?? null) : null,
+        editorial_score: item ? (item.editorial_score ?? null) : null,
+        meta,
+      };
+    }
+
     // ── URL Resolver ──
     async function resolveItemUrls(items) {
+      if (!Array.isArray(items)) return;
       // Solo resolver URLs de Google News
       const googleItems = items.filter(item =>
         item.link && item.link.includes('news.google.com')
@@ -1070,21 +1471,30 @@
         const { results } = await response.json();
 
         // Actualizar los links en el DOM
-        results.forEach((result, i) => {
+        await Promise.all(results.map(async (result, i) => {
           if (result.resolved && !result.resolved.includes('news.google.com')) {
             const item = googleItems[i];
             item.resolvedLink = result.resolved;
+            const oldId = item.item_id;
+            const newId = await sha256Hex(normalizeUrl(result.resolved));
+            item.item_id = newId;
+            if (oldId && sessionSeen.has(oldId)) sessionSeen.add(newId);
 
-            // Actualizar todos los links en el DOM que apunten a esta URL
-            document.querySelectorAll(`a[href="${CSS.escape(item.link)}"]`).forEach(a => {
-              a.href = result.resolved;
+            document.querySelectorAll(`[data-original-url="${CSS.escape(item.link)}"]`).forEach(a => {
+              a.dataset.finalUrl = result.resolved;
+              a.dataset.itemId = newId;
             });
+            if (oldId) {
+              document.querySelectorAll(`.save-btn[data-item-id="${CSS.escape(oldId)}"]`).forEach(btn => {
+                btn.dataset.itemId = newId;
+              });
+            }
             document.querySelectorAll(`[data-link="${CSS.escape(item.link)}"]`).forEach(el => {
               el.innerHTML = shareButtons(item.title, item.resolvedLink, item.source, item.description);
               el.setAttribute('data-link', item.resolvedLink);
             });
           }
-        });
+        }));
       } catch (err) {
         console.warn('URL resolve failed:', err);
         // No es crítico, los links de Google News siguen funcionando
@@ -1097,6 +1507,7 @@
       twitter: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
       facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
       copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>',
+      bookmark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>',
     };
 
     function shareButtons(title, url, source, description) {
@@ -1113,13 +1524,30 @@
     }
 
     function escapeAttr(str) {
-      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return String(str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
     function escapeHtml(str) {
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    }
+
+    function hoursSince(item) {
+      if (item.hours_since_publish != null) return Math.max(0, Math.round(item.hours_since_publish));
+      if (!item.pubDate) return null;
+      const d = new Date(item.pubDate);
+      if (Number.isNaN(d.getTime())) return null;
+      return Math.max(0, Math.round((Date.now() - d.getTime()) / 3600000));
+    }
+
+    async function hydrateItems(items) {
+      await Promise.all(items.map(async item => {
+        if (!item.link) return;
+        const normalized = normalizeUrl(item.link);
+        item.title_norm = normalizeTitleText(item.title);
+        item.item_id = await sha256Hex(normalized);
+      }));
     }
 
     // ── Render Functions ──
@@ -1154,7 +1582,7 @@
       ).join('');
     }
 
-    function renderFeed(data) {
+    async function renderFeed(data) {
       const main = document.getElementById('mainContent');
       const items = data.items || [];
 
@@ -1166,15 +1594,26 @@
         return;
       }
 
+      await hydrateItems(items);
+
       const hero = items[0];
       const rest = items.slice(1);
       const heroUrl = hero.resolvedLink || hero.link;
+      const heroShareUrl = hero.resolvedLink || hero.link;
 
       let html = '';
 
       // Hero card
       html += `
-        <a class="hero-card" href="${escapeAttr(heroUrl)}" target="_blank" rel="noopener noreferrer">
+        <a class="hero-card" href="${escapeAttr(heroUrl)}" target="_blank" rel="noopener noreferrer"
+           data-item-id="${escapeAttr(hero.item_id)}"
+           data-original-url="${escapeAttr(hero.link)}"
+           data-title="${escapeAttr(hero.title)}"
+           data-source="${escapeAttr(hero.source || '')}"
+           data-editorial-score="${hero.editorial_score ?? ''}"
+           data-factos-final="${hero.factos_final ?? ''}"
+           data-sources-count="${hero.sources_count ?? ''}"
+           data-hours="${hero.hours_since_publish ?? ''}">
           <div class="hero-badge">
             <span class="hero-badge-dot"></span>
             Última hora
@@ -1185,7 +1624,8 @@
             <span class="hero-source">${escapeHtml(hero.source)}</span>
             <span>${timeAgo(hero.pubDate)}</span>
             <div class="hero-share" data-link="${escapeAttr(hero.link)}">
-              ${shareButtons(hero.title, heroUrl, hero.source, hero.description)}
+              ${shareButtons(hero.title, heroShareUrl, hero.source, hero.description)}
+              <button class="save-btn" data-item-id="${escapeAttr(hero.item_id)}" title="Guardar">${ICONS.bookmark}</button>
             </div>
           </div>
         </a>
@@ -1199,7 +1639,16 @@
         rest.forEach((item, i) => {
           const finalUrl = item.resolvedLink || item.link;
           html += `
-            <a class="news-card" href="${escapeAttr(finalUrl)}" target="_blank" rel="noopener noreferrer" style="animation-delay: ${i * 0.04}s">
+            <a class="news-card" href="${escapeAttr(finalUrl)}" target="_blank" rel="noopener noreferrer"
+               style="animation-delay: ${i * 0.04}s"
+               data-item-id="${escapeAttr(item.item_id)}"
+               data-original-url="${escapeAttr(item.link)}"
+               data-title="${escapeAttr(item.title)}"
+               data-source="${escapeAttr(item.source || '')}"
+               data-editorial-score="${item.editorial_score ?? ''}"
+               data-factos-final="${item.factos_final ?? ''}"
+               data-sources-count="${item.sources_count ?? ''}"
+               data-hours="${item.hours_since_publish ?? ''}">
               <div class="news-card-source">${escapeHtml(item.source)}</div>
               <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
               ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
@@ -1207,6 +1656,7 @@
                 <span class="news-card-time">${timeAgo(item.pubDate)}</span>
                 <div class="news-card-actions" data-link="${escapeAttr(item.link)}">
                   ${shareButtons(item.title, finalUrl, item.source, item.description)}
+                  <button class="save-btn" data-item-id="${escapeAttr(item.item_id)}" title="Guardar">${ICONS.bookmark}</button>
                 </div>
               </div>
             </a>
@@ -1222,6 +1672,79 @@
       requestAnimationFrame(() => {
         main.classList.add('feed-enter-active');
       });
+
+      logItemsSeen(items);
+      wireItemActions(items);
+    }
+
+    function logItemsSeen(items) {
+      items.forEach(item => {
+        if (!item || !item.item_id || sessionSeen.has(item.item_id)) return;
+        sessionSeen.add(item.item_id);
+        void ledgerAppend(buildEvent('item_seen', item, { category: currentCategory }));
+      });
+    }
+
+    function wireItemActions(items) {
+      const main = document.getElementById('mainContent');
+      const itemMap = new Map(items.map(item => [item.item_id, item]));
+      const linkMap = new Map(items.map(item => [item.link, item]));
+
+      main.querySelectorAll('a[data-item-id]').forEach(link => {
+        link.addEventListener('click', () => {
+          const itemId = link.dataset.itemId;
+          const originalUrl = link.dataset.originalUrl;
+          const item = itemMap.get(itemId) || linkMap.get(originalUrl);
+          if (item) {
+            void ledgerAppend(buildEvent('item_opened', item, { category: currentCategory }));
+          }
+        });
+      });
+
+      main.querySelectorAll('.save-btn').forEach(btn => {
+        const itemId = btn.dataset.itemId;
+        if (!itemId) return;
+        savedHas(itemId).then(isSaved => {
+          if (isSaved) btn.classList.add('active');
+        }).catch(() => {});
+
+        btn.addEventListener('click', async e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const card = btn.closest('a[data-original-url]');
+          const originalUrl = card ? card.dataset.originalUrl : null;
+          const item = itemMap.get(itemId) || linkMap.get(originalUrl);
+          if (!item) return;
+          const savedAt = new Date().toISOString();
+          await savedUpsert({
+            item_id: item.item_id,
+            title: item.title,
+            url: item.link,
+            source: item.source,
+            saved_at: savedAt,
+          });
+          btn.classList.add('active');
+          void ledgerAppend(buildEvent('item_saved', item, { saved_at: savedAt }));
+          showToast('Guardado');
+        });
+      });
+    }
+
+    async function renderSavedList() {
+      const list = document.getElementById('savedList');
+      const saved = await savedList();
+      if (saved.length === 0) {
+        list.textContent = 'Aún no hay guardados.';
+        return;
+      }
+      list.innerHTML = saved.map(item => `
+        <div class="saved-item">
+          <a href="${escapeAttr(item.url)}" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(item.title)}
+          </a>
+          <div class="saved-item-time">${timeAgo(item.saved_at)}</div>
+        </div>
+      `).join('');
     }
 
     // ── Data Loading ──
@@ -1234,9 +1757,41 @@
         </div>`;
 
       try {
-        const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        let data = null;
+        let endpoint = '';
+
+        if (category === 'portada') {
+          const rankRes = await fetch('/api/rank?limit=30');
+          if (rankRes.ok) {
+            const payload = await rankRes.json();
+            const rankItems = (payload.items || []).map(item => ({
+              title: item.title,
+              link: item.url,
+              source: item.source || 'Fuente',
+              pubDate: item.publishedAt,
+              description: '',
+              factos_final: item.factos_final,
+              editorial_score: item.editorial_score,
+              sources_count: item.sources_count,
+              hours_since_publish: item.hours_since_publish,
+            }));
+            data = { items: rankItems, trending: [], categories };
+            endpoint = 'rank';
+            const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
+            void ledgerAppend(buildEvent('rank_generated', null, {
+              count: rankItems.length,
+              min_score: scores.length ? Math.min(...scores) : null,
+              max_score: scores.length ? Math.max(...scores) : null,
+            }));
+          }
+        }
+
+        if (!data) {
+          const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          data = await res.json();
+          endpoint = 'feeds';
+        }
 
         // Store categories for nav
         if (data.categories && categories.length === 0) {
@@ -1245,8 +1800,14 @@
         }
 
         renderTrending(data.trending);
-        renderFeed(data);
+        await renderFeed(data);
         resolveItemUrls(data.items); // Background URL resolve
+
+        void ledgerAppend(buildEvent('feed_fetch', null, {
+          endpoint,
+          category,
+          count: data.items ? data.items.length : 0,
+        }));
       } catch (err) {
         console.error('Feed load error:', err);
         main.innerHTML = `
@@ -1273,6 +1834,68 @@
     });
     scrollTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ── Saved + Backup Panels ──
+    const savedBtn = document.getElementById('savedBtn');
+    const backupBtn = document.getElementById('backupBtn');
+    const savedPanel = document.getElementById('savedPanel');
+    const backupPanel = document.getElementById('backupPanel');
+    const savedClose = document.getElementById('savedClose');
+    const backupClose = document.getElementById('backupClose');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile');
+    const backupStatus = document.getElementById('backupStatus');
+
+    function togglePanel(panel, show) {
+      panel.style.display = show ? 'block' : 'none';
+    }
+
+    savedBtn.addEventListener('click', async () => {
+      const open = savedPanel.style.display === 'block';
+      togglePanel(savedPanel, !open);
+      togglePanel(backupPanel, false);
+      if (!open) await renderSavedList();
+    });
+
+    backupBtn.addEventListener('click', () => {
+      const open = backupPanel.style.display === 'block';
+      togglePanel(backupPanel, !open);
+      togglePanel(savedPanel, false);
+    });
+
+    savedClose.addEventListener('click', () => togglePanel(savedPanel, false));
+    backupClose.addEventListener('click', () => togglePanel(backupPanel, false));
+
+    function downloadText(filename, text) {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    exportBtn.addEventListener('click', async () => {
+      const text = await ledgerExportJSONL();
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const filename = `qsd_ledger_${getDeviceId()}_${today}.jsonl`;
+      downloadText(filename, text);
+      backupStatus.textContent = 'Export listo.';
+    });
+
+    importBtn.addEventListener('click', () => importFile.click());
+    importFile.addEventListener('change', async () => {
+      const file = importFile.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const result = await ledgerImportJSONL(text);
+      backupStatus.textContent = `Importados ${result.imported}, omitidos ${result.skipped}.`;
+      importFile.value = '';
     });
 
     // ── PWA Install CTA ──
@@ -1383,6 +2006,7 @@
     // ── Init ──
     document.getElementById('currentDate').textContent = formatDate();
     setDynamicMeta();
+    ledgerInit().catch(() => {});
 
     // Default nav before API responds
     const defaultCats = [
