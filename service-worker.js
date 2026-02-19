@@ -1,4 +1,4 @@
-const CACHE = 'qsd-pwa-v0.0.1';
+const CACHE = 'qsd-pwa-v0.0.2';
 const PRECACHE_URLS = [
   '/',
   '/offline.html',
@@ -25,6 +25,12 @@ self.addEventListener('activate', event => {
       .catch(() => {})
       .then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', event => {

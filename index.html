@@ -156,6 +156,12 @@
 
     .topbar-date { text-transform: uppercase; font-weight: 500; }
 
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
     .topbar-live {
       display: flex;
       align-items: center;
@@ -172,6 +178,100 @@
       background: var(--accent-green);
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .install-btn,
+    .install-help {
+      display: none;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      background: transparent;
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .install-btn:hover,
+    .install-help:hover {
+      border-color: var(--gold-primary);
+      color: var(--gold-primary);
+      background: rgba(201, 149, 58, 0.08);
+    }
+
+    .install-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .install-tooltip {
+      position: fixed;
+      top: 4rem;
+      right: 1rem;
+      z-index: 30;
+      max-width: 320px;
+      padding: 0.75rem 0.9rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      line-height: 1.4;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .install-tooltip button {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .update-toast {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      display: none;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .update-btn {
+      border: 1px solid var(--border-light);
+      color: var(--gold-primary);
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .update-btn:hover {
+      border-color: var(--gold-primary);
+      background: rgba(201, 149, 58, 0.08);
     }
 
     @keyframes pulse {
@@ -785,9 +885,15 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-date" id="currentDate"></div>
-    <div class="topbar-live">
-      <span class="pulse-dot"></span>
-      En vivo — Actualización automática
+    <div class="topbar-right">
+      <div class="topbar-live">
+        <span class="pulse-dot"></span>
+        En vivo — Actualización automática
+      </div>
+      <div class="topbar-actions" id="installArea">
+        <button class="install-btn" id="installBtn" type="button">Instalar QSD</button>
+        <button class="install-help" id="installHelpBtn" type="button">Cómo instalar</button>
+      </div>
     </div>
   </div>
 
@@ -840,6 +946,16 @@
   <button class="scroll-top" id="scrollTop" aria-label="Volver arriba">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
   </button>
+
+  <div class="install-tooltip" id="installTooltip" role="dialog" aria-live="polite">
+    En Chrome: tocá ⋮ y elegí "Instalar app" / "Agregar a pantalla principal".
+    <button type="button" id="installTooltipClose" aria-label="Cerrar">×</button>
+  </div>
+
+  <div class="update-toast" id="updateToast" aria-live="polite">
+    Nueva version disponible
+    <button class="update-btn" id="updateBtn" type="button">Actualizar</button>
+  </div>
 
   <script>
     // ═══════════════════════════════════════════
@@ -1159,6 +1275,111 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // ── PWA Install CTA ──
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('installBtn');
+    const installHelpBtn = document.getElementById('installHelpBtn');
+    const installTooltip = document.getElementById('installTooltip');
+    const installTooltipClose = document.getElementById('installTooltipClose');
+    const installDismissedKey = 'qsd_install_dismissed';
+
+    function isInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function hideInstallUI() {
+      installBtn.style.display = 'none';
+      installHelpBtn.style.display = 'none';
+      installTooltip.style.display = 'none';
+    }
+
+    function showInstallCTA() {
+      if (localStorage.getItem(installDismissedKey) === '1' || isInstalled()) return;
+      installBtn.style.display = 'inline-flex';
+      installHelpBtn.style.display = 'none';
+      installTooltip.style.display = 'none';
+    }
+
+    function showInstallHelp() {
+      if (localStorage.getItem(installDismissedKey) === '1' || isInstalled()) return;
+      installHelpBtn.style.display = 'inline-flex';
+      installBtn.style.display = 'none';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallCTA();
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      installBtn.disabled = true;
+      try {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice && choice.outcome === 'dismissed') {
+          localStorage.setItem(installDismissedKey, '1');
+        }
+      } catch (err) {
+        console.warn('Install prompt failed:', err);
+      } finally {
+        deferredPrompt = null;
+        installBtn.disabled = false;
+        hideInstallUI();
+      }
+    });
+
+    installHelpBtn.addEventListener('click', () => {
+      const isVisible = installTooltip.style.display === 'block';
+      installTooltip.style.display = isVisible ? 'none' : 'block';
+    });
+
+    installTooltipClose.addEventListener('click', () => {
+      localStorage.setItem(installDismissedKey, '1');
+      hideInstallUI();
+    });
+
+    const displayModeQuery = window.matchMedia('(display-mode: standalone)');
+    if (displayModeQuery && typeof displayModeQuery.addEventListener === 'function') {
+      displayModeQuery.addEventListener('change', () => {
+        if (isInstalled()) hideInstallUI();
+      });
+    }
+
+    // ── Service worker update toast ──
+    const updateToast = document.getElementById('updateToast');
+    const updateBtn = document.getElementById('updateBtn');
+    let refreshing = false;
+
+    function showUpdateToast(reg) {
+      updateToast.style.display = 'flex';
+      updateBtn.onclick = () => {
+        updateToast.style.display = 'none';
+        if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      };
+    }
+
+    function listenForUpdates(reg) {
+      if (!reg) return;
+      if (reg.waiting) showUpdateToast(reg);
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateToast(reg);
+          }
+        });
+      });
+    }
+
+    navigator.serviceWorker?.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
     // ── Init ──
     document.getElementById('currentDate').textContent = formatDate();
     setDynamicMeta();
@@ -1185,9 +1406,15 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => listenForUpdates(reg))
+          .catch(() => {});
       });
     }
+
+    window.addEventListener('load', () => {
+      if (!deferredPrompt) showInstallHelp();
+    });
   </script>
 </body>
 </html>
