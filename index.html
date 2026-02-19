@@ -717,6 +717,44 @@
       border-color: var(--border-light);
     }
 
+    .news-summary {
+      margin: var(--space-sm) 0 var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      border-left: 2px solid var(--border-light);
+      background: rgba(17, 22, 39, 0.5);
+    }
+
+    .summary-list {
+      list-style: disc;
+      padding-left: 1.1rem;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .summary-list li + li { margin-top: 0.35rem; }
+
+    .summary-source {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: var(--space-xs);
+    }
+
+    .details-toggle {
+      margin-top: var(--space-xs);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+    }
+
+    .signals {
+      display: none;
+      margin-top: var(--space-xs);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
     .panel {
       position: fixed;
       top: 4rem;
@@ -1200,6 +1238,7 @@
     const DEVICE_ID_KEY = 'qsd_device_id';
     let ledgerDbPromise = null;
     const sessionSeen = new Set();
+    const summaryLogged = new Set();
 
     function getDeviceId() {
       let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -1478,6 +1517,7 @@
             const oldId = item.item_id;
             const newId = await sha256Hex(normalizeUrl(result.resolved));
             item.item_id = newId;
+            if (oldId && summaryLogged.has(oldId)) summaryLogged.add(newId);
             if (oldId && sessionSeen.has(oldId)) sessionSeen.add(newId);
 
             document.querySelectorAll(`[data-original-url="${CSS.escape(item.link)}"]`).forEach(a => {
@@ -1487,6 +1527,12 @@
             if (oldId) {
               document.querySelectorAll(`.save-btn[data-item-id="${CSS.escape(oldId)}"]`).forEach(btn => {
                 btn.dataset.itemId = newId;
+              });
+              document.querySelectorAll(`.details-toggle[data-item-id="${CSS.escape(oldId)}"]`).forEach(btn => {
+                btn.dataset.itemId = newId;
+              });
+              document.querySelectorAll(`.signals[data-item-id="${CSS.escape(oldId)}"]`).forEach(el => {
+                el.dataset.itemId = newId;
               });
             }
             document.querySelectorAll(`[data-link="${CSS.escape(item.link)}"]`).forEach(el => {
@@ -1533,6 +1579,39 @@
       return div.innerHTML;
     }
 
+    function buildRedirectUrl(url, title) {
+      const params = new URLSearchParams();
+      params.set('u', url);
+      if (title) params.set('t', title);
+      return `/r?${params.toString()}`;
+    }
+
+    function detectCategory(text) {
+      const t = (text || '').toLowerCase();
+      if (/(economía|economico|dólar|inflación|mercado|finanzas)/.test(t)) return 'economía';
+      if (/(política|gobierno|elección|congreso|presidente)/.test(t)) return 'política';
+      if (/(deporte|fútbol|boca|river|selección)/.test(t)) return 'deportes';
+      if (/(seguridad|policía|crimen|robo|homicidio)/.test(t)) return 'seguridad';
+      if (/(salud|hospital|vacuna|pandemia|médico)/.test(t)) return 'salud';
+      if (/(tecnología|tech|software|IA|inteligencia artificial)/.test(t)) return 'tecnología';
+      return 'actualidad';
+    }
+
+    function buildSummary(item) {
+      const bullets = [];
+      const desc = (item.description || '').trim();
+      if (desc.length >= 60) {
+        const sentences = desc.split(/[.!?]\s+/);
+        let text = sentences.slice(0, 2).join('. ').trim();
+        if (text.length > 180) text = text.slice(0, 177).trim() + '...';
+        if (text) bullets.push(text);
+      } else {
+        bullets.push(`Qué pasó: ${item.title}`);
+        bullets.push(`Clave: ${detectCategory(item.title)}`);
+      }
+      return bullets.slice(0, 3);
+    }
+
     function hoursSince(item) {
       if (item.hours_since_publish != null) return Math.max(0, Math.round(item.hours_since_publish));
       if (!item.pubDate) return null;
@@ -1548,6 +1627,37 @@
         item.title_norm = normalizeTitleText(item.title);
         item.item_id = await sha256Hex(normalized);
       }));
+    }
+
+    function buildSignalsText(item) {
+      const sources = item.sources_count != null ? item.sources_count : '—';
+      const scoreVal = item.editorial_score != null ? item.editorial_score : item.factos_final;
+      const score = scoreVal != null ? Number(scoreVal).toFixed(2) : '—';
+      const age = hoursSince(item);
+      const ageText = age != null ? `${age}h` : '—';
+      return `Señales: src=${sources} score=${score} age=${ageText}`;
+    }
+
+    function maybeLogSummary(item) {
+      if (!item || !item.item_id || summaryLogged.has(item.item_id)) return;
+      summaryLogged.add(item.item_id);
+      void ledgerAppend(buildEvent('summary_generated', item, { category: currentCategory }));
+    }
+
+    function renderSummaryHtml(item) {
+      const bullets = buildSummary(item);
+      const source = extractDomain(item.resolvedLink || item.link) || 'news.google.com';
+      maybeLogSummary(item);
+      return `
+        <div class="news-summary">
+          <ul class="summary-list">
+            ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+          </ul>
+          <div class="summary-source">Fuente: ${escapeHtml(source)}</div>
+          <button class="details-toggle" data-item-id="${escapeAttr(item.item_id)}" type="button">Detalles</button>
+          <div class="signals" data-item-id="${escapeAttr(item.item_id)}">${escapeHtml(buildSignalsText(item))}</div>
+        </div>
+      `;
     }
 
     // ── Render Functions ──
@@ -1598,7 +1708,7 @@
 
       const hero = items[0];
       const rest = items.slice(1);
-      const heroUrl = hero.resolvedLink || hero.link;
+      const heroUrl = buildRedirectUrl(hero.link, hero.title);
       const heroShareUrl = hero.resolvedLink || hero.link;
 
       let html = '';
@@ -1620,6 +1730,7 @@
           </div>
           <h2 class="hero-title">${escapeHtml(hero.title)}</h2>
           ${hero.description ? `<p class="hero-desc">${escapeHtml(hero.description)}</p>` : ''}
+          ${renderSummaryHtml(hero)}
           <div class="hero-meta">
             <span class="hero-source">${escapeHtml(hero.source)}</span>
             <span>${timeAgo(hero.pubDate)}</span>
@@ -1638,8 +1749,9 @@
 
         rest.forEach((item, i) => {
           const finalUrl = item.resolvedLink || item.link;
+          const redirectUrl = buildRedirectUrl(item.link, item.title);
           html += `
-            <a class="news-card" href="${escapeAttr(finalUrl)}" target="_blank" rel="noopener noreferrer"
+            <a class="news-card" href="${escapeAttr(redirectUrl)}" target="_blank" rel="noopener noreferrer"
                style="animation-delay: ${i * 0.04}s"
                data-item-id="${escapeAttr(item.item_id)}"
                data-original-url="${escapeAttr(item.link)}"
@@ -1652,6 +1764,7 @@
               <div class="news-card-source">${escapeHtml(item.source)}</div>
               <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
               ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
+              ${renderSummaryHtml(item)}
               <div class="news-card-footer">
                 <span class="news-card-time">${timeAgo(item.pubDate)}</span>
                 <div class="news-card-actions" data-link="${escapeAttr(item.link)}">
@@ -1701,6 +1814,17 @@
         });
       });
 
+      main.querySelectorAll('.details-toggle').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const itemId = btn.dataset.itemId;
+          const signals = main.querySelector(`.signals[data-item-id="${CSS.escape(itemId)}"]`);
+          if (!signals) return;
+          signals.style.display = signals.style.display === 'block' ? 'none' : 'block';
+        });
+      });
+
       main.querySelectorAll('.save-btn').forEach(btn => {
         const itemId = btn.dataset.itemId;
         if (!itemId) return;
@@ -1739,7 +1863,7 @@
       }
       list.innerHTML = saved.map(item => `
         <div class="saved-item">
-          <a href="${escapeAttr(item.url)}" target="_blank" rel="noopener noreferrer">
+          <a href="${escapeAttr(buildRedirectUrl(item.url, item.title))}" target="_blank" rel="noopener noreferrer">
             ${escapeHtml(item.title)}
           </a>
           <div class="saved-item-time">${timeAgo(item.saved_at)}</div>
