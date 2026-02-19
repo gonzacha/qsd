@@ -740,6 +740,12 @@
       margin-top: var(--space-xs);
     }
 
+    .summary-meta {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 0.35rem;
+    }
+
     .details-toggle {
       margin-top: var(--space-xs);
       font-size: 0.65rem;
@@ -1153,6 +1159,7 @@
     let currentCategory = 'portada';
     let categories = [];
     let refreshTimer = null;
+    const debugUi = new URLSearchParams(window.location.search).get('debug_ui') === '1';
 
     // ── Date Formatting ──
     function formatDate() {
@@ -1580,10 +1587,9 @@
     }
 
     function buildRedirectUrl(url, title) {
-      const params = new URLSearchParams();
-      params.set('u', url);
-      if (title) params.set('t', title);
-      return `/r?${params.toString()}`;
+      const u = encodeURIComponent(url || '');
+      const t = title ? `&t=${encodeURIComponent(title)}` : '';
+      return `/r?u=${u}${t}`;
     }
 
     function detectCategory(text) {
@@ -1612,6 +1618,20 @@
       return bullets.slice(0, 3);
     }
 
+    function buildHumanSignals(item) {
+      const lines = [];
+      if (item.sources_count != null) {
+        lines.push(`Confirmado por ${item.sources_count} medios`);
+      }
+      if (item.agreement_ratio != null && item.agreement_ratio >= 0.8) {
+        lines.push('Alta coincidencia entre fuentes');
+      }
+      if (item.contradiction_flag) {
+        lines.push('Versiones contradictorias');
+      }
+      return lines;
+    }
+
     function hoursSince(item) {
       if (item.hours_since_publish != null) return Math.max(0, Math.round(item.hours_since_publish));
       if (!item.pubDate) return null;
@@ -1629,13 +1649,13 @@
       }));
     }
 
-    function buildSignalsText(item) {
+    function renderDebugSignals(item) {
       const sources = item.sources_count != null ? item.sources_count : '—';
       const scoreVal = item.editorial_score != null ? item.editorial_score : item.factos_final;
       const score = scoreVal != null ? Number(scoreVal).toFixed(2) : '—';
       const age = hoursSince(item);
       const ageText = age != null ? `${age}h` : '—';
-      return `Señales: src=${sources} score=${score} age=${ageText}`;
+      return debugUi ? `Señales: src=${sources} score=${score} age=${ageText}` : '';
     }
 
     function maybeLogSummary(item) {
@@ -1646,7 +1666,9 @@
 
     function renderSummaryHtml(item) {
       const bullets = buildSummary(item);
+      const humanSignals = buildHumanSignals(item);
       const source = extractDomain(item.resolvedLink || item.link) || 'news.google.com';
+      const debugSignals = renderDebugSignals(item);
       maybeLogSummary(item);
       return `
         <div class="news-summary">
@@ -1654,8 +1676,9 @@
             ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
           </ul>
           <div class="summary-source">Fuente: ${escapeHtml(source)}</div>
-          <button class="details-toggle" data-item-id="${escapeAttr(item.item_id)}" type="button">Detalles</button>
-          <div class="signals" data-item-id="${escapeAttr(item.item_id)}">${escapeHtml(buildSignalsText(item))}</div>
+          ${humanSignals.length ? `<div class="summary-meta">${humanSignals.map(s => escapeHtml(s)).join(' · ')}</div>` : ''}
+          ${debugSignals ? `<button class="details-toggle" data-item-id="${escapeAttr(item.item_id)}" type="button">Detalles</button>` : ''}
+          ${debugSignals ? `<div class="signals" data-item-id="${escapeAttr(item.item_id)}">${escapeHtml(debugSignals)}</div>` : ''}
         </div>
       `;
     }

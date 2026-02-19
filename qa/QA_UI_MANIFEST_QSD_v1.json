@@ -1,0 +1,74 @@
+{
+  "version": "v1",
+  "name": "QA UI Manifest QSD v1",
+  "source_of_truth": true,
+  "philosophy": [
+    "Editorial-first, reader-first, deterministic UI.",
+    "No dashboard/engine feel in default reader mode.",
+    "Local-first memory; no external tracking."
+  ],
+  "identity_rules": [
+    "Dark editorial theme preserved.",
+    "Gold accent reserved for highlights, not system chrome.",
+    "No component library feel or admin panel styling."
+  ],
+  "content_translation_rules": {
+    "forbidden_raw_strings": [
+      "src=",
+      "score=",
+      "agreement_ratio",
+      "factos_final",
+      "editorial_score",
+      "hours_since_publish"
+    ],
+    "required_human_translations": [
+      {
+        "field": "sources_count",
+        "text": "Confirmado por X medios"
+      },
+      {
+        "field": "agreement_ratio (high)",
+        "text": "Alta coincidencia entre fuentes"
+      },
+      {
+        "field": "contradiction_flag",
+        "text": "Versiones contradictorias"
+      }
+    ]
+  },
+  "interaction_rules": [
+    "Hero looks like front page; title is most prominent.",
+    "Single primary action per card: open.",
+    "Secondary actions allowed: save, share, copy.",
+    "Install CTA/help must not reflow layout."
+  ],
+  "performance_rules": [
+    "No layout shift on load.",
+    "Offline shows last cached content; Saved always accessible.",
+    "Rank endpoint must not block render; fallback allowed."
+  ],
+  "qa_checks": [
+    "Does it read like a newspaper, not a dashboard?",
+    "Are technical signals hidden from reader mode?",
+    "Mobile/PWA navigation is clear without browser UI?"
+  ],
+  "forbidden_patterns": [
+    "Debug labels visible in production.",
+    "Developer copy visible to reader.",
+    "Multiple primary CTAs per card.",
+    "Analytics or tracking beacons (local ledger only)."
+  ],
+  "debug_rule": {
+    "toggle": "debug_ui",
+    "enabled_via": "URL query ?debug_ui=1 only",
+    "default": "off",
+    "allowed_raw_labels": [
+      "src=",
+      "score=",
+      "agreement_ratio",
+      "factos_final",
+      "editorial_score",
+      "hours_since_publish"
+    ]
+  }
+}
