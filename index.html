@@ -1653,8 +1653,8 @@
         if (text.length > 180) text = text.slice(0, 177).trim() + '...';
         if (text) bullets.push(text);
       } else {
-        bullets.push(`Qué pasó: ${item.title}`);
-        bullets.push(`Clave: ${detectCategory(item.title)}`);
+        bullets.push(`En síntesis: ${item.title}`);
+        bullets.push(`Tema: ${detectCategory(item.title)}`);
       }
       return bullets.slice(0, 3);
     }
@@ -1766,7 +1766,7 @@
       const age = hoursSince(item);
       const ageText = age != null ? `${age}h` : '—';
       const agreement = item.agreement_ratio != null ? Number(item.agreement_ratio).toFixed(2) : '—';
-      return debugUi ? `Señales: fuentes ${sources} · acuerdo ${agreement} · score ${score} · age ${ageText}` : '';
+      return debugUi ? `Señales: fuentes ${sources} · acuerdo ${agreement} · edad ${ageText}` : '';
     }
 
     function maybeLogSummary(item) {
@@ -1786,7 +1786,7 @@
           <ul class="summary-list">
             ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
           </ul>
-          <div class="summary-source">Fuente: ${escapeHtml(source)}</div>
+          <div class="summary-source">Medio: ${escapeHtml(source)}</div>
           ${humanSignals.length ? `<div class="summary-meta">${humanSignals.map(s => escapeHtml(s)).join(' · ')}</div>` : ''}
           ${debugSignals ? `<button class="details-toggle" data-item-id="${escapeAttr(item.item_id)}" type="button">Detalles</button>` : ''}
           ${debugSignals ? `<div class="signals" data-item-id="${escapeAttr(item.item_id)}">${escapeHtml(debugSignals)}</div>` : ''}
