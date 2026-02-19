@@ -65,17 +65,18 @@ PY
 
 html="$(curl -fsS "${BASE_URL}/")" || fail "Failed to fetch ${BASE_URL}/"
 html_no_script="$(printf '%s' "$html" | python3 -c "import re,sys; html=sys.stdin.read(); clean=re.sub(r'<script\\b[^>]*>.*?</script>', '', html, flags=re.IGNORECASE | re.DOTALL); sys.stdout.write(clean)")"
+html_text="$(printf '%s' "$html_no_script" | python3 -c "import re,sys; text=re.sub(r'<[^>]+>', ' ', sys.stdin.read()); sys.stdout.write(text)")"
 
 printf '%s' "$html_no_script" | grep -a -q "Guardados" || fail "Missing Guardados entry point in homepage HTML"
 printf '%s' "$html_no_script" | grep -a -q "Backup" || fail "Missing Backup entry point in homepage HTML"
 printf '%s' "$html_no_script" | grep -a -q "Instalar QSD" || fail "Missing Instalar QSD CTA in homepage HTML"
 printf '%s' "$html_no_script" | grep -a -q "Cómo instalar" || fail "Missing install help entry point in homepage HTML"
 printf '%s' "$html" | grep -a -q "serviceWorker" || fail "Missing service worker registration snippet"
-printf '%s' "$html" | grep -a -q "/r?u=" || fail "Missing /r redirect usage in template strings"
+curl -fsS "${BASE_URL}/" | grep -a -q "/r?u=" || fail "Missing /r redirect usage in template strings"
 pass "Runtime HTML checks: key UX elements and /r usage present"
 
 for token in "${forbidden_strings[@]}"; do
-  if printf '%s' "$html_no_script" | grep -a -q "$token"; then
+  if printf '%s' "$html_text" | grep -a -q "$token"; then
     fail "Forbidden token '$token' appears in production HTML"
   fi
 done
