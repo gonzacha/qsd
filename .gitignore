@@ -1,0 +1,10 @@
+# env
+.env*
+!.env.example
+
+# vercel
+.vercel/
+
+# system
+.DS_Store
+*.swp

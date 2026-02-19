@@ -7,12 +7,13 @@
   <meta name="description" content="Portal informativo con las últimas noticias de Corrientes, Argentina y el mundo. Actualización automática en tiempo real.">
   <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
   <meta name="author" content="Antonio y Gonzalo Haedo">
-  <meta name="theme-color" content="#0b0e1a">
+  <meta name="theme-color" content="#0b0f14">
   <meta name="robots" content="index, follow">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="Logo_qsd.png">
   <link rel="apple-touch-icon" href="Logo_qsd.png">
+  <link rel="manifest" href="/manifest.webmanifest">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -1181,6 +1182,12 @@
     setInterval(() => {
       document.getElementById('currentDate').textContent = formatDate();
     }, 60000);
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>
