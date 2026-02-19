@@ -655,6 +655,15 @@
       margin-bottom: var(--space-sm);
     }
 
+    .news-kicker {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent-red);
+      margin-bottom: var(--space-xs);
+    }
+
     .news-card-title {
       font-family: var(--font-headline);
       font-size: 1rem;
@@ -715,6 +724,38 @@
     .save-btn.active {
       color: var(--gold-primary);
       border-color: var(--border-light);
+    }
+
+    .panorama-block {
+      margin: var(--space-xs) 0 var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      border-left: 2px solid var(--border-light);
+      background: rgba(17, 22, 39, 0.45);
+    }
+
+    .panorama-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold-primary);
+      margin-bottom: 0.35rem;
+    }
+
+    .panorama-list {
+      list-style: disc;
+      padding-left: 1.1rem;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .panorama-list li + li { margin-top: 0.35rem; }
+
+    .panorama-confidence {
+      margin-top: 0.35rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
     }
 
     .news-summary {
@@ -1618,6 +1659,75 @@
       return bullets.slice(0, 3);
     }
 
+    function getEditorialInputs(item) {
+      const sources = Number.isFinite(item.sources_count) ? item.sources_count : 1;
+      const agreement = Number.isFinite(item.agreement_ratio) ? item.agreement_ratio : 0.5;
+      const contradiction = Boolean(item.contradiction_flag);
+      const hours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
+      return { sources, agreement, contradiction, hours };
+    }
+
+    function getFreshnessKicker(hours) {
+      if (hours <= 1.5) return 'ÚLTIMA HORA';
+      if (hours <= 6) return 'AHORA';
+      if (hours <= 18) return 'HOY';
+      return '';
+    }
+
+    function getCoverageBucket(sources) {
+      if (sources >= 15) return 'Cobertura amplísima';
+      if (sources >= 6) return 'Cobertura amplia';
+      if (sources >= 2) return 'Confirmado por varias fuentes';
+      return 'Reporte único';
+    }
+
+    function getAgreementBucket(agreement) {
+      if (agreement >= 0.85) return 'Alta coincidencia entre fuentes';
+      if (agreement >= 0.65) return 'Coincidencia moderada entre fuentes';
+      return 'Coincidencia baja entre fuentes';
+    }
+
+    function getConfidenceLine({ sources, agreement, contradiction }) {
+      if (contradiction) return 'Lectura: en disputa';
+      if (sources >= 6 && agreement >= 0.65) return 'Lectura: alta confianza';
+      if (sources >= 2) return 'Lectura: confianza media';
+      return 'Lectura: baja confianza';
+    }
+
+    function buildPanoramaBullets(item, signals) {
+      const bullets = [];
+      const title = (item.title || '').replace(/[.!\s]+$/g, '').trim();
+      bullets.push(`Panorama: ${title}`);
+      if (signals.contradiction) {
+        bullets.push('Hay versiones contradictorias: leer con cautela.');
+      } else if (signals.sources >= 6 && signals.agreement >= 0.65) {
+        bullets.push('Cobertura amplia y señales consistentes.');
+      } else if (signals.sources >= 2) {
+        bullets.push('Más de una fuente lo reporta.');
+      } else {
+        bullets.push('Es un primer reporte: puede ampliarse.');
+      }
+      return bullets.slice(0, 2);
+    }
+
+    function renderEditorialBlock(item) {
+      const signals = getEditorialInputs(item);
+      const bullets = buildPanoramaBullets(item, signals);
+      const confidence = getConfidenceLine(signals);
+      const agreement = getAgreementBucket(signals.agreement);
+      const coverage = getCoverageBucket(signals.sources);
+      return `
+        <div class="panorama-block">
+          <div class="panorama-title">PANORAMA</div>
+          <ul class="panorama-list">
+            ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+          </ul>
+          <div class="panorama-confidence">${escapeHtml(`${coverage} · ${agreement}`)}</div>
+          <div class="panorama-confidence">${escapeHtml(confidence)}</div>
+        </div>
+      `;
+    }
+
     function buildHumanSignals(item) {
       const lines = [];
       if (item.sources_count != null) {
@@ -1655,7 +1765,8 @@
       const score = scoreVal != null ? Number(scoreVal).toFixed(2) : '—';
       const age = hoursSince(item);
       const ageText = age != null ? `${age}h` : '—';
-      return debugUi ? `Señales: src=${sources} score=${score} age=${ageText}` : '';
+      const agreement = item.agreement_ratio != null ? Number(item.agreement_ratio).toFixed(2) : '—';
+      return debugUi ? `Señales: fuentes ${sources} · acuerdo ${agreement} · score ${score} · age ${ageText}` : '';
     }
 
     function maybeLogSummary(item) {
@@ -1733,6 +1844,8 @@
       const rest = items.slice(1);
       const heroUrl = buildRedirectUrl(hero.link, hero.title);
       const heroShareUrl = hero.resolvedLink || hero.link;
+      const heroSignals = getEditorialInputs(hero);
+      const heroKicker = getFreshnessKicker(heroSignals.hours);
 
       let html = '';
 
@@ -1747,12 +1860,15 @@
            data-factos-final="${hero.factos_final ?? ''}"
            data-sources-count="${hero.sources_count ?? ''}"
            data-hours="${hero.hours_since_publish ?? ''}">
-          <div class="hero-badge">
-            <span class="hero-badge-dot"></span>
-            Última hora
-          </div>
+          ${heroKicker ? `
+            <div class="hero-badge">
+              <span class="hero-badge-dot"></span>
+              ${escapeHtml(heroKicker)}
+            </div>
+          ` : ''}
           <h2 class="hero-title">${escapeHtml(hero.title)}</h2>
           ${hero.description ? `<p class="hero-desc">${escapeHtml(hero.description)}</p>` : ''}
+          ${renderEditorialBlock(hero)}
           ${renderSummaryHtml(hero)}
           <div class="hero-meta">
             <span class="hero-source">${escapeHtml(hero.source)}</span>
@@ -1773,6 +1889,8 @@
         rest.forEach((item, i) => {
           const finalUrl = item.resolvedLink || item.link;
           const redirectUrl = buildRedirectUrl(item.link, item.title);
+          const itemSignals = getEditorialInputs(item);
+          const itemKicker = getFreshnessKicker(itemSignals.hours);
           html += `
             <a class="news-card" href="${escapeAttr(redirectUrl)}" target="_blank" rel="noopener noreferrer"
                style="animation-delay: ${i * 0.04}s"
@@ -1785,8 +1903,10 @@
                data-sources-count="${item.sources_count ?? ''}"
                data-hours="${item.hours_since_publish ?? ''}">
               <div class="news-card-source">${escapeHtml(item.source)}</div>
+              ${itemKicker ? `<div class="news-kicker">${escapeHtml(itemKicker)}</div>` : ''}
               <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
               ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
+              ${renderEditorialBlock(item)}
               ${renderSummaryHtml(item)}
               <div class="news-card-footer">
                 <span class="news-card-time">${timeAgo(item.pubDate)}</span>
