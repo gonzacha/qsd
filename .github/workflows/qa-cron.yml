@@ -36,11 +36,11 @@ jobs:
           
           # Save for issue creation
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
-          
-          # Escape multiline for GitHub
+
+          # JSON-encode output to safely handle backticks, Spanish chars, special symbols
           {
             echo 'qa_output<<EOF'
-            echo "$output"
+            echo "$output" | jq -Rs .
             echo 'EOF'
           } >> $GITHUB_OUTPUT
           
@@ -51,7 +51,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const output = `${{ steps.qa.outputs.qa_output }}`;
+            const output = JSON.parse(${{ steps.qa.outputs.qa_output }});
             const title = `🔴 QSD QA Failed — ${new Date().toISOString().split('T')[0]}`;
             
             // Check if there's already an open issue
