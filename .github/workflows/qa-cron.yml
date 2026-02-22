@@ -30,7 +30,8 @@ jobs:
       - name: Make scripts executable
         run: chmod +x qa/*.sh qa/lib/*.sh scripts/qa_*.sh
 
-      - name: Run QA and process results
+      - name: Run QA
+        id: qa
         run: |
           set +e
 
@@ -47,26 +48,34 @@ jobs:
           echo ""
           echo "QA exit code: $QA_EXIT_CODE"
 
-          # Write canonical result files
+          # Save exit code for subsequent steps
+          echo "exit_code=$QA_EXIT_CODE" >> $GITHUB_OUTPUT
+
+          # Preserve exit code for workflow status
+          exit $QA_EXIT_CODE
+
+      - name: Write result files
+        if: always()
+        run: |
+          # Write canonical result files (always runs, even on QA failure)
           bash scripts/qa_write_result.sh \
-            "$QA_EXIT_CODE" \
+            "${{ steps.qa.outputs.exit_code }}" \
             "tmp/qa_raw_output.log" \
             "${{ github.sha }}" \
             "${{ github.run_id }}" \
             "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          # Append to ledger (append-only, deterministic)
+      - name: Append to ledger
+        if: always()
+        run: |
+          # Append to ledger (append-only, deterministic, always runs)
           bash scripts/qa_append_ledger.sh tmp/qa_result.json
 
-          # Notify Discord on FAIL only
-          if [ $QA_EXIT_CODE -ne 0 ]; then
-            echo ""
-            echo "QA failed, notifying Discord..."
-            bash scripts/qa_notify_discord.sh tmp/qa_result.json || echo "⚠ Discord notification failed (non-blocking)"
-          fi
-
-          # Preserve exit code for workflow status
-          exit $QA_EXIT_CODE
+      - name: Notify Discord on FAIL
+        if: failure()
+        run: |
+          # Notify Discord only on FAIL (non-blocking)
+          bash scripts/qa_notify_discord.sh tmp/qa_result.json || echo "⚠ Discord notification failed (non-blocking)"
         env:
           DISCORD_WEBHOOK_QA: ${{ secrets.DISCORD_WEBHOOK_QA }}
 
