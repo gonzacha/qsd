@@ -36,16 +36,14 @@ fetch_timed() {
   local endpoint="$1"
   local timeout="${2:-10}"
   local start end elapsed
+  local tmp_file
+  tmp_file=$(mktemp)
   start=$(date +%s%N)
-  local body
-  body=$(curl -sf --retry 2 --retry-delay 1 --retry-all-errors --max-time "$timeout" -w "\n%{http_code}" "${BASE_URL}${endpoint}" 2>/dev/null)
+  local http_code
+  http_code=$(curl -sf --retry 2 --retry-delay 1 --retry-all-errors --max-time "$timeout" -o "$tmp_file" -w "%{http_code}" "${BASE_URL}${endpoint}" 2>/dev/null || true)
   end=$(date +%s%N)
   elapsed=$(( (end - start) / 1000000 ))
-  local http_code
-  http_code=$(echo "$body" | tail -1)
-  local content
-  content=$(echo "$body" | sed '$d')
-  echo "${elapsed}|${http_code}|${content}"
+  printf "%s\t%s\t%s\n" "$elapsed" "$http_code" "$tmp_file"
 }
 
 # ── Fetch headers ──

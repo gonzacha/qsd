@@ -52,9 +52,15 @@ for cat in $CATEGORIES; do
   CAT_TOTAL=$((CAT_TOTAL+1))
 
   result=$(fetch_timed "/api/feeds?cat=$cat")
-  elapsed=$(echo "$result" | cut -d'|' -f1)
-  http_code=$(echo "$result" | cut -d'|' -f2)
-  body=$(echo "$result" | cut -d'|' -f3-)
+  elapsed=$(printf '%s' "$result" | cut -d$'\t' -f1)
+  http_code=$(printf '%s' "$result" | cut -d$'\t' -f2)
+  body_file=$(printf '%s' "$result" | cut -d$'\t' -f3)
+  if [ -n "$body_file" ] && [ -f "$body_file" ]; then
+    body=$(cat "$body_file")
+    rm -f "$body_file"
+  else
+    body=""
+  fi
   
   # Check response
   if [ -z "$body" ] || [ "$http_code" != "200" ]; then
@@ -116,8 +122,12 @@ fi
 
 # ── Check 7: Home page loads ──
 home_result=$(fetch_timed "/")
-home_elapsed=$(echo "$home_result" | cut -d'|' -f1)
-home_code=$(echo "$home_result" | cut -d'|' -f2)
+home_elapsed=$(printf '%s' "$home_result" | cut -d$'\t' -f1)
+home_code=$(printf '%s' "$home_result" | cut -d$'\t' -f2)
+home_body_file=$(printf '%s' "$home_result" | cut -d$'\t' -f3)
+if [ -n "$home_body_file" ] && [ -f "$home_body_file" ]; then
+  rm -f "$home_body_file"
+fi
 if [ "$home_code" = "200" ]; then
   if [ "$home_elapsed" -gt "$MAX_RESPONSE_MS" ]; then
     warn "home_load" "HTTP 200 pero lento: ${home_elapsed}ms"
