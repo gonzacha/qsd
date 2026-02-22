@@ -154,8 +154,22 @@ function isRepeatedTitle(title) {
 function validateItem(item) {
   const title = item && item.title ? item.title.trim() : '';
   if (title.length < 15) return false;
-  if (!item.link || !item.link.startsWith('http')) return false;
-  if (/portal del ciudadano|\.gov|\.gob/i.test(title)) return false;
+  const link = item && item.link ? String(item.link).trim() : '';
+  if (!link) return false;
+  try {
+    const u = new URL(link);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const host = (u.hostname || '').toLowerCase();
+    // Structural institutional filter (domain-based), not semantic (title-based)
+    if (host.endsWith('.gob.ar') || host.endsWith('.gov.ar') || host.includes('.gob.') || host.includes('.gov.')) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+  // Keep only the explicit institutional spam phrase in title (optional).
+  // If you want *zero* semantic filtering, delete this line too.
+  if (/portal del ciudadano/i.test(title)) return false;
   if (isRepeatedTitle(title)) return false;
   return true;
 }
