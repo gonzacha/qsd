@@ -117,6 +117,24 @@ SCORE=$(echo "scale=1; ($TITLE_OK * 30 + $LINK_OK * 30 + $SOURCE_OK * 15 + $DATE
 
 echo ""
 echo "──────────────────────────"
+title_pct=$(echo "scale=1; ($TITLE_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
+link_pct=$(echo "scale=1; ($LINK_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
+source_pct=$(echo "scale=1; ($SOURCE_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
+date_pct=$(echo "scale=1; ($DATE_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
+image_pct=$(echo "scale=1; ($IMAGE_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
+
+title_pts=$(echo "scale=1; ($TITLE_OK * 30) / $TOTAL" | bc 2>/dev/null || echo "0")
+link_pts=$(echo "scale=1; ($LINK_OK * 30) / $TOTAL" | bc 2>/dev/null || echo "0")
+source_pts=$(echo "scale=1; ($SOURCE_OK * 15) / $TOTAL" | bc 2>/dev/null || echo "0")
+date_pts=$(echo "scale=1; ($DATE_OK * 15) / $TOTAL" | bc 2>/dev/null || echo "0")
+image_pts=$(echo "scale=1; ($IMAGE_OK * 10) / $TOTAL" | bc 2>/dev/null || echo "0")
+
+info "score_component title" "${title_pct}% -> ${title_pts}/30"
+info "score_component link" "${link_pct}% -> ${link_pts}/30"
+info "score_component source" "${source_pct}% -> ${source_pts}/15"
+info "score_component date" "${date_pct}% -> ${date_pts}/15"
+info "score_component image" "${image_pct}% -> ${image_pts}/10"
+info "score_total" "${SCORE}% (threshold: ${INTEGRITY_THRESHOLD}%) items=${TOTAL}"
 
 SCORE_INT=${SCORE%.*}
 if [ "${SCORE_INT:-0}" -ge "$INTEGRITY_THRESHOLD" ]; then
