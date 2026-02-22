@@ -112,8 +112,14 @@ IMAGE_MISSING=$((TOTAL - IMAGE_OK))
   info "image_missing" "${IMAGE_MISSING}/${TOTAL} sin imagen"
 
 # ── Integrity Score ──
-# Weighted: title(30) + link(30) + source(15) + date(15) + image(10)
-SCORE=$(echo "scale=1; ($TITLE_OK * 30 + $LINK_OK * 30 + $SOURCE_OK * 15 + $DATE_OK * 15 + $IMAGE_OK * 10) / ($TOTAL * 100) * 100" | bc 2>/dev/null || echo "0")
+# Weighted: title(30) + link(30) + source(15) + date(15) + image(0)
+TITLE_WEIGHT=30
+LINK_WEIGHT=30
+SOURCE_WEIGHT=15
+DATE_WEIGHT=15
+IMAGE_WEIGHT=0
+TOTAL_WEIGHT=$((TITLE_WEIGHT + LINK_WEIGHT + SOURCE_WEIGHT + DATE_WEIGHT + IMAGE_WEIGHT))
+SCORE=$(echo "scale=1; ($TITLE_OK * $TITLE_WEIGHT + $LINK_OK * $LINK_WEIGHT + $SOURCE_OK * $SOURCE_WEIGHT + $DATE_OK * $DATE_WEIGHT + $IMAGE_OK * $IMAGE_WEIGHT) / ($TOTAL * $TOTAL_WEIGHT) * 100" | bc 2>/dev/null || echo "0")
 
 echo ""
 echo "──────────────────────────"
@@ -123,17 +129,17 @@ source_pct=$(echo "scale=1; ($SOURCE_OK * 100) / $TOTAL" | bc 2>/dev/null || ech
 date_pct=$(echo "scale=1; ($DATE_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
 image_pct=$(echo "scale=1; ($IMAGE_OK * 100) / $TOTAL" | bc 2>/dev/null || echo "0")
 
-title_pts=$(echo "scale=1; ($TITLE_OK * 30) / $TOTAL" | bc 2>/dev/null || echo "0")
-link_pts=$(echo "scale=1; ($LINK_OK * 30) / $TOTAL" | bc 2>/dev/null || echo "0")
-source_pts=$(echo "scale=1; ($SOURCE_OK * 15) / $TOTAL" | bc 2>/dev/null || echo "0")
-date_pts=$(echo "scale=1; ($DATE_OK * 15) / $TOTAL" | bc 2>/dev/null || echo "0")
-image_pts=$(echo "scale=1; ($IMAGE_OK * 10) / $TOTAL" | bc 2>/dev/null || echo "0")
+title_pts=$(echo "scale=1; ($TITLE_OK * $TITLE_WEIGHT) / $TOTAL" | bc 2>/dev/null || echo "0")
+link_pts=$(echo "scale=1; ($LINK_OK * $LINK_WEIGHT) / $TOTAL" | bc 2>/dev/null || echo "0")
+source_pts=$(echo "scale=1; ($SOURCE_OK * $SOURCE_WEIGHT) / $TOTAL" | bc 2>/dev/null || echo "0")
+date_pts=$(echo "scale=1; ($DATE_OK * $DATE_WEIGHT) / $TOTAL" | bc 2>/dev/null || echo "0")
+image_pts=$(echo "scale=1; ($IMAGE_OK * $IMAGE_WEIGHT) / $TOTAL" | bc 2>/dev/null || echo "0")
 
-info "score_component title" "${title_pct}% -> ${title_pts}/30"
-info "score_component link" "${link_pct}% -> ${link_pts}/30"
-info "score_component source" "${source_pct}% -> ${source_pts}/15"
-info "score_component date" "${date_pct}% -> ${date_pts}/15"
-info "score_component image" "${image_pct}% -> ${image_pts}/10"
+info "score_component title" "${title_pct}% -> ${title_pts}/${TITLE_WEIGHT}"
+info "score_component link" "${link_pct}% -> ${link_pts}/${LINK_WEIGHT}"
+info "score_component source" "${source_pct}% -> ${source_pts}/${SOURCE_WEIGHT}"
+info "score_component date" "${date_pct}% -> ${date_pts}/${DATE_WEIGHT}"
+info "score_component image" "${image_pct}% -> ${image_pts}/${IMAGE_WEIGHT}"
 info "score_total" "${SCORE}% (threshold: ${INTEGRITY_THRESHOLD}%) items=${TOTAL}"
 
 SCORE_INT=${SCORE%.*}
