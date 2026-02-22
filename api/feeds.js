@@ -153,14 +153,9 @@ function isRepeatedTitle(title) {
 
 function validateItem(item) {
   const title = item && item.title ? item.title.trim() : '';
-  if (!title) return false;
-  const link = item && item.link ? item.link.trim() : '';
-  if (!link) return false;
-  try {
-    new URL(link);
-  } catch {
-    return false;
-  }
+  if (title.length < 15) return false;
+  if (!item.link || !item.link.startsWith('http')) return false;
+  if (/portal del ciudadano|\.gov|\.gob/i.test(title)) return false;
   if (isRepeatedTitle(title)) return false;
   return true;
 }
