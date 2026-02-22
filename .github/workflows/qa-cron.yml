@@ -35,6 +35,9 @@ jobs:
         run: |
           set +e
 
+          # Create tmp directory (required for tee output)
+          mkdir -p tmp
+
           echo "═══════════════════════════════════════════"
           echo "QSD Editorial Quality Factory"
           echo "Target: ${BASE_URL}"
