@@ -8,6 +8,44 @@
 
 export const config = { runtime: 'edge' };
 
+// ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
+const DICT_CAPITAL = [
+  'polich',
+  'claudio polich',
+  'intendente',
+  'intendencia',
+  'municipalidad',
+  'municipio',
+  'concejo deliberante',
+  'concejales',
+  'ediles',
+  'ciudad de corrientes',
+  'ejecutivo municipal',
+  'comuna',
+];
+
+const DICT_PROVINCIA = [
+  'valdés',
+  'gustavo valdés',
+  'gobernador',
+  'tassano',
+  'eduardo tassano',
+  'diputados',
+  'cámara de diputados',
+  'senado',
+  'senadores',
+  'legislatura',
+  'legisladores',
+  'proyecto de ley',
+  'ley provincial',
+  'gobierno provincial',
+  'ministerio provincial',
+  'palacio legislativo',
+];
+
+const DICT_CAPITAL_NORM = DICT_CAPITAL.map(term => normalizeText(term));
+const DICT_PROVINCIA_NORM = DICT_PROVINCIA.map(term => normalizeText(term));
+
 // ── Feed Sources ──────────────────────────────────────────────
 const FEEDS = {
   portada: {
@@ -138,6 +176,34 @@ function normalizeTitle(title) {
 
   cleaned = cleaned.replace(/\s[-|]\s[^-|]+$/, '').trim();
   return cleaned;
+}
+
+function normalizeText(text) {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function countHits(normalizedText, dict) {
+  let hits = 0;
+  for (const term of dict) {
+    if (normalizedText.includes(term)) hits += 1;
+  }
+  return hits;
+}
+
+function detectCorrientesEdition(text) {
+  const normalized = normalizeText(text);
+  const capitalHits = countHits(normalized, DICT_CAPITAL_NORM);
+  const provinciaHits = countHits(normalized, DICT_PROVINCIA_NORM);
+  if (capitalHits >= 2 && provinciaHits < 2) return 'corrientes_capital';
+  if (provinciaHits >= 2 && capitalHits < 2) return 'corrientes_provincia';
+  return 'corrientes';
 }
 
 function isRepeatedTitle(title) {
@@ -321,7 +387,13 @@ export default async function handler(req) {
     const trending = extractTrending(allItems);
 
     // Limit results
-    const items = allItems.slice(0, 50);
+    const items = allItems.slice(0, 50).map(item => {
+      if (category === 'corrientes') {
+        const text = `${item.title} ${item.description || ''}`.trim();
+        return { ...item, edition: detectCorrientesEdition(text) };
+      }
+      return { ...item, edition: category };
+    });
 
     return new Response(JSON.stringify({
       category,

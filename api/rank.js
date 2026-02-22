@@ -8,14 +8,49 @@
 
 export const config = { runtime: 'edge' };
 
+// ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
+const DICT_CAPITAL = [
+  'polich',
+  'claudio polich',
+  'intendente',
+  'intendencia',
+  'municipalidad',
+  'municipio',
+  'concejo deliberante',
+  'concejales',
+  'ediles',
+  'ciudad de corrientes',
+  'ejecutivo municipal',
+  'comuna',
+];
+
+const DICT_PROVINCIA = [
+  'valdés',
+  'gustavo valdés',
+  'gobernador',
+  'tassano',
+  'eduardo tassano',
+  'diputados',
+  'cámara de diputados',
+  'senado',
+  'senadores',
+  'legislatura',
+  'legisladores',
+  'proyecto de ley',
+  'ley provincial',
+  'gobierno provincial',
+  'ministerio provincial',
+  'palacio legislativo',
+];
+
 // ── Feed Sources (all categories for maximum pool) ────────────
-const ALL_FEED_URLS = [
-  'https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es',
-  'https://news.google.com/rss/search?q=Argentina&hl=es-419&gl=AR&ceid=AR:es',
-  'https://news.google.com/rss/search?q=Corrientes+Argentina&hl=es-419&gl=AR&ceid=AR:es',
-  'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es',
-  'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp1ZEdvU0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es',
-  'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es',
+const FEED_SOURCES = [
+  { url: 'https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es', category: 'portada' },
+  { url: 'https://news.google.com/rss/search?q=Argentina&hl=es-419&gl=AR&ceid=AR:es', category: 'argentina' },
+  { url: 'https://news.google.com/rss/search?q=Corrientes+Argentina&hl=es-419&gl=AR&ceid=AR:es', category: 'corrientes' },
+  { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es', category: 'mundo' },
+  { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp1ZEdvU0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es', category: 'deportes' },
+  { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es', category: 'economia' },
 ];
 
 // ── RSS helpers (edge-compatible, no imports) ─────────────────
@@ -45,6 +80,37 @@ function normalizeTitle(title) {
   return s.replace(/\s[-|]\s[^-|]+$/, '').trim();
 }
 
+function normalizeText(text) {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const DICT_CAPITAL_NORM = DICT_CAPITAL.map(term => normalizeText(term));
+const DICT_PROVINCIA_NORM = DICT_PROVINCIA.map(term => normalizeText(term));
+
+function countHits(normalizedText, dict) {
+  let hits = 0;
+  for (const term of dict) {
+    if (normalizedText.includes(term)) hits += 1;
+  }
+  return hits;
+}
+
+function detectCorrientesEdition(text) {
+  const normalized = normalizeText(text);
+  const capitalHits = countHits(normalized, DICT_CAPITAL_NORM);
+  const provinciaHits = countHits(normalized, DICT_PROVINCIA_NORM);
+  if (capitalHits >= 2 && provinciaHits < 2) return 'corrientes_capital';
+  if (provinciaHits >= 2 && capitalHits < 2) return 'corrientes_provincia';
+  return 'corrientes';
+}
+
 function stripHtml(str) { return str.replace(/<[^>]*>/g, '').trim(); }
 
 function extractDomain(url) {
@@ -61,7 +127,7 @@ function isRepeatedTitle(title) {
   return false;
 }
 
-function parseRSSItems(xml) {
+function parseRSSItems(xml, category) {
   const items = [];
   const re = /<item>([\s\S]*?)<\/item>/gi;
   let m;
@@ -76,14 +142,20 @@ function parseRSSItems(xml) {
     const pubDate = extractTag(b, 'pubDate') || null;
     const description = extractTag(b, 'description');
     const source = extractTag(b, 'source');
+    const descriptionText = description ? stripHtml(decodeEntities(description)) : '';
+    const edition = category === 'corrientes'
+      ? detectCorrientesEdition(`${normalTitle} ${descriptionText}`)
+      : category || null;
     items.push({
       title: normalTitle,
       link,
       pubDate,
       timestamp: pubDate ? new Date(pubDate).getTime() : 0,
-      description: description ? stripHtml(decodeEntities(description)) : '',
+      description: descriptionText,
       source: source ? decodeEntities(source) : extractDomain(link),
       sourceUrl: extractAttr(b, 'source', 'url') || null,
+      category: category || null,
+      edition,
     });
   }
   return items;
@@ -129,6 +201,7 @@ const CLUSTER_STOPWORDS = new Set([
 
 function computeClusterSizes(items) {
   const n = items.length;
+  const sameEdition = (a, b) => (items[a].edition || '') === (items[b].edition || '');
   const tokenSets = items.map(item =>
     new Set(
       item.title.toLowerCase().split(/\s+/)
@@ -149,6 +222,7 @@ function computeClusterSizes(items) {
   // Pass 1: threshold = 2
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
+      if (!sameEdition(i, j)) continue;
       let shared = 0;
       for (const w of tokenSets[i]) { if (tokenSets[j].has(w) && ++shared >= 2) break; }
       if (shared >= 2) union(i, j);
@@ -168,6 +242,7 @@ function computeClusterSizes(items) {
     for (let a = 0; a < members.length; a++) {
       for (let b = a + 1; b < members.length; b++) {
         const [i, j] = [members[a], members[b]];
+        if (!sameEdition(i, j)) continue;
         let shared = 0;
         for (const w of tokenSets[i]) { if (tokenSets[j].has(w) && ++shared >= 3) break; }
         if (shared >= 3) lUnion(i, j);
@@ -190,7 +265,33 @@ function qualityEnrich(items) {
     const sources_effective = Math.min(sources_count, 5);
     const agreement_ratio = Math.min(sources_effective / 5, 1);
     const contradiction_flag = CONTRADICTION_WORDS.some(w => item.title.toLowerCase().includes(w));
-    return { ...item, publishedAt, sources_count, sources_effective, agreement_ratio, contradiction_flag };
+    const quality_flags = Array.isArray(item.quality_flags) ? [...item.quality_flags] : [];
+    let quality_penalty = Number.isFinite(item.quality_penalty) ? item.quality_penalty : 0;
+    const descriptionText = item.description || item.summary || item.snippet || '';
+    const normTitle = normalizeText(item.title);
+    const normDesc = normalizeText(descriptionText);
+    if (normTitle && normDesc && normDesc.includes(normTitle)) {
+      if (!quality_flags.includes('title_echo_desc')) quality_flags.push('title_echo_desc');
+      quality_penalty += 10;
+    }
+    if (item.edition === 'corrientes_capital') {
+      const driftText = normalizeText(`${item.title} ${descriptionText}`);
+      const provinciaHits = countHits(driftText, DICT_PROVINCIA_NORM);
+      if (provinciaHits >= 2) {
+        if (!quality_flags.includes('power_branch_drift')) quality_flags.push('power_branch_drift');
+        quality_penalty += 15;
+      }
+    }
+    return {
+      ...item,
+      publishedAt,
+      sources_count,
+      sources_effective,
+      agreement_ratio,
+      contradiction_flag,
+      quality_flags,
+      quality_penalty,
+    };
   });
 }
 
@@ -230,6 +331,9 @@ function rankItems(enriched) {
       hours_since_publish,
       sources_count: item.sources_count,
       sources_effective: se,
+      quality_flags: item.quality_flags || [],
+      quality_penalty: item.quality_penalty || 0,
+      edition: item.edition || null,
       title: item.title,
       url: item.link,
       publishedAt: item.publishedAt,
@@ -254,18 +358,23 @@ export default async function handler(req) {
   }
 
   const params  = new URL(req.url).searchParams;
+  const cat      = params.get('cat') || params.get('category') || '';
   const limit    = Math.max(1, parseInt(params.get('limit') || '30', 10));
   const minScore = parseFloat(params.get('min') || '0');
   const format   = params.get('format') || 'json';
 
   try {
-    // Fetch all feed URLs in parallel
+    const sources = cat
+      ? FEED_SOURCES.filter(feed => feed.category === cat)
+      : FEED_SOURCES;
+
+    // Fetch feed URLs in parallel
     const results = await Promise.all(
-      ALL_FEED_URLS.map(async feedUrl => {
+      sources.map(async feed => {
         try {
           const ctrl = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 12000);
-          const res = await fetch(feedUrl, {
+          const res = await fetch(feed.url, {
             headers: {
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
               'Accept': 'application/rss+xml, application/xml, text/xml, */*',
@@ -274,14 +383,22 @@ export default async function handler(req) {
           });
           clearTimeout(timer);
           if (!res.ok) return [];
-          return parseRSSItems(await res.text());
+          return parseRSSItems(await res.text(), feed.category);
         } catch { return []; }
       })
     );
 
     // Merge, sort newest-first, deduplicate
     let items = results.flat();
+    if (cat) {
+      items = items.filter(item => (item.category || '') === cat);
+    }
     items.sort((a, b) => b.timestamp - a.timestamp);
+
+    items = items.map(item => ({
+      ...item,
+      edition: item.edition || item.category || cat || 'unknown',
+    }));
 
     // Quality enrich (cluster before dedup so sources_count reflects raw pool)
     const enriched = qualityEnrich(items);
