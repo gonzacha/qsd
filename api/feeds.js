@@ -129,7 +129,20 @@ function parseRSSItems(xml) {
     }
   }
 
-  return items.filter(item => validateItem(item));
+  // [ TÚNEL ] Pre-filtro antes de validación editorial
+  const seenUrls = new Set();
+  const filteredItems = items.filter(item => {
+    const gate = feed_gate(item, seenUrls);
+    if (!gate.pass) {
+      // Log para auditoría (no bloquea el pipeline)
+      console.log(`[TUNEL] REJECT reason=${gate.reason} url=${item.link || item.url}`);
+      return false;
+    }
+    return true;
+  });
+
+  // [ PURGATORIO ] Validación editorial
+  return filteredItems.filter(item => validateItem(item));
 }
 
 function extractTag(xml, tag) {
@@ -216,6 +229,108 @@ function isRepeatedTitle(title) {
   }
   return false;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// QSD PIPELINE — INGESTA → PUBLICACIÓN
+// ═══════════════════════════════════════════════════════════════
+//
+//  [ INGESTA ]    fetch RSS raw desde fuentes configuradas
+//       ↓
+//  [ TÚNEL ]      feed_gate() — pre-filtro: fuente, idioma, dedup temprana
+//                 Sin lógica editorial. Solo: ¿este item merece procesarse?
+//       ↓
+//  [ PURGATORIO ] validateItem() — filtro editorial determinístico
+//                 Reglas de estructura, campos requeridos, score mínimo
+//       ↓
+//  [ SCORING ]    scoreItem() — ranking factos + editorial_score
+//                 Convergencia de fuentes, frescura, relevancia
+//       ↓
+//  [ QUALITY ]    qualityEnrich() — flags determinísticos
+//                 title_echo_desc, power_branch_drift, etc.
+//       ↓
+//  [ GATE ]       EQF — audit final de calidad (publishable true/false)
+//                 Si rechaza, no publica aunque HITL apruebe
+//       ↓
+//  [ LEDGER ]     stories.jsonl — append-only, solo lo que pasa todo
+//
+// PRINCIPIOS: Deterministic-first. LLM opcional. Zero-maintenance.
+// ═══════════════════════════════════════════════════════════════
+
+// ── [ TÚNEL ] Pre-filtro ──────────────────────────────────────
+
+// Dominios bloqueados — agregar acá si una fuente empieza a meter basura
+const BLOCKED_DOMAINS = [
+  // 'example-spam-site.com',
+];
+
+// Dominios permitidos (whitelist) — si está vacío, permite todo excepto bloqueados
+const ALLOWED_DOMAINS = [
+  // Si se define, solo estos dominios pasan
+];
+
+// Stopwords español — determinístico, sin deps, sin APIs externas
+const SPANISH_STOPWORDS = new Set([
+  'de','la','el','en','y','a','los','las','del','un','una','con',
+  'por','para','que','se','su','al','es','lo','como','más','pero',
+  'fue','son','hay','le','no','si','ya','o','este','esta','esto',
+  'también','cuando','muy','años','gobierno','provincia','ciudad',
+  'nacional','municipal','presidente','gobernador','intendente'
+]);
+
+function getDomain(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+}
+
+function isSpanish(text) {
+  if (!text) return true;
+  const words = text.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 1);
+  if (words.length < 4) return true; // título muy corto → no filtrar
+  const hits = words.filter(w => SPANISH_STOPWORDS.has(w)).length;
+  return hits >= 2;
+}
+
+// [ TÚNEL ] — Primera capa del pipeline. Sin lógica editorial.
+// Pregunta: ¿este item merece entrar al pipeline?
+function feed_gate(item, seenUrls) {
+  // 1. URL requerida
+  if (!item.link && !item.url) return { pass: false, reason: 'no_url' };
+
+  const url = item.link || item.url;
+
+  // 2. Early dedup
+  if (seenUrls.has(url)) return { pass: false, reason: 'duplicate_url' };
+  seenUrls.add(url);
+
+  // 3. Source filter
+  const domain = getDomain(url);
+  if (domain && BLOCKED_DOMAINS.includes(domain))
+    return { pass: false, reason: 'blocked_domain' };
+  if (ALLOWED_DOMAINS.length > 0 && domain && !ALLOWED_DOMAINS.includes(domain))
+    return { pass: false, reason: 'not_in_allowlist' };
+
+  // 4. Language filter
+  if (!isSpanish(item.title)) return { pass: false, reason: 'lang_en' };
+
+  return { pass: true };
+}
+
+// ── ETAPAS FUTURAS DEL TÚNEL (no implementadas) ──────────────────
+// TÚNEL v2: Normalización de encoding (UTF-8 forzado, entidades HTML)
+// TÚNEL v3: Router por tipo de fuente (regional / nacional / Google News)
+//           → permite aplicar reglas distintas por tipo
+// TÚNEL v4: Metadata enrichment temprano (canonical URL, pub date fix)
+// TÚNEL v5: Feed quality score histórico (integración TCC/Trinity)
+//           → feeds con historial de basura reciben penalidad automática
+// ─────────────────────────────────────────────────────────────────
+
+// ── [ PURGATORIO ] Validación editorial ──────────────────────────
 
 function validateItem(item) {
   const title = item && item.title ? item.title.trim() : '';

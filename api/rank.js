@@ -270,7 +270,7 @@ function qualityEnrich(items) {
     const descriptionText = item.description || item.summary || item.snippet || '';
     const normTitle = normalizeText(item.title);
     const normDesc = normalizeText(descriptionText);
-    if (normTitle && normDesc && normDesc.includes(normTitle)) {
+    if (descriptionText && descriptionText.trim() && normTitle && normDesc && normDesc.includes(normTitle)) {
       if (!quality_flags.includes('title_echo_desc')) quality_flags.push('title_echo_desc');
       quality_penalty += 10;
     }
@@ -334,7 +334,9 @@ function rankItems(enriched) {
       quality_flags: item.quality_flags || [],
       quality_penalty: item.quality_penalty || 0,
       edition: item.edition || null,
+      category: item.category || null,
       title: item.title,
+      description: item.description || null,
       url: item.link,
       publishedAt: item.publishedAt,
       source: item.source,

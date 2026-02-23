@@ -1627,6 +1627,24 @@
       return div.innerHTML;
     }
 
+    function normalizeLite(s) {
+      return (s || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^\p{L}\p{N}\s]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function isEchoLine(line, title) {
+      if (!line || !title) return false;
+      const nt = normalizeLite(title);
+      let nl = normalizeLite(line);
+      nl = nl.replace(/^panorama\s*:\s*/i, '').trim();
+      return nt && nl.includes(nt);
+    }
+
     function buildRedirectUrl(url, title) {
       const u = encodeURIComponent(url || '');
       const t = title ? `&t=${encodeURIComponent(title)}` : '';
@@ -1647,13 +1665,16 @@
     function buildSummary(item) {
       const bullets = [];
       const desc = (item.description || '').trim();
+      const hasEchoFlag = Array.isArray(item.quality_flags) && item.quality_flags.includes('title_echo_desc');
       if (desc.length >= 60) {
         const sentences = desc.split(/[.!?]\s+/);
         let text = sentences.slice(0, 2).join('. ').trim();
         if (text.length > 180) text = text.slice(0, 177).trim() + '...';
         if (text) bullets.push(text);
       } else {
-        bullets.push(`En síntesis: ${item.title}`);
+        if (!hasEchoFlag) {
+          bullets.push(`En síntesis: ${item.title}`);
+        }
         bullets.push(`Tema: ${detectCategory(item.title)}`);
       }
       return bullets.slice(0, 3);
@@ -1697,7 +1718,12 @@
     function buildPanoramaBullets(item, signals) {
       const bullets = [];
       const title = (item.title || '').replace(/[.!\s]+$/g, '').trim();
-      bullets.push(`Panorama: ${title}`);
+      const panoramaLine = `Panorama: ${title}`;
+      const hasEchoFlag = Array.isArray(item.quality_flags) && item.quality_flags.includes('title_echo_desc');
+      const shouldSuppressFirst = hasEchoFlag && isEchoLine(panoramaLine, item.title || '');
+      if (!shouldSuppressFirst) {
+        bullets.push(panoramaLine);
+      }
       if (signals.contradiction) {
         bullets.push('Hay versiones contradictorias: leer con cautela.');
       } else if (signals.sources >= 6 && signals.agreement >= 0.65) {
