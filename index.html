@@ -1628,7 +1628,15 @@
     }
 
     function normalizeLite(s) {
-      return (s || '')
+      if (!s) return '';
+      // Decode HTML entities before normalizing
+      const decoded = s.replace(/&nbsp;/g, ' ')
+                       .replace(/&amp;/g, '&')
+                       .replace(/&lt;/g, '<')
+                       .replace(/&gt;/g, '>')
+                       .replace(/&quot;/g, '"')
+                       .replace(/&#\d+;/g, '');
+      return decoded
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')

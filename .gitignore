@@ -8,3 +8,5 @@
 # system
 .DS_Store
 *.swp
+.vercel
+.env*.local
