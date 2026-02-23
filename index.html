@@ -1645,6 +1645,16 @@
       return nt && nl.includes(nt);
     }
 
+    // Detect PWA standalone mode (Android "Add to Home Screen" or iOS Safari)
+    function isPWAStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true; // iOS Safari
+    }
+
+    // In PWA standalone: use _self to avoid ephemeral popup bug
+    // In browser: use _blank for normal new-tab behavior
+    const LINK_TARGET = isPWAStandalone() ? '_self' : '_blank';
+
     function buildRedirectUrl(url, title) {
       const u = encodeURIComponent(url || '');
       const t = title ? `&t=${encodeURIComponent(title)}` : '';
@@ -1877,7 +1887,7 @@
 
       // Hero card
       html += `
-        <a class="hero-card" href="${escapeAttr(heroUrl)}" target="_blank" rel="noopener noreferrer"
+        <a class="hero-card" href="${escapeAttr(heroUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
            data-item-id="${escapeAttr(hero.item_id)}"
            data-original-url="${escapeAttr(hero.link)}"
            data-title="${escapeAttr(hero.title)}"
@@ -1918,7 +1928,7 @@
           const itemSignals = getEditorialInputs(item);
           const itemKicker = getFreshnessKicker(itemSignals.hours);
           html += `
-            <a class="news-card" href="${escapeAttr(redirectUrl)}" target="_blank" rel="noopener noreferrer"
+            <a class="news-card" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
                style="animation-delay: ${i * 0.04}s"
                data-item-id="${escapeAttr(item.item_id)}"
                data-original-url="${escapeAttr(item.link)}"
@@ -2032,7 +2042,7 @@
       }
       list.innerHTML = saved.map(item => `
         <div class="saved-item">
-          <a href="${escapeAttr(buildRedirectUrl(item.url, item.title))}" target="_blank" rel="noopener noreferrer">
+          <a href="${escapeAttr(buildRedirectUrl(item.url, item.title))}" target="${LINK_TARGET}" rel="noopener noreferrer">
             ${escapeHtml(item.title)}
           </a>
           <div class="saved-item-time">${timeAgo(item.saved_at)}</div>
