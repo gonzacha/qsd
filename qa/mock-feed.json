@@ -1,0 +1,46 @@
+[
+  {
+    "id": "case-1-standard",
+    "title": "Valdés anunció nuevas obras de infraestructura para el puerto de Ituzaingó",
+    "category": "POLÍTICA",
+    "edition": "CORRIENTES",
+    "source": "El Litoral",
+    "sources_count": 3,
+    "pub_date": "2026-02-25T14:30:00",
+    "url": "#test-1",
+    "quality_flags": []
+  },
+  {
+    "id": "case-2-long-title",
+    "title": "ALERTA: El SMN emitió un aviso a muy corto plazo por tormentas fuertes con ráfagas y ocasional caída de granizo para toda la zona capital",
+    "category": "SOCIEDAD",
+    "edition": "REGIONAL",
+    "source": "Radio Dos",
+    "sources_count": 1,
+    "pub_date": "2026-02-25T10:00:00",
+    "url": "#test-2",
+    "quality_flags": []
+  },
+  {
+    "id": "case-3-contradiction",
+    "title": "Dudas sobre el feriado del lunes: Comercio dice que abre, Sindicato dice que no",
+    "category": "ECONOMÍA",
+    "edition": "NACIONAL",
+    "source": "Clarín",
+    "sources_count": 5,
+    "pub_date": "2026-02-24T20:00:00",
+    "url": "#test-3",
+    "quality_flags": ["contradiction"]
+  },
+  {
+    "id": "case-4-short",
+    "title": "Ganó Boca",
+    "category": "DEPORTES",
+    "edition": "NACIONAL",
+    "source": "Olé",
+    "sources_count": 1,
+    "pub_date": "2026-02-25T09:00:00",
+    "url": "#test-4",
+    "quality_flags": []
+  }
+]

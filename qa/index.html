@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QSD Visual QA Lab</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0b0e14;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #1f2937;
+      background: #0f1623;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    h1 { margin: 0; font-size: 18px; color: #c9953a; }
+    .qa-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .qa-controls {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      margin-bottom: 16px;
+      padding: 12px;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      background: #0f1623;
+    }
+    .qa-controls label {
+      display: block;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .qa-controls input {
+      width: 100%;
+      background: #0b0e14;
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      color: #e2e8f0;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+    .qa-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .qa-btn {
+      background: #111827;
+      border: 1px solid #1f2937;
+      color: #e2e8f0;
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .qa-btn:hover { border-color: #c9953a; color: #c9953a; }
+    .qa-viewport {
+      border: 1px dashed #374151;
+      border-radius: 10px;
+      padding: 14px;
+      background: #0f1623;
+    }
+    .qa-label {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    #qaRoot {
+      margin: 0 auto;
+    }
+    #qaStatus {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .qa-note {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>QSD Visual QA Lab</h1>
+  </header>
+
+  <div class="qa-wrap">
+    <div class="qa-controls">
+      <div>
+        <label for="baseUrl">Base URL (para /api/thumb)</label>
+        <input id="baseUrl" type="text" value="">
+        <div class="qa-note">Si abrís con file://, setea una URL válida.</div>
+      </div>
+      <div class="qa-actions">
+        <button class="qa-btn" id="btnLoadMock">Cargar mock</button>
+        <button class="qa-btn" id="btnViewport360">Viewport 360px</button>
+        <button class="qa-btn" id="btnViewport1440">Viewport 1440px</button>
+        <button class="qa-btn" id="btnReloadStyles">Recargar CSS</button>
+      </div>
+    </div>
+
+    <div class="qa-viewport">
+      <div class="qa-label" id="qaViewportLabel">Viewport: 360px</div>
+      <div id="qaRoot" style="max-width: 360px;"></div>
+    </div>
+    <div id="qaStatus"></div>
+  </div>
+
+  <script>
+    const qaStatus = document.getElementById('qaStatus');
+    const qaRoot = document.getElementById('qaRoot');
+    const baseUrlInput = document.getElementById('baseUrl');
+    const qaViewportLabel = document.getElementById('qaViewportLabel');
+
+    const defaultOrigin = window.location.origin && window.location.origin !== 'null'
+      ? window.location.origin
+      : 'https://qsd-seven.vercel.app';
+    baseUrlInput.value = defaultOrigin;
+
+    function setStatus(text) {
+      qaStatus.textContent = text;
+    }
+
+    async function loadCoreStyles() {
+      try {
+        const res = await fetch('../index.html', { cache: 'no-store' });
+        const html = await res.text();
+        const match = html.match(/<style>([\s\S]*?)<\/style>/i);
+        if (!match) {
+          setStatus('No se encontró <style> en index.html');
+          return;
+        }
+        let styleEl = document.getElementById('qsdCoreStyles');
+        if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = 'qsdCoreStyles';
+          document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = match[1];
+        setStatus('CSS principal cargado desde index.html');
+      } catch (err) {
+        setStatus('Error cargando CSS principal: ' + err.message);
+      }
+    }
+
+    function buildThumbUrl(item) {
+      const baseUrl = baseUrlInput.value.trim().replace(/\/$/, '');
+      const params = new URLSearchParams();
+      if (item.edition) params.set('edition', item.edition);
+      if (item.category) params.set('category', item.category);
+      if (item.pub_date) params.set('date', new Date(item.pub_date).toLocaleDateString('es-AR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      }));
+      if (Number.isFinite(item.sources_count)) params.set('sources', String(item.sources_count));
+      const query = params.toString();
+      return `${baseUrl}/api/thumb${query ? `?${query}` : ''}`;
+    }
+
+    function timeAgo(iso) {
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return '—';
+      const diffMs = Date.now() - date.getTime();
+      const hours = Math.max(0, Math.round(diffMs / 3600000));
+      if (hours < 1) return 'Hace minutos';
+      if (hours === 1) return 'Hace 1h';
+      return `Hace ${hours}h`;
+    }
+
+    function createHeroCard(item) {
+      const hero = document.createElement('a');
+      hero.className = 'hero-card';
+      hero.href = item.url || '#';
+      hero.target = '_blank';
+      hero.rel = 'noopener noreferrer';
+      hero.innerHTML = `
+        <img class="hero-thumb" src="${buildThumbUrl(item)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+        <div class="hero-body">
+          <h2 class="hero-title">${item.title}</h2>
+          <div class="hero-meta">
+            <span class="hero-source">${item.source || '—'}</span>
+            <img src="../Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+            <span>${timeAgo(item.pub_date)}</span>
+            <div class="hero-share">
+              <button class="share-btn">WA</button>
+              <button class="share-btn">X</button>
+              <button class="share-btn">FB</button>
+              <button class="share-btn">Copy</button>
+            </div>
+          </div>
+        </div>
+      `;
+      return hero;
+    }
+
+    function createNewsCard(item) {
+      const card = document.createElement('a');
+      card.className = 'news-card';
+      card.href = item.url || '#';
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+      const sourcesCount = Number(item.sources_count);
+      card.innerHTML = `
+        <img class="news-card-thumb" src="${buildThumbUrl(item)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+        <div class="news-card-body">
+          <div class="news-card-meta">
+            <span class="news-card-source">${item.source || '—'}</span>
+            ${Number.isFinite(sourcesCount) && sourcesCount > 1 ? `<span class="news-sources-badge">+${sourcesCount}</span>` : ''}
+          </div>
+          <h3 class="news-card-title">${item.title}</h3>
+          <div class="news-card-footer">
+            <div class="news-card-timegroup">
+              <img src="../Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+              <span class="news-card-time">${timeAgo(item.pub_date)}</span>
+            </div>
+            <div class="news-card-actions">
+              <button class="share-btn">WA</button>
+              <button class="share-btn">X</button>
+              <button class="share-btn">FB</button>
+              <button class="share-btn">Copy</button>
+            </div>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    function renderFeed(items) {
+      qaRoot.innerHTML = '';
+      if (!items || items.length === 0) {
+        qaRoot.textContent = 'No hay datos para renderizar.';
+        return;
+      }
+      qaRoot.appendChild(createHeroCard(items[0]));
+      const sectionLabel = document.createElement('div');
+      sectionLabel.className = 'section-label';
+      sectionLabel.textContent = 'Más noticias';
+      qaRoot.appendChild(sectionLabel);
+      const grid = document.createElement('div');
+      grid.className = 'news-grid';
+      items.slice(1).forEach(item => grid.appendChild(createNewsCard(item)));
+      qaRoot.appendChild(grid);
+    }
+
+    async function loadMock() {
+      try {
+        setStatus('Cargando mock-feed.json...');
+        const res = await fetch('mock-feed.json', { cache: 'no-store' });
+        const data = await res.json();
+        renderFeed(data);
+        setStatus('Mock cargado.');
+      } catch (err) {
+        setStatus('Error cargando mock: ' + err.message);
+      }
+    }
+
+    function setViewport(width) {
+      qaRoot.style.maxWidth = width + 'px';
+      qaViewportLabel.textContent = 'Viewport: ' + width + 'px';
+    }
+
+    document.getElementById('btnViewport360').addEventListener('click', () => setViewport(360));
+    document.getElementById('btnViewport1440').addEventListener('click', () => setViewport(1440));
+    document.getElementById('btnLoadMock').addEventListener('click', loadMock);
+    document.getElementById('btnReloadStyles').addEventListener('click', loadCoreStyles);
+
+    loadCoreStyles().then(loadMock);
+  </script>
+</body>
+</html>
