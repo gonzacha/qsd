@@ -4,7 +4,6 @@ export default async function handler(req) {
   try {
     const url = new URL(req.url);
     const params = {
-      title: url.searchParams.get('title') || '',
       edition: url.searchParams.get('edition') || '',
       category: url.searchParams.get('category') || '',
       date: url.searchParams.get('date') || ''
@@ -12,20 +11,17 @@ export default async function handler(req) {
 
     // Sanitize all params
     const sanitized = {
-      title: sanitize(params.title, 120),
       edition: sanitize(params.edition, 24),
       category: sanitize(params.category, 24),
       date: sanitize(params.date, 20)
     };
 
-    // Validate title - if >50% non-alphanumeric, use fallback
-    const title = validateTitle(sanitized.title) ? sanitized.title : 'QSD';
     const edition = sanitized.edition || 'QSD';
     const category = sanitized.category || 'GENERAL';
     const date = sanitized.date;
 
     // Generate SVG
-    const svg = generateSVG({ title, edition, category, date });
+    const svg = generateSVG({ edition, category, date });
 
     return new Response(svg, {
       headers: {
@@ -61,69 +57,8 @@ function sanitize(text, maxLength) {
   return cleaned;
 }
 
-// Validate title - reject if >50% non-alphanumeric
-function validateTitle(title) {
-  if (!title) return false;
-
-  const alphanumeric = title.replace(/[^a-zA-Z0-9]/g, '').length;
-  const total = title.length;
-
-  return total > 0 && (alphanumeric / total) >= 0.5;
-}
-
-// Split title into short version (first 4 words, max 2 lines of 16 chars)
-function getTitleShort(title) {
-  if (!title) return ['QSD'];
-
-  const words = title.split(/\s+/).filter(w => w.length > 0);
-  const first4 = words.slice(0, 4).join(' ').toUpperCase();
-
-  // Deterministic split: build line 1 until >16 chars
-  const lines = [];
-  let currentLine = '';
-
-  const tokens = first4.split(/\s+/);
-  for (const token of tokens) {
-    const testLine = currentLine ? `${currentLine} ${token}` : token;
-
-    if (testLine.length <= 16) {
-      currentLine = testLine;
-    } else {
-      // Current line is full, push it
-      if (currentLine) {
-        lines.push(currentLine);
-      }
-
-      // If single token >16 chars, truncate with hyphen
-      if (token.length > 16) {
-        lines.push(token.substring(0, 15) + '-');
-        break;
-      } else {
-        currentLine = token;
-      }
-    }
-
-    // Max 2 lines
-    if (lines.length >= 2) break;
-  }
-
-  // Push remaining
-  if (currentLine && lines.length < 2) {
-    lines.push(currentLine);
-  }
-
-  return lines.length > 0 ? lines : ['QSD'];
-}
-
-// Truncate full title to 90 chars
-function getTitleFull(title) {
-  if (!title) return '';
-  if (title.length <= 90) return title;
-  return title.substring(0, 90) + '…';
-}
-
 // Generate SVG
-function generateSVG({ title, edition, category, date }) {
+function generateSVG({ edition, category, date }) {
   // Top bar text
   const topBarLeft = date ? `${edition.toUpperCase()} · ${date}` : edition.toUpperCase();
 
