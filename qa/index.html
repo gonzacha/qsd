@@ -216,12 +216,14 @@
       card.target = '_blank';
       card.rel = 'noopener noreferrer';
       const sourcesCount = Number(item.sources_count);
+      const kicker = item.kicker ? `<span class="news-kicker">${item.kicker}</span>` : '';
       card.innerHTML = `
         <img class="news-card-thumb" src="${buildThumbUrl(item)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
         <div class="news-card-body">
           <div class="news-card-meta">
             <span class="news-card-source">${item.source || '—'}</span>
             ${Number.isFinite(sourcesCount) && sourcesCount > 1 ? `<span class="news-sources-badge">+${sourcesCount}</span>` : ''}
+            ${kicker}
           </div>
           <h3 class="news-card-title">${item.title}</h3>
           <div class="news-card-footer">
