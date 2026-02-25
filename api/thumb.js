@@ -66,12 +66,13 @@ function generateSVG({ edition, category, date }) {
   const categoryText = category.toUpperCase();
   const pillWidth = categoryText.length * 7 + 16;
   const pillX = 610 - pillWidth;
+  const { start: gradientStart, end: gradientEnd } = getCategoryGradient(categoryText);
 
   return `<svg width="640" height="360" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f1623;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#090d14;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:${gradientStart};stop-opacity:1" />
+      <stop offset="100%" style="stop-color:${gradientEnd};stop-opacity:1" />
     </linearGradient>
   </defs>
 
@@ -91,4 +92,26 @@ function generateSVG({ edition, category, date }) {
   <!-- LOGO -->
   <text x="618" y="348" font-family="monospace" font-size="11" fill="#c9953a50" text-anchor="end">QSD</text>
 </svg>`;
+}
+
+function getCategoryGradient(category) {
+  switch (category) {
+    case 'POLÍTICA':
+    case 'POLITICA':
+      return { start: '#1a3a5c', end: '#0d1f33' };
+    case 'ECONOMÍA':
+    case 'ECONOMIA':
+      return { start: '#3a2800', end: '#1f1500' };
+    case 'SEGURIDAD':
+      return { start: '#3a1a1a', end: '#1f0d0d' };
+    case 'DEPORTES':
+      return { start: '#0d2b1a', end: '#061510' };
+    case 'CULTURA':
+      return { start: '#2a1a4a', end: '#150d26' };
+    case 'SOCIEDAD':
+      return { start: '#1a2a3a', end: '#0d151f' };
+    case 'GENERAL':
+    default:
+      return { start: '#1a1a2a', end: '#0d0d15' };
+  }
 }
