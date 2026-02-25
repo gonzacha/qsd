@@ -533,12 +533,16 @@
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
-    .hero-thumb {
+    .qsd-hero__thumb,
+    .qsd-card__thumb {
       width: 100%;
       aspect-ratio: 16 / 9;
       object-fit: cover;
-      object-position: center;
       display: block;
+    }
+
+    .qsd-hero__thumb {
+      max-height: 360px;
     }
 
     .hero-body {
@@ -662,12 +666,8 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .news-card-thumb {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      object-position: center;
-      display: block;
+    .qsd-card__thumb {
+      min-height: 0;
     }
 
     .news-card-body {
@@ -1005,6 +1005,16 @@
 
       .hero-title {
         font-size: 1.2rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .qsd-card__thumb {
+        min-height: 220px;
+      }
+
+      .qsd-hero__thumb {
+        max-height: 240px;
       }
     }
 
@@ -1739,7 +1749,7 @@
            data-sources-count="${hero.sources_count ?? ''}"
            data-hours="${hero.hours_since_publish ?? ''}">
           ${heroThumbUrl ? `
-            <img class="hero-thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+            <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
           ` : ''}
           <div class="hero-body">
             ${heroKicker ? `
@@ -1787,7 +1797,7 @@
                data-sources-count="${item.sources_count ?? ''}"
                data-hours="${item.hours_since_publish ?? ''}">
               ${itemThumbUrl ? `
-                <img class="news-card-thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+                <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
               ` : ''}
               <div class="news-card-body">
                 <div class="news-card-meta">

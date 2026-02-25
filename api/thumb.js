@@ -64,8 +64,13 @@ function generateSVG({ edition, category, date }) {
 
   // Category pill dimensions (approximate)
   const categoryText = category.toUpperCase();
-  const pillWidth = categoryText.length * 7 + 16;
-  const pillX = 610 - pillWidth;
+  const pillFontSize = 18;
+  const pillPaddingX = 12;
+  const pillPaddingY = 7;
+  const pillHeight = pillFontSize + (pillPaddingY * 2);
+  const pillWidth = categoryText.length * 10 + (pillPaddingX * 2);
+  const pillX = 620 - pillWidth;
+  const pillY = 22;
   const { start: gradientStart, end: gradientEnd } = getCategoryGradient(categoryText);
 
   return `<svg width="640" height="360" xmlns="http://www.w3.org/2000/svg">
@@ -80,17 +85,17 @@ function generateSVG({ edition, category, date }) {
   <rect width="640" height="360" fill="url(#bg)" />
 
   <!-- Left strip -->
-  <rect x="0" y="0" width="4" height="360" fill="#c9953a" />
+  <rect x="0" y="0" width="12" height="360" fill="#c9953a" />
 
   <!-- TOP BAR -->
-  <text x="24" y="40" font-family="sans-serif" font-size="12" fill="#8888a0">${topBarLeft}</text>
+  <text x="24" y="44" font-family="sans-serif" font-size="20" fill="#8888a0">${topBarLeft}</text>
 
   <!-- Category pill -->
-  <rect x="${pillX}" y="28" width="${pillWidth}" height="20" rx="4" fill="#c9953a20" stroke="#c9953a" stroke-width="1" />
-  <text x="${pillX + pillWidth / 2}" y="41" font-family="sans-serif" font-size="11" fill="#c9953a" text-anchor="middle">${categoryText}</text>
+  <rect x="${pillX}" y="${pillY}" width="${pillWidth}" height="${pillHeight}" rx="8" fill="#c9953a20" stroke="#c9953a" stroke-width="2" />
+  <text x="${pillX + pillWidth / 2}" y="${pillY + pillHeight - pillPaddingY}" font-family="sans-serif" font-size="${pillFontSize}" fill="#c9953a" text-anchor="middle">${categoryText}</text>
 
   <!-- LOGO -->
-  <text x="618" y="348" font-family="monospace" font-size="11" fill="#c9953a50" text-anchor="end">QSD</text>
+  <text x="620" y="346" font-family="monospace" font-size="16" fill="#c9953a50" text-anchor="end">QSD</text>
 </svg>`;
 }
 
