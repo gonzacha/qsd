@@ -743,6 +743,12 @@
       border-top: 1px solid var(--border-subtle);
     }
 
+    .news-card-timegroup {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
     .news-card-time {
       font-size: 0.7rem;
       color: var(--text-muted);
@@ -873,6 +879,13 @@
     .share-btn.copy:hover { color: var(--gold-light); }
 
     .share-btn svg { width: 14px; height: 14px; }
+
+    .card-logo-watermark {
+      height: 18px;
+      width: auto;
+      filter: grayscale(1) opacity(0.3);
+      display: inline-block;
+    }
     .save-btn svg { width: 14px; height: 14px; }
 
     /* ═══════════════════════════════════════════
@@ -1239,8 +1252,11 @@
     }
 
     function shareFacebook(url, title, source, description) {
+      const ogUrl = `/api/og?title=${encodeURIComponent(title || '')}&source=${encodeURIComponent(source || '')}&cat=general`;
+      const ogImageUrl = new URL(ogUrl, SITE_DOMAIN).toString();
       const sUrl = shareUrl(title || '', url, source, description);
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sUrl)}`, '_blank');
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sUrl)}&picture=${encodeURIComponent(ogImageUrl)}`;
+      window.open(fbUrl, '_blank');
     }
 
     function copyLink(url, title, source, description) {
@@ -1736,6 +1752,7 @@
             ${hero.description ? `<p class="hero-desc">${escapeHtml(hero.description)}</p>` : ''}
             <div class="hero-meta">
               <span class="hero-source">${escapeHtml(hero.source)}</span>
+              <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
               <span>${timeAgo(hero.pubDate)}</span>
               <div class="hero-share" data-link="${escapeAttr(hero.link)}">
                 ${shareButtons(hero.title, heroShareUrl, hero.source, hero.description)}
@@ -1781,7 +1798,10 @@
                 <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
                 ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
                 <div class="news-card-footer">
-                  <span class="news-card-time">${timeAgo(item.pubDate)}</span>
+                  <div class="news-card-timegroup">
+                    <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+                    <span class="news-card-time">${timeAgo(item.pubDate)}</span>
+                  </div>
                   <div class="news-card-actions" data-link="${escapeAttr(item.link)}">
                     ${shareButtons(item.title, finalUrl, item.source, item.description)}
                     <button class="save-btn" data-item-id="${escapeAttr(item.item_id)}" title="Guardar">${ICONS.bookmark}</button>
