@@ -641,6 +641,28 @@
       gap: var(--space-lg);
     }
 
+    @media (max-width: 420px) {
+      body.qsd-snap-enabled,
+      html.qsd-snap-enabled {
+        scroll-snap-type: y proximity;
+        scroll-padding-top: 12px;
+      }
+
+      .qsd-snap .hero-card,
+      .qsd-snap .news-card {
+        scroll-snap-align: start;
+        scroll-snap-stop: normal;
+        scroll-margin-top: 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.qsd-snap-enabled,
+      html.qsd-snap-enabled {
+        scroll-snap-type: none;
+      }
+    }
+
     .news-card {
       display: flex;
       flex-direction: column;
@@ -1281,6 +1303,24 @@
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
+    function shouldEnableSnap() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('snap') === '1') return true;
+      try {
+        return localStorage.getItem('qsd_snap') === '1';
+      } catch {
+        return false;
+      }
+    }
+
+    function applySnapMode() {
+      if (!shouldEnableSnap()) return;
+      const main = document.getElementById('mainContent');
+      if (main) main.classList.add('qsd-snap');
+      document.body.classList.add('qsd-snap-enabled');
+      document.documentElement.classList.add('qsd-snap-enabled');
+    }
+
     // ── Ledger + Device ID ──
     const DEVICE_ID_KEY = 'qsd_device_id';
     let ledgerDbPromise = null;
@@ -1618,6 +1658,8 @@
       return div.innerHTML;
     }
 
+    const THUMB_VER = '2026-02-25a';
+
     function buildThumbUrl(item) {
       if (!item) return null;
 
@@ -1637,8 +1679,9 @@
         params.set('sources', String(sourcesCount));
       }
 
+      params.set('v', THUMB_VER);
       const query = params.toString();
-      return query ? `/api/thumb?${query}` : '/api/thumb';
+      return `/api/thumb?${query}`;
     }
 
     // Detect PWA standalone mode (Android "Add to Home Screen" or iOS Safari)
@@ -2165,6 +2208,7 @@
     // ── Init ──
     document.getElementById('currentDate').textContent = formatDate();
     setDynamicMeta();
+    applySnapMode();
     ledgerInit().catch(() => {});
 
     // Default nav before API responds
