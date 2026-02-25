@@ -112,6 +112,6 @@ function getCategoryGradient(category) {
       return { start: '#1a2a3a', end: '#0d151f' };
     case 'GENERAL':
     default:
-      return { start: '#1a1a2a', end: '#0d0d15' };
+      return { start: '#2a2060', end: '#140f30' };
   }
 }
