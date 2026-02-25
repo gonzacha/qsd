@@ -1012,28 +1012,36 @@
       }
 
       /* ── Snap Scroll Feed — mobile only ── */
-      html {
-        scroll-snap-type: y mandatory;
-        overflow-y: scroll;
-      }
-
       body {
-        overflow-y: unset;
+        height: 100vh;
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
       }
 
       .hero-card,
       .news-card {
         scroll-snap-align: start;
         scroll-snap-stop: always;
-        scroll-margin-top: var(--header-height);
-        min-height: 85vh;
+        height: 100vh;
+        min-height: unset;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        overflow-y: auto;
+        box-sizing: border-box;
       }
 
       .news-grid {
         gap: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .container {
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+        padding-top: 0;
+        padding-bottom: 0;
       }
     }
 
