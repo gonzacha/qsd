@@ -73,7 +73,7 @@ function generateSVG({ edition, category, date }) {
   const pillY = 22;
   const { start: gradientStart, end: gradientEnd } = getCategoryGradient(categoryText);
 
-  return `<svg width="640" height="360" xmlns="http://www.w3.org/2000/svg">
+  return `<svg width="640" height="360" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:${gradientStart};stop-opacity:1" />
