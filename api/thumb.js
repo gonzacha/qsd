@@ -124,9 +124,6 @@ function getTitleFull(title) {
 
 // Generate SVG
 function generateSVG({ title, edition, category, date }) {
-  const titleShortLines = getTitleShort(title);
-  const titleFull = getTitleFull(title);
-
   // Top bar text
   const topBarLeft = date ? `${edition.toUpperCase()} · ${date}` : edition.toUpperCase();
 
@@ -155,14 +152,6 @@ function generateSVG({ title, edition, category, date }) {
   <!-- Category pill -->
   <rect x="${pillX}" y="28" width="${pillWidth}" height="20" rx="4" fill="#c9953a20" stroke="#c9953a" stroke-width="1" />
   <text x="${pillX + pillWidth / 2}" y="41" font-family="sans-serif" font-size="11" fill="#c9953a" text-anchor="middle">${categoryText}</text>
-
-  <!-- TITLE SHORT -->
-  ${titleShortLines.map((line, i) =>
-    `<text x="24" y="${150 + i * 44}" font-family="sans-serif" font-size="34" font-weight="bold" fill="#ffffff">${line}</text>`
-  ).join('\n  ')}
-
-  <!-- TITLE FULL -->
-  <text x="24" y="290" font-family="sans-serif" font-size="14" fill="#8888a8">${titleFull}</text>
 
   <!-- LOGO -->
   <text x="618" y="348" font-family="monospace" font-size="11" fill="#c9953a50" text-anchor="end">QSD</text>
