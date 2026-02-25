@@ -1010,6 +1010,31 @@
       .masthead {
         padding: var(--space-lg) var(--space-md) var(--space-md);
       }
+
+      /* ── Snap Scroll Feed — mobile only ── */
+      html {
+        scroll-snap-type: y mandatory;
+        overflow-y: scroll;
+      }
+
+      body {
+        overflow-y: unset;
+      }
+
+      .hero-card,
+      .news-card {
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        scroll-margin-top: var(--header-height);
+        min-height: 85vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .news-grid {
+        gap: 0;
+      }
     }
 
     @media (max-width: 480px) {
