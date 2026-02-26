@@ -11,3 +11,6 @@
 .vercel
 .env*.local
 nordia-qa-main/
+
+.env.local
+.env.*
