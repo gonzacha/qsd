@@ -43,6 +43,30 @@ const DICT_PROVINCIA = [
   'palacio legislativo',
 ];
 
+const DICT_CORRIENTES_GENERAL = [
+  'corrientes',
+  'provincia de corrientes',
+  'capital correntina',
+  'resistencia',
+  'chaco',
+  'formosa',
+  'misiones',
+  'posadas',
+  'nordeste',
+  'nea',
+  'litoral',
+  'paraná',
+  'iberá',
+  'mercedes',
+  'goya',
+  'curuzú cuatiá',
+  'paso de los libres',
+  'bella vista',
+  'santo tomé',
+  'mburucuyá',
+  'ituzaingó',
+];
+
 // ── Feed Sources (all categories for maximum pool) ────────────
 const FEED_SOURCES = [
   { url: 'https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es', category: 'portada' },
@@ -93,6 +117,7 @@ function normalizeText(text) {
 
 const DICT_CAPITAL_NORM = DICT_CAPITAL.map(term => normalizeText(term));
 const DICT_PROVINCIA_NORM = DICT_PROVINCIA.map(term => normalizeText(term));
+const DICT_CORRIENTES_GENERAL_NORM = DICT_CORRIENTES_GENERAL.map(term => normalizeText(term));
 
 function countHits(normalizedText, dict) {
   let hits = 0;
@@ -324,7 +349,16 @@ function rankItems(enriched) {
       se, item.agreement_ratio, item.contradiction_flag, hours_since_publish
     );
     const freshness = Math.max(0, 1 - hours_since_publish / 24);
-    const editorial_score = (factos_final * 0.7) + (freshness * 0.3);
+
+    // Geo-boost: contenido de Corrientes/NEA sube en portada
+    const text = normalizeText(`${item.title} ${item.description || ''}`);
+    const isLocal = countHits(text, DICT_CORRIENTES_GENERAL_NORM) >= 1 ||
+                    countHits(text, DICT_CAPITAL_NORM) >= 1 ||
+                    countHits(text, DICT_PROVINCIA_NORM) >= 1;
+    const geoBoost = isLocal ? 0.15 : 0;
+
+    const editorial_score = Math.min(1, (factos_final * 0.7) + (freshness * 0.3) + geoBoost);
+
     return {
       factos_final,
       editorial_score,
