@@ -142,13 +142,25 @@ function parseRSSItems(xml) {
 
     if (title && link) {
       const normalizedTitle = normalizeTitle(decodeEntities(title));
+
+      // Determine source domain for .gob.ar filter
+      const sourceDomain = source ? decodeEntities(source).toLowerCase() : extractDomain(link);
+
+      // Filter .gob.ar/.gov.ar sources (institutional spam)
+      if (sourceDomain.includes('gob.ar') ||
+          sourceDomain.includes('gov.ar') ||
+          sourceDomain.includes('gob.') ||
+          sourceDomain.includes('gov.')) {
+        continue; // Skip this item
+      }
+
       items.push({
         title: normalizedTitle,
         link,
         pubDate: pubDate || null,
         timestamp: pubDate ? new Date(pubDate).getTime() : 0,
         description: description ? stripHtml(decodeEntities(description)) : '',
-        source: source ? decodeEntities(source) : extractDomain(link),
+        source: sourceDomain,
         sourceUrl: sourceUrl || null,
       });
     }
