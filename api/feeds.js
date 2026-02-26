@@ -43,8 +43,33 @@ const DICT_PROVINCIA = [
   'palacio legislativo',
 ];
 
+const DICT_CORRIENTES_GENERAL = [
+  'corrientes',
+  'provincia de corrientes',
+  'capital correntina',
+  'resistencia',
+  'chaco',
+  'formosa',
+  'misiones',
+  'posadas',
+  'nordeste',
+  'nea',
+  'litoral',
+  'paraná',
+  'iberá',
+  'mercedes',
+  'goya',
+  'curuzú cuatiá',
+  'paso de los libres',
+  'bella vista',
+  'santo tomé',
+  'mburucuyá',
+  'ituzaingó',
+];
+
 const DICT_CAPITAL_NORM = DICT_CAPITAL.map(term => normalizeText(term));
 const DICT_PROVINCIA_NORM = DICT_PROVINCIA.map(term => normalizeText(term));
+const DICT_CORRIENTES_GENERAL_NORM = DICT_CORRIENTES_GENERAL.map(term => normalizeText(term));
 
 // ── Feed Sources ──────────────────────────────────────────────
 const FEEDS = {
@@ -217,6 +242,15 @@ function detectCorrientesEdition(text) {
   if (capitalHits >= 2 && provinciaHits < 2) return 'corrientes_capital';
   if (provinciaHits >= 2 && capitalHits < 2) return 'corrientes_provincia';
   return 'corrientes';
+}
+
+function isCorreintesRelevant(text) {
+  const normalized = normalizeText(text);
+  // Al menos 1 hit del diccionario general O 1 hit de capital/provincia
+  const generalHits = countHits(normalized, DICT_CORRIENTES_GENERAL_NORM);
+  const capitalHits = countHits(normalized, DICT_CAPITAL_NORM);
+  const provinciaHits = countHits(normalized, DICT_PROVINCIA_NORM);
+  return generalHits >= 1 || capitalHits >= 1 || provinciaHits >= 1;
 }
 
 function isRepeatedTitle(title) {
@@ -501,14 +535,25 @@ export default async function handler(req) {
     // Extract trending from all items
     const trending = extractTrending(allItems);
 
-    // Limit results
-    const items = allItems.slice(0, 50).map(item => {
+    // Map items with edition classification
+    let mappedItems = allItems.map(item => {
       if (category === 'corrientes') {
         const text = `${item.title} ${item.description || ''}`.trim();
         return { ...item, edition: detectCorrientesEdition(text) };
       }
       return { ...item, edition: category };
     });
+
+    // Filter Corrientes items by relevance
+    if (category === 'corrientes') {
+      mappedItems = mappedItems.filter(item => {
+        const text = `${item.title} ${item.description || ''}`.trim();
+        return isCorreintesRelevant(text);
+      });
+    }
+
+    // Limit results
+    const items = mappedItems.slice(0, 50);
 
     return new Response(JSON.stringify({
       category,
