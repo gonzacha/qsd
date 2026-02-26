@@ -536,13 +536,8 @@
     .qsd-hero__thumb,
     .qsd-card__thumb {
       width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
+      height: auto;
       display: block;
-    }
-
-    .qsd-hero__thumb {
-      max-height: 360px;
     }
 
     .hero-body {
@@ -688,9 +683,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .qsd-card__thumb {
-      min-height: 0;
-    }
 
     .news-card-body {
       padding: var(--space-lg);
@@ -1031,13 +1023,6 @@
     }
 
     @media (max-width: 420px) {
-      .qsd-card__thumb {
-        min-height: 220px;
-      }
-
-      .qsd-hero__thumb {
-        max-height: 240px;
-      }
     }
 
     /* ═══════════════════════════════════════════
