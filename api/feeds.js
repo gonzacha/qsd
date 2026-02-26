@@ -532,6 +532,29 @@ export default async function handler(req) {
     // Deduplicate
     allItems = deduplicateItems(allItems);
 
+    // ── Age Filter ─────────────────────────────────────────────────
+    const MAX_AGE_HOURS = 72; // 3 días
+    const now = Date.now();
+
+    allItems = allItems.filter(item => {
+      // Keep items without timestamp (edge case)
+      if (!item.timestamp || item.timestamp === 0) {
+        console.warn(`[AGE_FILTER] Item sin timestamp: ${item.title?.substring(0, 50)}`);
+        return true;
+      }
+
+      const ageHours = (now - item.timestamp) / (1000 * 60 * 60);
+
+      if (ageHours > MAX_AGE_HOURS) {
+        console.log(`[AGE_FILTER] REJECT age=${ageHours.toFixed(1)}h title="${item.title?.substring(0, 50)}"`);
+        return false;
+      }
+
+      return true;
+    });
+
+    console.log(`[AGE_FILTER] Kept ${allItems.length} items within ${MAX_AGE_HOURS}h window`);
+
     // Extract trending from all items
     const trending = extractTrending(allItems);
 
