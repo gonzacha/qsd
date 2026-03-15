@@ -992,6 +992,16 @@
       opacity: 0.5;
     }
 
+    .editorial-divider {
+      font-family: var(--font-headline);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin: var(--space-xl) 0 var(--space-md);
+      text-align: center;
+    }
+
     /* ═══════════════════════════════════════════
        RESPONSIVE
        ═══════════════════════════════════════════ */
@@ -1716,6 +1726,63 @@
       return '';
     }
 
+    function normalizeToken(text) {
+      return String(text || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s.-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function matchesAny(haystack, list) {
+      if (!haystack) return false;
+      return list.some(entry => haystack.includes(entry));
+    }
+
+    function getDomainFromUrl(url) {
+      if (!url) return '';
+      try {
+        const parsed = new URL(url);
+        return parsed.hostname.replace(/^www\./, '');
+      } catch (err) {
+        return '';
+      }
+    }
+
+    function classifyItem(item) {
+      const domain = normalizeToken(getDomainFromUrl(item.link));
+      const source = normalizeToken(item.source);
+      const title = normalizeToken(item.title);
+      const haystack = `${domain} ${source} ${title}`;
+
+      const argentinaDomains = [
+        'clarin.com', 'lanacion.com.ar', 'infobae.com', 'ambito.com', 'perfil.com',
+        'pagina12.com.ar', 'cronista.com', 'ellitoral.com', 'elterritorio.com',
+        'diarionorte.com', 'datachaco.com', 'misionesonline.net', 'corrienteshoy.com.ar',
+      ];
+      const argentinaKeywords = [
+        'corrientes', 'chaco', 'misiones', 'nea', 'argentina', 'milei', 'valdes',
+        'tassano', 'gobernador', 'intendente', 'resistencia', 'posadas', 'correntino',
+      ];
+      const mundoDomains = [
+        'dw.com', 'bbc.com', 'cnn.com', 'reuters.com', 'france24.com', 'apnews.com',
+        'aljazeera.com', 'elpais.com', 'nytimes.com', 'theguardian.com',
+      ];
+      const mundoKeywords = [
+        'israel', 'iran', 'ucrania', 'rusia', 'eeuu', 'europa', 'china', 'gaza',
+        'onu', 'trump', 'netanyahu', 'putin', 'zelensky',
+      ];
+
+      const isArgentina = matchesAny(domain, argentinaDomains) || matchesAny(haystack, argentinaKeywords);
+      const isMundo = matchesAny(domain, mundoDomains) || matchesAny(haystack, mundoKeywords);
+
+      if (isArgentina && !isMundo) return 'argentina';
+      if (isMundo && !isArgentina) return 'mundo';
+      return 'more';
+    }
+
     function hoursSince(item) {
       if (item.hours_since_publish != null) return Math.max(0, Math.round(item.hours_since_publish));
       if (!item.pubDate) return null;
@@ -1834,54 +1901,74 @@
 
       // News grid
       if (rest.length > 0) {
-        html += `<div class="section-label">Más noticias</div>`;
-        html += `<div class="news-grid">`;
+        const argentinaRegionItems = [];
+        const mundoItems = [];
+        const masNoticiasItems = [];
 
-        rest.forEach((item, i) => {
-          const finalUrl = item.resolvedLink || item.link;
-          const redirectUrl = buildRedirectUrl(item.link, item.title);
-          const itemHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
-          const itemKicker = getFreshnessKicker(itemHours);
-          const itemThumbUrl = buildThumbUrl(item);
-          const sourcesCount = Number(item.sources_count);
-          html += `
-            <a class="news-card" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
-               style="animation-delay: ${i * 0.04}s"
-               data-item-id="${escapeAttr(item.item_id)}"
-               data-original-url="${escapeAttr(item.link)}"
-               data-title="${escapeAttr(item.title)}"
-               data-source="${escapeAttr(item.source || '')}"
-               data-editorial-score="${item.editorial_score ?? ''}"
-               data-factos-final="${item.factos_final ?? ''}"
-               data-sources-count="${item.sources_count ?? ''}"
-               data-hours="${item.hours_since_publish ?? ''}">
-              ${itemThumbUrl ? `
-                <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
-              ` : ''}
-              <div class="news-card-body">
-                <div class="news-card-meta">
-                  <span class="news-card-source">${escapeHtml(item.source)}</span>
-                  ${Number.isFinite(sourcesCount) && sourcesCount > 1 ? `<span class="news-sources-badge">+${sourcesCount}</span>` : ''}
-                  ${itemKicker ? `<span class="news-kicker">${escapeHtml(itemKicker)}</span>` : ''}
-                </div>
-                <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
-                ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
-                <div class="news-card-footer">
-                  <div class="news-card-timegroup">
-                    <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
-                    <span class="news-card-time">${timeAgo(item.pubDate)}</span>
-                  </div>
-                  <div class="news-card-actions" data-link="${escapeAttr(item.link)}">
-                    ${shareButtons(item.title, finalUrl, item.source, item.description)}
-                    <button class="save-btn" data-item-id="${escapeAttr(item.item_id)}" title="Guardar">${ICONS.bookmark}</button>
-                  </div>
-                </div>
-              </div>
-            </a>
-          `;
+        rest.forEach(item => {
+          const bucket = classifyItem(item);
+          if (bucket === 'argentina') argentinaRegionItems.push(item);
+          else if (bucket === 'mundo') mundoItems.push(item);
+          else masNoticiasItems.push(item);
         });
 
-        html += `</div>`;
+        const renderSection = (title, sectionItems, delayOffset = 0) => {
+          if (!sectionItems.length) return '';
+          let sectionHtml = `<div class="section-label">${title}</div>`;
+          sectionHtml += `<div class="news-grid">`;
+          sectionItems.forEach((item, i) => {
+            const finalUrl = item.resolvedLink || item.link;
+            const redirectUrl = buildRedirectUrl(item.link, item.title);
+            const itemHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
+            const itemKicker = getFreshnessKicker(itemHours);
+            const itemThumbUrl = buildThumbUrl(item);
+            const sourcesCount = Number(item.sources_count);
+            sectionHtml += `
+              <a class="news-card" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+                 style="animation-delay: ${(i + delayOffset) * 0.04}s"
+                 data-item-id="${escapeAttr(item.item_id)}"
+                 data-original-url="${escapeAttr(item.link)}"
+                 data-title="${escapeAttr(item.title)}"
+                 data-source="${escapeAttr(item.source || '')}"
+                 data-editorial-score="${item.editorial_score ?? ''}"
+                 data-factos-final="${item.factos_final ?? ''}"
+                 data-sources-count="${item.sources_count ?? ''}"
+                 data-hours="${item.hours_since_publish ?? ''}">
+                ${itemThumbUrl ? `
+                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+                ` : ''}
+                <div class="news-card-body">
+                  <div class="news-card-meta">
+                    <span class="news-card-source">${escapeHtml(item.source)}</span>
+                    ${Number.isFinite(sourcesCount) && sourcesCount > 1 ? `<span class="news-sources-badge">+${sourcesCount}</span>` : ''}
+                    ${itemKicker ? `<span class="news-kicker">${escapeHtml(itemKicker)}</span>` : ''}
+                  </div>
+                  <h3 class="news-card-title">${escapeHtml(item.title)}</h3>
+                  ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
+                  <div class="news-card-footer">
+                    <div class="news-card-timegroup">
+                      <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+                      <span class="news-card-time">${timeAgo(item.pubDate)}</span>
+                    </div>
+                    <div class="news-card-actions" data-link="${escapeAttr(item.link)}">
+                      ${shareButtons(item.title, finalUrl, item.source, item.description)}
+                      <button class="save-btn" data-item-id="${escapeAttr(item.item_id)}" title="Guardar">${ICONS.bookmark}</button>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            `;
+          });
+          sectionHtml += `</div>`;
+          return sectionHtml;
+        };
+
+        html += renderSection('Argentina / Región', argentinaRegionItems, 0);
+        if (argentinaRegionItems.length && mundoItems.length) {
+          html += `<div class="editorial-divider">Panorama global</div>`;
+        }
+        html += renderSection('Mundo', mundoItems, argentinaRegionItems.length);
+        html += renderSection('Más noticias', masNoticiasItems, argentinaRegionItems.length + mundoItems.length);
       }
 
       main.innerHTML = html;
