@@ -997,7 +997,22 @@
        ═══════════════════════════════════════════ */
     @media (max-width: 768px) {
       .news-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        grid-template-columns: none;
+        overflow-x: auto;
+        gap: var(--space-lg);
+        padding: 0 var(--space-md) var(--space-md);
+        scroll-snap-type: x mandatory;
+        scroll-padding-left: var(--space-md);
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .news-grid::-webkit-scrollbar { display: none; }
+
+      .news-card {
+        flex: 0 0 86%;
+        scroll-snap-align: start;
       }
 
       .hero-body {

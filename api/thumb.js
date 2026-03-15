@@ -17,7 +17,7 @@ export default async function handler(req) {
     };
 
     const edition = sanitized.edition || 'QSD';
-    const category = sanitized.category || 'GENERAL';
+    const category = sanitized.category || '';
     const date = sanitized.date;
 
     // Generate SVG
@@ -63,7 +63,8 @@ function generateSVG({ edition, category, date }) {
   const topBarLeft = date ? `${edition.toUpperCase()} · ${date}` : edition.toUpperCase();
 
   // Category pill dimensions (approximate)
-  const categoryText = category.toUpperCase();
+  const categoryText = (category || '').toUpperCase();
+  const showCategory = categoryText && categoryText !== 'GENERAL';
   const pillFontSize = 22;
   const pillPaddingX = 14;
   const pillPaddingY = 8;
@@ -71,7 +72,7 @@ function generateSVG({ edition, category, date }) {
   const pillWidth = categoryText.length * 10 + (pillPaddingX * 2);
   const pillX = 600 - pillWidth;
   const pillY = 22;
-  const { start: gradientStart, end: gradientEnd } = getCategoryGradient(categoryText);
+  const { start: gradientStart, end: gradientEnd } = getCategoryGradient(categoryText || 'GENERAL');
 
   return `<svg width="640" height="360" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -90,9 +91,11 @@ function generateSVG({ edition, category, date }) {
   <!-- TOP BAR -->
   <text x="24" y="46" font-family="sans-serif" font-size="24" fill="#8888a0">${topBarLeft}</text>
 
+  ${showCategory ? `
   <!-- Category pill -->
   <rect x="${pillX}" y="${pillY}" width="${pillWidth}" height="${pillHeight}" rx="10" fill="#c9953a20" stroke="#c9953a" stroke-width="2" />
   <text x="${pillX + pillWidth / 2}" y="${pillY + pillHeight / 2}" font-family="sans-serif" font-size="${pillFontSize}" fill="#c9953a" text-anchor="middle" dominant-baseline="middle">${categoryText}</text>
+  ` : ''}
 
   <!-- LOGO -->
   <text x="620" y="346" font-family="monospace" font-size="16" fill="#c9953a50" text-anchor="end">QSD</text>
