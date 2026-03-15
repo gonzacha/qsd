@@ -262,8 +262,16 @@
 
     const linkEl = document.getElementById('sourceLink');
     if (url) {
-      linkEl.setAttribute('href', url);
-      linkEl.setAttribute('aria-disabled', 'false');
+      try {
+        const parsedUrl = new URL(url);
+        const isHttp = parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+        if (isHttp) {
+          linkEl.setAttribute('href', parsedUrl.toString());
+          linkEl.setAttribute('aria-disabled', 'false');
+        }
+      } catch (err) {
+        // Invalid URL, keep CTA disabled.
+      }
     }
   </script>
 </body>
