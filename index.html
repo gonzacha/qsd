@@ -1713,10 +1713,13 @@
     // In browser: use _blank for normal new-tab behavior
     const LINK_TARGET = isPWAStandalone() ? '_self' : '_blank';
 
-    function buildRedirectUrl(url, title) {
+    function buildRedirectUrl(url, title, meta = {}) {
       const u = encodeURIComponent(url || '');
       const t = title ? `&t=${encodeURIComponent(title)}` : '';
-      return `/r?u=${u}${t}`;
+      const s = meta.source ? `&s=${encodeURIComponent(meta.source)}` : '';
+      const ts = meta.pubDate ? `&ts=${encodeURIComponent(meta.pubDate)}` : '';
+      const sn = meta.description ? `&sn=${encodeURIComponent(meta.description.substring(0, 220))}` : '';
+      return `/r.html?u=${u}${t}${s}${ts}${sn}`;
     }
 
     function getFreshnessKicker(hours) {
@@ -1855,7 +1858,11 @@
 
       const hero = items[0];
       const rest = items.slice(1);
-      const heroUrl = buildRedirectUrl(hero.link, hero.title);
+      const heroUrl = buildRedirectUrl(hero.link, hero.title, {
+        source: hero.source,
+        pubDate: hero.pubDate,
+        description: hero.description,
+      });
       const heroShareUrl = hero.resolvedLink || hero.link;
       const heroHours = Number.isFinite(hero.hours_since_publish) ? hero.hours_since_publish : (hoursSince(hero) ?? 24);
       const heroKicker = getFreshnessKicker(heroHours);
@@ -1918,7 +1925,11 @@
           sectionHtml += `<div class="news-grid">`;
           sectionItems.forEach((item, i) => {
             const finalUrl = item.resolvedLink || item.link;
-            const redirectUrl = buildRedirectUrl(item.link, item.title);
+            const redirectUrl = buildRedirectUrl(item.link, item.title, {
+              source: item.source,
+              pubDate: item.pubDate,
+              description: item.description,
+            });
             const itemHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
             const itemKicker = getFreshnessKicker(itemHours);
             const itemThumbUrl = buildThumbUrl(item);
