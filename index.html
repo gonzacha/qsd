@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
-  <meta name="description" content="Portal informativo con las últimas noticias de Corrientes, Argentina y el mundo. Actualización automática en tiempo real.">
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
   <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
   <meta name="author" content="Antonio y Gonzalo Haedo">
   <meta name="theme-color" content="#0b0f14">
@@ -18,11 +18,12 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo">
-  <meta property="og:description" content="El pulso informativo de Corrientes y el mundo. Noticias en tiempo real, tendencias y más.">
+  <meta property="og:description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
   <meta property="og:image" content="/api/og">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/svg+xml">
+  <meta property="og:image:alt" content="Qué Se Dice — titulares de Corrientes y Argentina">
   <meta property="og:locale" content="es_AR">
   <meta property="og:site_name" content="Qué Se Dice">
   <meta property="og:url" content="" id="meta-og-url">
@@ -364,6 +365,13 @@
       color: var(--text-secondary);
       margin-top: var(--space-xs);
       letter-spacing: 0.02em;
+    }
+
+    .masthead-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-top: var(--space-sm);
+      letter-spacing: 0.01em;
     }
 
     .masthead-rule {
@@ -1113,6 +1121,7 @@
     <img src="Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo logo-wave">
     <h1 class="masthead-title">Qué Se Dice</h1>
     <p class="masthead-tagline">El pulso informativo de Corrientes y el mundo</p>
+    <p class="masthead-subtitle">Agregador editorial con actualización automática de noticias de Corrientes, Argentina y el mundo.</p>
     <hr class="masthead-rule">
   </header>
 
@@ -1700,6 +1709,13 @@
       return Math.max(0, Math.round((Date.now() - d.getTime()) / 3600000));
     }
 
+    function isRenderableItem(item) {
+      if (!item) return false;
+      const title = typeof item.title === 'string' ? item.title.trim() : '';
+      const link = typeof item.link === 'string' ? item.link.trim() : '';
+      return Boolean(title && link);
+    }
+
     async function hydrateItems(items) {
       await Promise.all(items.map(async item => {
         if (!item.link) return;
@@ -1743,7 +1759,7 @@
 
     async function renderFeed(data) {
       const main = document.getElementById('mainContent');
-      const items = data.items || [];
+      const items = (data.items || []).filter(isRenderableItem);
 
       if (items.length === 0) {
         main.innerHTML = `
