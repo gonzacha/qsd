@@ -153,6 +153,34 @@
       object-fit: contain;
     }
 
+    .sponsor-label {
+      display: inline-block;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      margin-bottom: var(--space-md);
+    }
+
+    .brand-plate {
+      animation: sponsorGlow 6s ease-in-out infinite;
+    }
+
+    @keyframes sponsorGlow {
+      0%,
+      100% {
+        box-shadow: 0 0 0 rgba(201, 149, 58, 0);
+        opacity: 1;
+      }
+      50% {
+        box-shadow: 0 0 18px rgba(201, 149, 58, 0.12);
+        opacity: 0.98;
+      }
+    }
+
     .brand-kicker {
       font-size: 0.65rem;
       letter-spacing: 0.25em;
@@ -223,6 +251,7 @@
     <p class="reader-snippet" id="snippet" hidden></p>
 
     <div class="brand-plate">
+      <div class="sponsor-label">ESPACIO PATROCINADO</div>
       <div class="sponsor-banner">
         <img
           src="adds/gob-corrientes-banner.webp"
