@@ -138,6 +138,21 @@
       margin-bottom: var(--space-xl);
     }
 
+    .sponsor-banner {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .sponsor-banner img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: inherit;
+      object-fit: contain;
+    }
+
     .brand-kicker {
       font-size: 0.65rem;
       letter-spacing: 0.25em;
@@ -208,8 +223,13 @@
     <p class="reader-snippet" id="snippet" hidden></p>
 
     <div class="brand-plate">
-      <div class="brand-kicker">PRESENTA</div>
-      <div class="brand-title">Tu marca aquí</div>
+      <div class="sponsor-banner">
+        <img
+          src="adds/gob-corrientes-banner.webp"
+          alt="Gobierno de Corrientes - Siempre cerca"
+          loading="lazy"
+        />
+      </div>
     </div>
 
     <a class="cta-link" id="sourceLink" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">
