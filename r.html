@@ -30,6 +30,7 @@
       --space-xl: 2rem;
       --space-2xl: 3rem;
       --max-width: 720px;
+      --header-height: 64px;
     }
 
     body {
@@ -41,7 +42,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: var(--space-xl) var(--space-md) var(--space-2xl);
+      padding: calc(var(--space-xl) + var(--header-height)) var(--space-md) var(--space-2xl);
     }
 
     body::before {
@@ -61,8 +62,18 @@
       display: flex;
       align-items: center;
       gap: var(--space-sm);
+      position: fixed;
+      top: var(--space-md);
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(11, 14, 26, 0.7);
+      border: 1px solid rgba(201, 149, 58, 0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       margin-bottom: var(--space-xl);
-      z-index: 1;
+      z-index: 10;
     }
 
     .reader-logo {
@@ -134,6 +145,9 @@
       border-radius: 14px;
       padding: var(--space-lg);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       background: linear-gradient(135deg, rgba(201, 149, 58, 0.08), rgba(17, 22, 39, 0.8));
       margin-bottom: var(--space-xl);
     }
@@ -155,30 +169,15 @@
 
     .sponsor-label {
       display: inline-block;
-      font-size: 0.62rem;
-      letter-spacing: 0.22em;
+      font-size: 0.52rem;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--text-muted);
-      border: 1px solid var(--border-subtle);
-      padding: 0.35rem 0.7rem;
+      color: rgba(233, 237, 248, 0.6);
+      border: 1px solid rgba(233, 237, 248, 0.18);
+      padding: 0.25rem 0.6rem;
       border-radius: 999px;
-      margin-bottom: var(--space-md);
-    }
-
-    .brand-plate {
-      animation: sponsorGlow 6s ease-in-out infinite;
-    }
-
-    @keyframes sponsorGlow {
-      0%,
-      100% {
-        box-shadow: 0 0 0 rgba(201, 149, 58, 0);
-        opacity: 1;
-      }
-      50% {
-        box-shadow: 0 0 18px rgba(201, 149, 58, 0.12);
-        opacity: 0.98;
-      }
+      margin-bottom: var(--space-sm);
+      align-self: flex-start;
     }
 
     .brand-kicker {
@@ -229,6 +228,20 @@
         padding: var(--space-lg) var(--space-md) var(--space-xl);
       }
 
+      .reader-header {
+        top: var(--space-sm);
+        padding: 0.3rem 0.75rem;
+      }
+
+      .reader-logo {
+        font-size: 0.85rem;
+        letter-spacing: 0.06em;
+      }
+
+      .reader-logo img {
+        width: 32px;
+      }
+
       .reader-shell {
         padding: var(--space-xl) var(--space-lg);
       }
@@ -251,7 +264,7 @@
     <p class="reader-snippet" id="snippet" hidden></p>
 
     <div class="brand-plate">
-      <div class="sponsor-label">ESPACIO PATROCINADO</div>
+      <div class="sponsor-label">Patrocinado</div>
       <div class="sponsor-banner">
         <img
           src="adds/gob-corrientes-banner.webp"
