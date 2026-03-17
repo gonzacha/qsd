@@ -178,8 +178,8 @@ function parseRSSItems(xml) {
     return true;
   });
 
-  // [ PURGATORIO ] Validación editorial
-  return filteredItems.filter(item => validateItem(item));
+  // [ PURGATORIO ] Render gate (técnico)
+  return filteredItems.filter(item => isRenderReady(item));
 }
 
 function extractTag(xml, tag) {
@@ -285,8 +285,8 @@ function isRepeatedTitle(title) {
 //  [ TÚNEL ]      feed_gate() — pre-filtro: fuente, idioma, dedup temprana
 //                 Sin lógica editorial. Solo: ¿este item merece procesarse?
 //       ↓
-//  [ PURGATORIO ] validateItem() — filtro editorial determinístico
-//                 Reglas de estructura, campos requeridos, score mínimo
+//  [ PURGATORIO ] isRenderReady() — gate técnico (render-ready)
+//                 Reglas de estructura, campos requeridos, fecha válida
 //       ↓
 //  [ SCORING ]    scoreItem() — ranking factos + editorial_score
 //                 Convergencia de fuentes, frescura, relevancia
@@ -354,6 +354,9 @@ function feed_gate(item, seenUrls) {
   if (seenUrls.has(url)) return { pass: false, reason: 'duplicate_url' };
   seenUrls.add(url);
 
+  // 3. Repeated title check (structural dedup)
+  if (isRepeatedTitle(item.title || '')) return { pass: false, reason: 'repeat_title' };
+
   // 3. Source filter
   const domain = getDomain(url);
   if (domain && BLOCKED_DOMAINS.includes(domain))
@@ -376,30 +379,49 @@ function feed_gate(item, seenUrls) {
 //           → feeds con historial de basura reciben penalidad automática
 // ─────────────────────────────────────────────────────────────────
 
-// ── [ PURGATORIO ] Validación editorial ──────────────────────────
+// ── [ PURGATORIO ] Render gate técnico ───────────────────────────
 
-function validateItem(item) {
+function isRenderReady(item) {
   const title = item && item.title ? item.title.trim() : '';
-  if (title.length < 15) return false;
+  if (title.length < 5) return false;
   const link = item && item.link ? String(item.link).trim() : '';
-  if (!link) return false;
   try {
-    const u = new URL(link);
-    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-    const host = (u.hostname || '').toLowerCase();
-    // Structural institutional filter (domain-based), not semantic (title-based)
-    if (host.endsWith('.gob.ar') || host.endsWith('.gov.ar') || host.includes('.gob.') || host.includes('.gov.')) {
-      return false;
-    }
+    const parsedUrl = new URL(link);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return false;
   } catch {
     return false;
   }
-  // Keep only the explicit institutional spam phrase in title (optional).
-  // If you want *zero* semantic filtering, delete this line too.
-  if (/portal del ciudadano/i.test(title)) return false;
-  if (isRepeatedTitle(title)) return false;
+  const source = item && typeof item.source === 'string' ? item.source.trim() : '';
+  if (!source) return false;
+  const pubDate = item && item.pubDate ? new Date(item.pubDate) : null;
+  if (!pubDate || Number.isNaN(pubDate.getTime())) return false;
+  const hoursAgo = (Date.now() - pubDate.getTime()) / 3600000;
+  if (hoursAgo < 0 || hoursAgo > 72) return false;
   return true;
 }
+
+// DEPRECATED function validateItem(item) {
+// DEPRECATED   const title = item && item.title ? item.title.trim() : '';
+// DEPRECATED   if (title.length < 15) return false;
+// DEPRECATED   const link = item && item.link ? String(item.link).trim() : '';
+// DEPRECATED   if (!link) return false;
+// DEPRECATED   try {
+// DEPRECATED     const u = new URL(link);
+// DEPRECATED     if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+// DEPRECATED     const host = (u.hostname || '').toLowerCase();
+// DEPRECATED     // Structural institutional filter (domain-based), not semantic (title-based)
+// DEPRECATED     if (host.endsWith('.gob.ar') || host.endsWith('.gov.ar') || host.includes('.gob.') || host.includes('.gov.')) {
+// DEPRECATED       return false;
+// DEPRECATED     }
+// DEPRECATED   } catch {
+// DEPRECATED     return false;
+// DEPRECATED   }
+// DEPRECATED   // Keep only the explicit institutional spam phrase in title (optional).
+// DEPRECATED   // If you want *zero* semantic filtering, delete this line too.
+// DEPRECATED   if (/portal del ciudadano/i.test(title)) return false;
+// DEPRECATED   if (isRepeatedTitle(title)) return false;
+// DEPRECATED   return true;
+// DEPRECATED }
 
 function stripHtml(str) {
   return str.replace(/<[^>]*>/g, '').trim();
