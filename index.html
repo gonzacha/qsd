@@ -120,6 +120,7 @@
       line-height: 1.6;
       min-height: 100vh;
       overflow-x: hidden;
+      padding-top: var(--header-height);
     }
 
     /* Subtle background texture */
@@ -139,29 +140,62 @@
     button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
     /* ═══════════════════════════════════════════
-       TOP BAR
+       FIXED HEADER
        ═══════════════════════════════════════════ */
-    .topbar {
-      position: relative;
-      z-index: 10;
-      background: var(--bg-deep);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: var(--space-xs) var(--space-lg);
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: var(--header-height);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: 0.75rem;
+      background: rgba(11, 14, 26, 0.7);
+      border-bottom: 1px solid var(--border-light);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 20;
+    }
+
+    .site-header-inner {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 var(--space-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+
+    .site-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-headline);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .site-brand img {
+      width: 26px;
+      height: auto;
+      filter: drop-shadow(0 4px 10px rgba(201, 149, 58, 0.3));
+    }
+
+    .site-header-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      font-size: 0.72rem;
       color: var(--text-muted);
       letter-spacing: 0.03em;
     }
 
     .topbar-date { text-transform: uppercase; font-weight: 500; }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-    }
 
     .topbar-live {
       display: flex;
@@ -171,7 +205,7 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
     }
 
     .pulse-dot {
@@ -513,6 +547,28 @@
     /* ═══════════════════════════════════════════
        HERO CARD
        ═══════════════════════════════════════════ */
+    .hero-wheel {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      margin-bottom: var(--space-2xl);
+    }
+
+    .hero-wheel-main,
+    .hero-wheel-secondary {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+
+    .hero-wheel .hero-card {
+      margin-bottom: 0;
+    }
+
+    .hero-wheel.is-rotating .hero-card {
+      opacity: 0.8;
+    }
+
     .hero-card {
       display: flex;
       flex-direction: column;
@@ -523,6 +579,10 @@
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+    }
+
+    .hero-card--secondary {
+      border-color: rgba(201, 149, 58, 0.06);
     }
 
     .hero-card::before {
@@ -548,11 +608,49 @@
       display: block;
     }
 
+    .hero-media {
+      position: relative;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .hero-overlay--main {
+      background: linear-gradient(180deg, rgba(8, 10, 18, 0.15) 0%, rgba(8, 10, 18, 0.6) 60%, rgba(8, 10, 18, 0.85) 100%);
+    }
+
+    .hero-overlay--secondary {
+      background: linear-gradient(180deg, rgba(8, 10, 18, 0.1) 0%, rgba(8, 10, 18, 0.45) 100%);
+    }
+
+    .hero-pill {
+      position: absolute;
+      top: var(--space-md);
+      left: var(--space-md);
+      padding: 0.3rem 0.6rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-bright);
+      background: rgba(8, 10, 18, 0.6);
+      border: 1px solid rgba(201, 149, 58, 0.25);
+      border-radius: 999px;
+      z-index: 2;
+    }
+
     .hero-body {
       padding: var(--space-2xl);
       display: flex;
       flex-direction: column;
       gap: var(--space-md);
+    }
+
+    .hero-card--secondary .hero-body {
+      padding: var(--space-lg);
+      gap: var(--space-sm);
     }
 
     .hero-badge {
@@ -583,11 +681,20 @@
       margin-bottom: var(--space-md);
     }
 
+    .hero-card--secondary .hero-title {
+      font-size: 1.05rem;
+      margin-bottom: var(--space-sm);
+    }
+
     .hero-desc {
       font-size: 1rem;
       color: var(--text-secondary);
       line-height: 1.7;
       max-width: 700px;
+    }
+
+    .hero-card--secondary .hero-desc {
+      display: none;
     }
 
     .hero-meta {
@@ -596,6 +703,10 @@
       gap: var(--space-md);
       font-size: 0.75rem;
       color: var(--text-muted);
+    }
+
+    .hero-card--secondary .hero-meta {
+      font-size: 0.7rem;
     }
 
     .hero-source {
@@ -607,6 +718,10 @@
       display: flex;
       gap: var(--space-sm);
       margin-left: auto;
+    }
+
+    .hero-card--secondary .hero-share {
+      display: none;
     }
 
     .feed-enter {
@@ -1006,6 +1121,32 @@
        RESPONSIVE
        ═══════════════════════════════════════════ */
     @media (max-width: 768px) {
+      :root {
+        --header-height: 3.1rem;
+      }
+
+      .site-header-inner {
+        padding: 0 var(--space-md);
+      }
+
+      .site-brand {
+        font-size: 0.82rem;
+        letter-spacing: 0.06em;
+      }
+
+      .site-brand img {
+        width: 22px;
+      }
+
+      .site-header-meta {
+        gap: var(--space-sm);
+        font-size: 0.68rem;
+      }
+
+      .topbar-live {
+        display: none;
+      }
+
       .news-grid {
         display: flex;
         grid-template-columns: none;
@@ -1027,6 +1168,20 @@
 
       .hero-body {
         padding: var(--space-lg);
+      }
+
+      .hero-wheel {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-wheel-secondary {
+        display: none;
+      }
+
+      .hero-pill {
+        top: var(--space-sm);
+        left: var(--space-sm);
+        font-size: 0.55rem;
       }
 
       .container {
@@ -1123,23 +1278,27 @@
   </style>
 </head>
 <body>
-
-  <!-- Top Bar -->
-  <div class="topbar">
-    <div class="topbar-date" id="currentDate"></div>
-    <div class="topbar-right">
-      <div class="topbar-live">
-        <span class="pulse-dot"></span>
-        En vivo — Actualización automática
-      </div>
-      <div class="topbar-actions" id="installArea">
-        <button class="tool-btn" id="savedBtn" type="button">Guardados</button>
-        <button class="tool-btn" id="backupBtn" type="button">Backup</button>
-        <button class="install-btn" id="installBtn" type="button">Instalar QSD</button>
-        <button class="install-help" id="installHelpBtn" type="button">Cómo instalar</button>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-brand" href="/">
+        <img src="Logo_qsd.png" alt="Qué Se Dice">
+        Qué Se Dice
+      </a>
+      <div class="site-header-meta">
+        <div class="topbar-date" id="currentDate"></div>
+        <div class="topbar-live">
+          <span class="pulse-dot"></span>
+          En vivo — Actualización automática
+        </div>
+        <div class="topbar-actions" id="installArea">
+          <button class="tool-btn" id="savedBtn" type="button">Guardados</button>
+          <button class="tool-btn" id="backupBtn" type="button">Backup</button>
+          <button class="install-btn" id="installBtn" type="button">Instalar QSD</button>
+          <button class="install-help" id="installHelpBtn" type="button">Cómo instalar</button>
+        </div>
       </div>
     </div>
-  </div>
+  </header>
 
   <!-- Masthead -->
   <header class="masthead">
@@ -1842,6 +2001,154 @@
       ).join('');
     }
 
+    const heroWheelState = { items: [], timer: null, rotating: false };
+
+    function renderHeroCard(item, variant) {
+      const heroUrl = buildRedirectUrl(item.link, item.title, {
+        source: item.source,
+        pubDate: item.pubDate,
+        description: item.description,
+      });
+      const heroShareUrl = item.resolvedLink || item.link;
+      const heroHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
+      const heroKicker = getFreshnessKicker(heroHours);
+      const heroThumbUrl = buildThumbUrl(item);
+      const isMain = variant === 'main';
+
+      return `
+        <a class="hero-card ${isMain ? 'hero-card--main' : 'hero-card--secondary'}" href="${escapeAttr(heroUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+           data-item-id="${escapeAttr(item.item_id)}"
+           data-original-url="${escapeAttr(item.link)}"
+           data-title="${escapeAttr(item.title)}"
+           data-source="${escapeAttr(item.source || '')}"
+           data-editorial-score="${item.editorial_score ?? ''}"
+           data-factos-final="${item.factos_final ?? ''}"
+           data-sources-count="${item.sources_count ?? ''}"
+           data-hours="${item.hours_since_publish ?? ''}">
+          ${heroThumbUrl ? `
+            <div class="hero-media">
+              <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+              <div class="hero-overlay ${isMain ? 'hero-overlay--main' : 'hero-overlay--secondary'}"></div>
+              ${isMain ? `<span class="hero-pill">EN FOCO</span>` : ''}
+            </div>
+          ` : ''}
+          <div class="hero-body">
+            ${heroKicker ? `
+              <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                ${escapeHtml(heroKicker)}
+              </div>
+            ` : ''}
+            <h2 class="hero-title">${escapeHtml(item.title)}</h2>
+            ${isMain && item.description ? `<p class="hero-desc">${escapeHtml(item.description)}</p>` : ''}
+            <div class="hero-meta">
+              <span class="hero-source">${escapeHtml(item.source)}</span>
+              <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+              <span>${timeAgo(item.pubDate)}</span>
+              <div class="hero-share" data-link="${escapeAttr(item.link)}">
+                ${shareButtons(item.title, heroShareUrl, item.source, item.description)}
+                <button class="save-btn" data-item-id="${escapeAttr(item.item_id)}" title="Guardar">${ICONS.bookmark}</button>
+              </div>
+            </div>
+          </div>
+        </a>
+      `;
+    }
+
+    function renderHeroWheelInner(items) {
+      if (!items.length) return '';
+      const mainItem = items[0];
+      const secondaryItems = items.slice(1, 3);
+      let html = `<div class="hero-wheel-main">${renderHeroCard(mainItem, 'main')}</div>`;
+      if (secondaryItems.length) {
+        html += `<div class="hero-wheel-secondary">`;
+        html += secondaryItems.map(item => renderHeroCard(item, 'secondary')).join('');
+        html += `</div>`;
+      }
+      return html;
+    }
+
+    function renderHeroWheel(items) {
+      return `<section class="hero-wheel" data-hero-wheel>${renderHeroWheelInner(items)}</section>`;
+    }
+
+    function wireHeroActions(items) {
+      const wheel = document.querySelector('[data-hero-wheel]');
+      if (!wheel) return;
+      const itemMap = new Map(items.map(item => [item.item_id, item]));
+      const linkMap = new Map(items.map(item => [item.link, item]));
+
+      wheel.querySelectorAll('a[data-item-id]').forEach(link => {
+        link.addEventListener('click', () => {
+          const itemId = link.dataset.itemId;
+          const originalUrl = link.dataset.originalUrl;
+          const item = itemMap.get(itemId) || linkMap.get(originalUrl);
+          if (item) {
+            void ledgerAppend(buildEvent('item_opened', item, { category: currentCategory }));
+          }
+        });
+      });
+
+      wheel.querySelectorAll('.save-btn').forEach(btn => {
+        const itemId = btn.dataset.itemId;
+        if (!itemId) return;
+        savedHas(itemId).then(isSaved => {
+          if (isSaved) btn.classList.add('active');
+        }).catch(() => {});
+
+        btn.addEventListener('click', async e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const card = btn.closest('a[data-original-url]');
+          const originalUrl = card ? card.dataset.originalUrl : null;
+          const item = itemMap.get(itemId) || linkMap.get(originalUrl);
+          if (!item) return;
+          const savedAt = new Date().toISOString();
+          await savedUpsert({
+            item_id: item.item_id,
+            title: item.title,
+            url: item.link,
+            source: item.source,
+            saved_at: savedAt,
+          });
+          btn.classList.add('active');
+          void ledgerAppend(buildEvent('item_saved', item, { saved_at: savedAt }));
+          showToast('Guardado');
+        });
+      });
+    }
+
+    function rotateHeroWheel() {
+      const wheel = document.querySelector('[data-hero-wheel]');
+      if (!wheel || heroWheelState.items.length < 2 || heroWheelState.rotating) return;
+      heroWheelState.rotating = true;
+      wheel.classList.add('is-rotating');
+      setTimeout(() => {
+        heroWheelState.items.push(heroWheelState.items.shift());
+        wheel.innerHTML = renderHeroWheelInner(heroWheelState.items);
+        wireHeroActions(heroWheelState.items);
+        wheel.classList.remove('is-rotating');
+        heroWheelState.rotating = false;
+      }, 200);
+    }
+
+    function setupHeroWheelRotation(items) {
+      if (heroWheelState.timer) {
+        clearInterval(heroWheelState.timer);
+        heroWheelState.timer = null;
+      }
+      heroWheelState.items = items.slice();
+
+      const wheel = document.querySelector('[data-hero-wheel]');
+      if (!wheel) return;
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      // Keep rotation off on mobile or reduced-motion for stability/readability.
+      if (prefersReduced || isMobile || heroWheelState.items.length < 2) return;
+
+      heroWheelState.timer = setInterval(rotateHeroWheel, 7000);
+    }
+
     async function renderFeed(data) {
       const main = document.getElementById('mainContent');
       const items = (data.items || []).filter(isRenderableItem);
@@ -1856,55 +2163,13 @@
 
       await hydrateItems(items);
 
-      const hero = items[0];
-      const rest = items.slice(1);
-      const heroUrl = buildRedirectUrl(hero.link, hero.title, {
-        source: hero.source,
-        pubDate: hero.pubDate,
-        description: hero.description,
-      });
-      const heroShareUrl = hero.resolvedLink || hero.link;
-      const heroHours = Number.isFinite(hero.hours_since_publish) ? hero.hours_since_publish : (hoursSince(hero) ?? 24);
-      const heroKicker = getFreshnessKicker(heroHours);
-      const heroThumbUrl = buildThumbUrl(hero);
+      const heroItems = items.slice(0, 3);
+      const rest = items.slice(heroItems.length);
 
       let html = '';
 
-      // Hero card
-      html += `
-        <a class="hero-card" href="${escapeAttr(heroUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
-           data-item-id="${escapeAttr(hero.item_id)}"
-           data-original-url="${escapeAttr(hero.link)}"
-           data-title="${escapeAttr(hero.title)}"
-           data-source="${escapeAttr(hero.source || '')}"
-           data-editorial-score="${hero.editorial_score ?? ''}"
-           data-factos-final="${hero.factos_final ?? ''}"
-           data-sources-count="${hero.sources_count ?? ''}"
-           data-hours="${hero.hours_since_publish ?? ''}">
-          ${heroThumbUrl ? `
-            <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
-          ` : ''}
-          <div class="hero-body">
-            ${heroKicker ? `
-              <div class="hero-badge">
-                <span class="hero-badge-dot"></span>
-                ${escapeHtml(heroKicker)}
-              </div>
-            ` : ''}
-            <h2 class="hero-title">${escapeHtml(hero.title)}</h2>
-            ${hero.description ? `<p class="hero-desc">${escapeHtml(hero.description)}</p>` : ''}
-            <div class="hero-meta">
-              <span class="hero-source">${escapeHtml(hero.source)}</span>
-              <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
-              <span>${timeAgo(hero.pubDate)}</span>
-              <div class="hero-share" data-link="${escapeAttr(hero.link)}">
-                ${shareButtons(hero.title, heroShareUrl, hero.source, hero.description)}
-                <button class="save-btn" data-item-id="${escapeAttr(hero.item_id)}" title="Guardar">${ICONS.bookmark}</button>
-              </div>
-            </div>
-          </div>
-        </a>
-      `;
+      // Hero wheel
+      html += renderHeroWheel(heroItems);
 
       // News grid
       if (rest.length > 0) {
@@ -1987,6 +2252,7 @@
       main.classList.add('feed-enter');
       requestAnimationFrame(() => {
         main.classList.add('feed-enter-active');
+        setupHeroWheelRotation(heroItems);
       });
 
       logItemsSeen(items);
