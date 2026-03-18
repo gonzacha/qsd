@@ -67,6 +67,67 @@ const DICT_CORRIENTES_GENERAL = [
   'ituzaingó',
 ];
 
+// ── Source Tiering (deterministic v0.1) ───────────────────────
+const SOURCE_TIER_CONFIG = {
+  tiers: [
+    {
+      id: 'tier_1',
+      weight: 1.0,
+      meaning: 'strong primary/provincial reporting',
+      sources: [
+        'lanacion.com.ar',
+        'la nacion',
+        'clarin.com',
+        'clarin',
+        'infobae.com',
+        'infobae',
+        'perfil.com',
+        'perfil',
+        'eldiarioar.com',
+        'el diario ar',
+      ],
+    },
+    {
+      id: 'tier_2',
+      weight: 0.7,
+      meaning: 'credible secondary/local coverage',
+      sources: [
+        'ellitoral.com.ar',
+        'el litoral',
+        'nordesteya.com',
+        'nordeste ya',
+        'diarioellibertador.com.ar',
+        'diario el libertador',
+        'diarioprimeralinea.com.ar',
+        'primera linea',
+        'radiosudamericana.com',
+        'radio sudamericana',
+      ],
+    },
+    {
+      id: 'tier_3',
+      weight: 0.4,
+      meaning: 'municipal or low-originality coverage',
+      sources: [
+        'municipalidad',
+        'prensa',
+        'gobierno',
+      ],
+    },
+    {
+      id: 'tier_4',
+      weight: 0.2,
+      meaning: 'repost/weak signal source',
+      sources: [
+        'facebook',
+        'twitter',
+        'blogspot',
+      ],
+    },
+  ],
+  unknown_default: 0.5,
+};
+
 // ── Feed Sources (all categories for maximum pool) ────────────
 const FEED_SOURCES = [
   { url: 'https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es', category: 'portada' },
@@ -115,6 +176,24 @@ function normalizeText(text) {
     .trim();
 }
 
+function normalizeSourceKey(source) {
+  if (!source) return '';
+  return normalizeText(source);
+}
+
+function buildSourceWeightMap(config) {
+  const map = {};
+  for (const tier of config.tiers) {
+    for (const source of tier.sources) {
+      const key = normalizeSourceKey(source);
+      if (key) map[key] = tier.weight;
+    }
+  }
+  return map;
+}
+
+const SOURCE_WEIGHT_MAP = buildSourceWeightMap(SOURCE_TIER_CONFIG);
+
 const DICT_CAPITAL_NORM = DICT_CAPITAL.map(term => normalizeText(term));
 const DICT_PROVINCIA_NORM = DICT_PROVINCIA.map(term => normalizeText(term));
 const DICT_CORRIENTES_GENERAL_NORM = DICT_CORRIENTES_GENERAL.map(term => normalizeText(term));
@@ -140,6 +219,21 @@ function stripHtml(str) { return str.replace(/<[^>]*>/g, '').trim(); }
 
 function extractDomain(url) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return 'Fuente'; }
+}
+
+function getSourceWeight(item) {
+  const candidates = [
+    item.source,
+    item.sourceUrl ? extractDomain(item.sourceUrl) : '',
+    item.link ? extractDomain(item.link) : '',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    const key = normalizeSourceKey(candidate);
+    if (key && Object.prototype.hasOwnProperty.call(SOURCE_WEIGHT_MAP, key)) {
+      return SOURCE_WEIGHT_MAP[key];
+    }
+  }
+  return SOURCE_TIER_CONFIG.unknown_default;
 }
 
 function isRepeatedTitle(title) {
@@ -234,6 +328,7 @@ function computeClusterSizes(items) {
     )
   );
   const parent = Array.from({ length: n }, (_, i) => i);
+  const sourceWeights = items.map(item => getSourceWeight(item));
 
   function find(x) {
     while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
@@ -278,17 +373,28 @@ function computeClusterSizes(items) {
 
   const roots = Array.from({ length: n }, (_, i) => find(i));
   const sizes = {};
-  roots.forEach(r => { sizes[r] = (sizes[r] || 0) + 1; });
-  return roots.map(r => sizes[r]);
+  const weightedSizes = {};
+  roots.forEach((r, i) => {
+    sizes[r] = (sizes[r] || 0) + 1;
+    weightedSizes[r] = (weightedSizes[r] || 0) + sourceWeights[i];
+  });
+  return {
+    sizes: roots.map(r => sizes[r]),
+    weightedSizes: roots.map(r => weightedSizes[r]),
+    sourceWeights,
+  };
 }
 
 function qualityEnrich(items) {
-  const clusterSizes = computeClusterSizes(items);
+  const clusterStats = computeClusterSizes(items);
   return items.map((item, i) => {
     const publishedAt = item.pubDate || item.date || item.isoDate || null;
-    const sources_count = clusterSizes[i];
+    const sources_count = clusterStats.sizes[i];
+    const weighted_sources_count = clusterStats.weightedSizes[i];
     const sources_effective = Math.min(sources_count, 5);
+    const weighted_sources_effective = Math.min(weighted_sources_count, 5);
     const agreement_ratio = Math.min(sources_effective / 5, 1);
+    const weighted_agreement_ratio = Math.min(weighted_sources_effective / 5, 1);
     const contradiction_flag = CONTRADICTION_WORDS.some(w => item.title.toLowerCase().includes(w));
     const quality_flags = Array.isArray(item.quality_flags) ? [...item.quality_flags] : [];
     let quality_penalty = Number.isFinite(item.quality_penalty) ? item.quality_penalty : 0;
@@ -311,11 +417,15 @@ function qualityEnrich(items) {
       ...item,
       publishedAt,
       sources_count,
+      weighted_sources_count,
       sources_effective,
+      weighted_sources_effective,
       agreement_ratio,
+      weighted_agreement_ratio,
       contradiction_flag,
       quality_flags,
       quality_penalty,
+      source_weight: clusterStats.sourceWeights[i],
     };
   });
 }
@@ -345,8 +455,14 @@ function rankItems(enriched) {
   const scored = enriched.map(item => {
     const hours_since_publish = parseHoursSince(item.publishedAt);
     const se = item.sources_effective ?? Math.min(item.sources_count, 5);
+    const seWeighted = Number.isFinite(item.weighted_sources_effective)
+      ? item.weighted_sources_effective
+      : se;
+    const arWeighted = Number.isFinite(item.weighted_agreement_ratio)
+      ? item.weighted_agreement_ratio
+      : item.agreement_ratio;
     const factos_final = convergenceScore(
-      se, item.agreement_ratio, item.contradiction_flag, hours_since_publish
+      seWeighted, arWeighted, item.contradiction_flag, hours_since_publish
     );
     const freshness = Math.max(0, 1 - hours_since_publish / 24);
 
@@ -364,7 +480,10 @@ function rankItems(enriched) {
       editorial_score,
       hours_since_publish,
       sources_count: item.sources_count,
+      weighted_sources_count: item.weighted_sources_count,
       sources_effective: se,
+      weighted_sources_effective: seWeighted,
+      weighted_agreement_ratio: arWeighted,
       quality_flags: item.quality_flags || [],
       quality_penalty: item.quality_penalty || 0,
       edition: item.edition || null,
