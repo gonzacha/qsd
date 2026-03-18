@@ -1166,6 +1166,11 @@
         scroll-snap-align: start;
       }
 
+      .news-card-desc,
+      .news-card-actions {
+        display: none;
+      }
+
       .hero-body {
         padding: var(--space-lg);
       }
@@ -2029,7 +2034,7 @@
             <div class="hero-media">
               <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
               <div class="hero-overlay ${isMain ? 'hero-overlay--main' : 'hero-overlay--secondary'}"></div>
-              ${isMain ? `<span class="hero-pill">EN FOCO</span>` : ''}
+
             </div>
           ` : ''}
           <div class="hero-body">
@@ -2146,7 +2151,8 @@
       // Keep rotation off on mobile or reduced-motion for stability/readability.
       if (prefersReduced || isMobile || heroWheelState.items.length < 2) return;
 
-      heroWheelState.timer = setInterval(rotateHeroWheel, 7000);
+      // Auto-rotation disabled for editorial stability.
+      // heroWheelState.timer = setInterval(rotateHeroWheel, 7000);
     }
 
     async function renderFeed(data) {
@@ -2239,7 +2245,8 @@
           return sectionHtml;
         };
 
-        html += renderSection('Argentina / Región', argentinaRegionItems, 0);
+      const argentinaRegionCapped = argentinaRegionItems.slice(0, 6);
+      html += renderSection('Argentina / Región', argentinaRegionCapped, 0);
         if (argentinaRegionItems.length && mundoItems.length) {
           html += `<div class="editorial-divider">Panorama global</div>`;
         }
