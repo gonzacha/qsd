@@ -92,6 +92,8 @@ const SOURCE_TIER_CONFIG = {
       weight: 0.7,
       meaning: 'credible secondary/local coverage',
       sources: [
+        'argentina.gob.ar',
+        'argentina gob ar',
         'ellitoral.com.ar',
         'el litoral',
         'nordesteya.com',
