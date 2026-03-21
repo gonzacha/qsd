@@ -2,6 +2,7 @@ export const config = { runtime: 'edge' };
 
 const SITE_URL = 'https://quesedice.com.ar';
 const STORIES_LIMIT = 120;
+const FALLBACK_IMAGE = `${SITE_URL}/og_qsd_1200x630_v1.png`;
 
 function normalizeUrl(raw) {
   try {
@@ -44,6 +45,42 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/\"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function isHttpUrl(raw) {
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function normalizeImageUrl(raw, baseUrl) {
+  if (!raw) return '';
+  const trimmed = String(raw).trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  try {
+    return new URL(trimmed, baseUrl || SITE_URL).toString();
+  } catch {
+    return '';
+  }
+}
+
+function extractMetaContent(html, key) {
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name)=[\"']${key}[\"'][^>]*content=[\"']([^\"']+)[\"'][^>]*>`,
+    'i'
+  );
+  const match = html.match(re);
+  return match ? match[1].trim() : '';
+}
+
+function extractLinkImage(html) {
+  const re = /<link[^>]+rel=[\"']image_src[\"'][^>]*href=[\"']([^\"']+)[\"'][^>]*>/i;
+  const match = html.match(re);
+  return match ? match[1].trim() : '';
 }
 
 function decodeHtmlEntities(value) {
@@ -130,7 +167,7 @@ function buildOgImageUrl(title, source, category) {
   return `${SITE_URL}/api/og?${params.toString()}`;
 }
 
-function buildHtml({ title, description, source, publishedAt, url, category, canonical }) {
+function buildHtml({ title, description, source, publishedAt, url, category, canonical, imageUrl }) {
   const cleanedTitle = cleanText(title || 'Historia');
   const cleanedDesc = cleanText(description || 'Cobertura destacada en Qué Se Dice.');
   const paragraphs = buildParagraphs(cleanedDesc);
@@ -141,7 +178,8 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
   const safeDate = escapeHtml(formatDate(publishedAt));
   const safeUrl = escapeHtml(url || SITE_URL);
   const safeCanonical = escapeHtml(canonical);
-  const ogImage = escapeHtml(buildOgImageUrl(title, source, category));
+  const ogImage = escapeHtml(imageUrl || FALLBACK_IMAGE || buildOgImageUrl(title, source, category));
+  const heroImage = escapeHtml(imageUrl || FALLBACK_IMAGE);
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -207,6 +245,14 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
       flex-wrap: wrap;
       gap: 12px;
     }
+    .hero {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(201, 149, 58, 0.12);
+      object-fit: cover;
+    }
     .source {
       color: var(--accent);
       font-weight: 600;
@@ -238,6 +284,7 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
 <body>
   <main>
     <div class="kicker">Qué Se Dice — Historia</div>
+    <img class="hero" src="${heroImage}" alt="${safeTitle}" loading="eager" decoding="async" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
     <h1>${safeTitle}</h1>
     <div class="meta">
       ${safeDate ? `<span>${safeDate}</span>` : ''}
@@ -255,6 +302,39 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
   </main>
 </body>
 </html>`;
+}
+
+async function resolveStoryImage(item) {
+  const direct = [
+    item.image,
+    item.image_url,
+    item.imageUrl,
+    item.thumbnail,
+    item.thumbnail_url,
+    item.media,
+    item.media_url,
+  ].find(isHttpUrl);
+  if (direct) return normalizeImageUrl(direct, item.url);
+
+  if (!isHttpUrl(item.url)) return '';
+  try {
+    const res = await fetch(item.url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return '';
+    const html = (await res.text()).slice(0, 200000);
+    const og = extractMetaContent(html, 'og:image');
+    const tw = extractMetaContent(html, 'twitter:image');
+    const link = extractLinkImage(html);
+    const candidate = og || tw || link;
+    return normalizeImageUrl(candidate, item.url);
+  } catch {
+    return '';
+  }
 }
 
 async function fetchStories(origin) {
@@ -281,6 +361,7 @@ export default async function handler(req) {
     if (itemId !== storyId) continue;
 
     const canonical = `${SITE_URL}/story/${storyId}`;
+    const imageUrl = await resolveStoryImage(item);
     const html = buildHtml({
       title: item.title,
       description: item.description || '',
@@ -289,6 +370,7 @@ export default async function handler(req) {
       url: item.url,
       category: item.category,
       canonical,
+      imageUrl: imageUrl || FALLBACK_IMAGE,
     });
 
     return new Response(html, {
