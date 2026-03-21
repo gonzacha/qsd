@@ -46,6 +46,71 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function decodeHtmlEntities(value) {
+  return String(value || '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#x2f;/gi, '/')
+    .replace(/&apos;/gi, "'");
+}
+
+function stripHtmlTags(value) {
+  return String(value || '').replace(/<[^>]*>/g, ' ');
+}
+
+function normalizeWhitespace(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function splitSentences(text) {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map(part => part.trim())
+    .filter(Boolean);
+}
+
+function dedupeSentences(sentences) {
+  const seen = new Set();
+  const result = [];
+  for (const sentence of sentences) {
+    const key = sentence.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(sentence);
+  }
+  return result;
+}
+
+function buildParagraphs(text) {
+  const sentences = dedupeSentences(splitSentences(text));
+  if (sentences.length === 0) return [];
+  const paragraphs = [];
+  let buffer = [];
+  let size = 0;
+  for (const sentence of sentences) {
+    buffer.push(sentence);
+    size += sentence.length;
+    if (buffer.length >= 2 || size >= 220) {
+      paragraphs.push(buffer.join(' '));
+      buffer = [];
+      size = 0;
+    }
+  }
+  if (buffer.length) paragraphs.push(buffer.join(' '));
+  return paragraphs;
+}
+
+function cleanText(value) {
+  const decoded = decodeHtmlEntities(value);
+  const withoutTags = stripHtmlTags(decoded.replace(/<br\s*\/?>/gi, ' '));
+  return normalizeWhitespace(withoutTags);
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const t = new Date(dateStr).getTime();
@@ -66,8 +131,12 @@ function buildOgImageUrl(title, source, category) {
 }
 
 function buildHtml({ title, description, source, publishedAt, url, category, canonical }) {
-  const safeTitle = escapeHtml(title || 'Historia');
-  const safeDesc = escapeHtml(description || 'Cobertura destacada en Qué Se Dice.');
+  const cleanedTitle = cleanText(title || 'Historia');
+  const cleanedDesc = cleanText(description || 'Cobertura destacada en Qué Se Dice.');
+  const paragraphs = buildParagraphs(cleanedDesc);
+  const fallbackDesc = cleanedDesc || 'Cobertura destacada en Qué Se Dice.';
+  const safeTitle = escapeHtml(cleanedTitle || 'Historia');
+  const safeDesc = escapeHtml(fallbackDesc);
   const safeSource = escapeHtml(source || 'Fuente');
   const safeDate = escapeHtml(formatDate(publishedAt));
   const safeUrl = escapeHtml(url || SITE_URL);
@@ -174,7 +243,11 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
       ${safeDate ? `<span>${safeDate}</span>` : ''}
       <span class="source">${safeSource}</span>
     </div>
-    <p class="desc">${safeDesc}</p>
+    ${
+      paragraphs.length
+        ? paragraphs.map(p => `<p class="desc">${escapeHtml(p)}</p>`).join('')
+        : `<p class="desc">${safeDesc}</p>`
+    }
     ${safeUrl ? `<a class="cta" href="${safeUrl}" rel="noopener noreferrer" target="_blank">Leer fuente original</a>` : ''}
     <footer>
       <div>URL canónica: ${safeCanonical}</div>
