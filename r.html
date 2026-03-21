@@ -15,12 +15,15 @@
       --bg-primary: #0b0e1a;
       --bg-card: #111627;
       --bg-elevated: #1a2040;
-      --gold-primary: #c9953a;
-      --gold-light: #e4b65c;
+      --violet-primary: #7a5cff;
+      --violet-strong: #8f77ff;
+      --violet-soft: rgba(122, 92, 255, 0.18);
+      --gray-violet: #2a2f44;
+      --gray-violet-soft: rgba(136, 144, 174, 0.2);
       --text-primary: #e8e4dc;
       --text-secondary: #9a968e;
       --text-muted: #5c5850;
-      --border-subtle: rgba(201, 149, 58, 0.15);
+      --border-subtle: rgba(136, 144, 174, 0.18);
       --font-display: 'Playfair Display', Georgia, serif;
       --font-headline: 'Libre Baskerville', Georgia, serif;
       --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
@@ -50,8 +53,8 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse at 20% 0%, rgba(201, 149, 58, 0.04) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 100%, rgba(62, 124, 196, 0.03) 0%, transparent 55%);
+        radial-gradient(ellipse at 18% 0%, rgba(122, 92, 255, 0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 82% 100%, rgba(55, 163, 165, 0.03) 0%, transparent 55%);
       pointer-events: none;
       z-index: 0;
     }
@@ -69,7 +72,7 @@
       padding: 0.35rem 0.9rem;
       border-radius: 999px;
       background: rgba(11, 14, 26, 0.7);
-      border: 1px solid rgba(201, 149, 58, 0.12);
+      border: 1px solid var(--border-subtle);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       margin-bottom: var(--space-xl);
@@ -91,7 +94,7 @@
     .reader-logo img {
       width: 40px;
       height: auto;
-      filter: drop-shadow(0 4px 10px rgba(201, 149, 58, 0.3));
+      filter: none;
     }
 
     .reader-shell {
@@ -110,7 +113,7 @@
       margin: var(--space-lg) 0;
       border-radius: 16px;
       overflow: hidden;
-      border: 1px solid rgba(201, 149, 58, 0.12);
+      border: 1px solid var(--border-subtle);
     }
 
     .reader-hero img {
@@ -131,8 +134,16 @@
     .source-name {
       font-family: var(--font-headline);
       font-size: 1rem;
-      color: var(--gold-light);
+      color: var(--violet-strong);
       margin-bottom: var(--space-md);
+    }
+
+    .reader-editorial {
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--violet-primary);
+      margin-bottom: var(--space-lg);
     }
 
     .reader-title {
@@ -163,7 +174,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: linear-gradient(135deg, rgba(201, 149, 58, 0.08), rgba(17, 22, 39, 0.8));
+      background: var(--bg-elevated);
       margin-bottom: var(--space-xl);
     }
 
@@ -220,16 +231,16 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #0b0e1a;
-      background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+      background: var(--violet-primary);
       border-radius: 999px;
       text-decoration: none;
-      box-shadow: 0 10px 20px rgba(201, 149, 58, 0.25);
+      box-shadow: 0 10px 20px rgba(122, 92, 255, 0.25);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .cta-link:hover {
       transform: translateY(-1px);
-      box-shadow: 0 14px 24px rgba(201, 149, 58, 0.3);
+      box-shadow: 0 14px 24px rgba(122, 92, 255, 0.3);
     }
 
     .cta-link[aria-disabled="true"] {
@@ -274,6 +285,7 @@
   <main class="reader-shell">
     <div class="source-label">FUENTE ORIGINAL</div>
     <div class="source-name" id="sourceName">Fuente externa</div>
+    <div class="reader-editorial" id="editorialMeta" hidden></div>
     <div class="reader-hero" id="heroWrap" hidden>
       <img id="heroImage" alt="" loading="lazy" decoding="async">
     </div>
@@ -322,9 +334,17 @@
     const source = params.get('s') || 'Fuente externa';
     const ts = params.get('ts');
     const snippet = params.get('sn');
+    const score = params.get('sc');
+    const sources = params.get('cnt');
 
     document.getElementById('title').textContent = title;
     document.getElementById('sourceName').textContent = source;
+
+    if (score && sources) {
+      const editorialEl = document.getElementById('editorialMeta');
+      editorialEl.textContent = `Curado · score ${score} · ${sources} fuentes`;
+      editorialEl.hidden = false;
+    }
 
     if (snippet) {
       const snippetEl = document.getElementById('snippet');
