@@ -803,6 +803,25 @@
       overflow: hidden;
     }
 
+    .news-card--with-thumb {
+      flex-direction: row;
+      align-items: stretch;
+    }
+
+    .news-card--with-thumb .qsd-card__thumb {
+      width: clamp(80px, 22vw, 120px);
+      aspect-ratio: 16 / 9;
+      height: auto;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+      margin: var(--space-lg) 0 var(--space-lg) var(--space-lg);
+    }
+
+    .news-card--with-thumb .news-card-body {
+      padding-left: var(--space-md);
+    }
+
     .news-card:hover {
       background-color: var(--bg-card-hover);
       border-color: var(--border-light);
@@ -1889,7 +1908,11 @@
         img.decoding = 'async';
         img.width = 640;
         img.height = 360;
-        img.onerror = () => img.remove();
+        img.onerror = () => {
+          card.classList.remove('news-card--with-thumb');
+          img.remove();
+        };
+        card.classList.add('news-card--with-thumb');
         card.insertBefore(img, body);
       });
     }
@@ -2265,7 +2288,7 @@
             const itemThumbUrl = getItemImage(item);
             const sourcesCount = Number(item.sources_count);
             sectionHtml += `
-              <a class="news-card" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+              <a class="news-card${itemThumbUrl ? ' news-card--with-thumb' : ''}" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
                  style="animation-delay: ${(i + delayOffset) * 0.04}s"
                  data-item-id="${escapeAttr(item.item_id)}"
                  data-original-url="${escapeAttr(item.link)}"
@@ -2276,7 +2299,7 @@
                  data-sources-count="${item.sources_count ?? ''}"
                  data-hours="${item.hours_since_publish ?? ''}">
                 ${itemThumbUrl ? `
-                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.remove()" />
+                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.closest('.news-card')?.classList.remove('news-card--with-thumb'); this.remove()" />
                 ` : ''}
                 <div class="news-card-body">
                   <div class="news-card-meta">
