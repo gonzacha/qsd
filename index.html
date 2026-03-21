@@ -1874,10 +1874,31 @@
 
     const imageCache = new Map();
 
+    function extractFirstImageUrlFromHtml(html) {
+      if (!html) return '';
+      const match = String(html).match(/<img[^>]+src=["']([^"']+)["']/i);
+      return match ? match[1].trim() : '';
+    }
+
     function getItemImage(item) {
       if (!item) return '';
-      const raw = item.image_url || item.imageUrl || '';
-      return typeof raw === 'string' ? raw : '';
+      const candidates = [
+        item.image_url,
+        item.imageUrl,
+        item.image,
+        item.enclosure,
+        item.enclosure_url,
+        item.thumbnail,
+        item.thumbnail_url,
+        item.media,
+        item.media_url,
+        item['media:content'],
+        item['media:thumbnail'],
+        extractFirstImageUrlFromHtml(item.description),
+        extractFirstImageUrlFromHtml(item.content),
+      ];
+      const raw = candidates.find(value => typeof value === 'string' && value.trim());
+      return raw ? raw.trim() : '';
     }
 
     function applyItemImage(item, imageUrl) {
