@@ -1,0 +1,232 @@
+export const config = { runtime: 'edge' };
+
+const SITE_URL = 'https://quesedice.com.ar';
+const STORIES_LIMIT = 120;
+
+function normalizeUrl(raw) {
+  try {
+    const url = new URL(raw);
+    url.hash = '';
+    const params = new URLSearchParams(url.searchParams);
+    for (const key of [...params.keys()]) {
+      const k = key.toLowerCase();
+      if (k.startsWith('utm_') || k === 'gclid' || k === 'fbclid') {
+        params.delete(key);
+      }
+    }
+    const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
+    url.search = entries.length
+      ? `?${entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')}`
+      : '';
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
+async function sha256Hex(input) {
+  const data = new TextEncoder().encode(input);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function buildStoryId(url) {
+  if (!url) return '';
+  const normalized = normalizeUrl(url);
+  const hex = await sha256Hex(normalized);
+  return hex.slice(0, 16);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const t = new Date(dateStr).getTime();
+  if (Number.isNaN(t)) return '';
+  return new Date(t).toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function buildOgImageUrl(title, source, category) {
+  const params = new URLSearchParams();
+  if (title) params.set('title', title);
+  if (source) params.set('source', source);
+  if (category) params.set('cat', category);
+  return `${SITE_URL}/api/og?${params.toString()}`;
+}
+
+function buildHtml({ title, description, source, publishedAt, url, category, canonical }) {
+  const safeTitle = escapeHtml(title || 'Historia');
+  const safeDesc = escapeHtml(description || 'Cobertura destacada en Qué Se Dice.');
+  const safeSource = escapeHtml(source || 'Fuente');
+  const safeDate = escapeHtml(formatDate(publishedAt));
+  const safeUrl = escapeHtml(url || SITE_URL);
+  const safeCanonical = escapeHtml(canonical);
+  const ogImage = escapeHtml(buildOgImageUrl(title, source, category));
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${safeTitle} — Qué Se Dice</title>
+  <meta name="description" content="${safeDesc}">
+  <link rel="canonical" href="${safeCanonical}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="${safeTitle}">
+  <meta property="og:description" content="${safeDesc}">
+  <meta property="og:url" content="${safeCanonical}">
+  <meta property="og:image" content="${ogImage}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="robots" content="index, follow">
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --text: #f2f1ed;
+      --muted: #b6b3ad;
+      --accent: #c9953a;
+      --card: #141a2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Source Sans 3", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px 64px;
+    }
+    main {
+      width: 100%;
+      max-width: 760px;
+      background: var(--card);
+      padding: 32px;
+      border-radius: 18px;
+      border: 1px solid rgba(201, 149, 58, 0.15);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+    }
+    .kicker {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      margin: 0 0 16px;
+      color: var(--text);
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .source {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .desc {
+      font-size: 1.05rem;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    footer {
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="kicker">Qué Se Dice — Historia</div>
+    <h1>${safeTitle}</h1>
+    <div class="meta">
+      ${safeDate ? `<span>${safeDate}</span>` : ''}
+      <span class="source">${safeSource}</span>
+    </div>
+    <p class="desc">${safeDesc}</p>
+    ${safeUrl ? `<a class="cta" href="${safeUrl}" rel="noopener noreferrer" target="_blank">Leer fuente original</a>` : ''}
+    <footer>
+      <div>URL canónica: ${safeCanonical}</div>
+    </footer>
+  </main>
+</body>
+</html>`;
+}
+
+async function fetchStories(origin) {
+  const res = await fetch(`${origin}/api/rank?limit=${STORIES_LIMIT}`, {
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+export default async function handler(req) {
+  const { searchParams } = new URL(req.url);
+  const storyId = (searchParams.get('id') || '').trim();
+  const origin = new URL(req.url).origin;
+
+  if (!storyId) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const stories = await fetchStories(origin);
+  for (const item of stories) {
+    const itemId = await buildStoryId(item.url || item.link || '');
+    if (itemId !== storyId) continue;
+
+    const canonical = `${SITE_URL}/story/${storyId}`;
+    const html = buildHtml({
+      title: item.title,
+      description: item.description || '',
+      source: item.source,
+      publishedAt: item.publishedAt || item.pubDate,
+      url: item.url,
+      category: item.category,
+      canonical,
+    });
+
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=0, must-revalidate',
+        'CDN-Cache-Control': 's-maxage=1800, stale-while-revalidate=86400',
+      },
+    });
+  }
+
+  return new Response('Not Found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
+}

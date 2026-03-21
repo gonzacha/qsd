@@ -1,15 +1,56 @@
 export const config = { runtime: 'edge' };
 
 const SITE_URL = 'https://quesedice.com.ar';
+const STORIES_LIMIT = 120;
 
-const URLS = [
-  {
-    loc: `${SITE_URL}/`,
-    changefreq: 'hourly',
-    priority: '1.0',
-    lastmod: new Date().toISOString().split('T')[0],
-  },
-];
+function normalizeUrl(raw) {
+  try {
+    const url = new URL(raw);
+    url.hash = '';
+    const params = new URLSearchParams(url.searchParams);
+    for (const key of [...params.keys()]) {
+      const k = key.toLowerCase();
+      if (k.startsWith('utm_') || k === 'gclid' || k === 'fbclid') {
+        params.delete(key);
+      }
+    }
+    const entries = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
+    url.search = entries.length
+      ? `?${entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')}`
+      : '';
+    return url.toString();
+  } catch {
+    return raw;
+  }
+}
+
+async function sha256Hex(input) {
+  const data = new TextEncoder().encode(input);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function buildStoryId(url) {
+  const normalized = normalizeUrl(url);
+  const hex = await sha256Hex(normalized);
+  return hex.slice(0, 16);
+}
+
+function formatLastmod(dateStr) {
+  if (!dateStr) return null;
+  const t = new Date(dateStr).getTime();
+  if (Number.isNaN(t)) return null;
+  return new Date(t).toISOString().split('T')[0];
+}
+
+async function fetchStories(origin) {
+  const res = await fetch(`${origin}/api/rank?limit=${STORIES_LIMIT}`, {
+    headers: { 'Accept': 'application/json' },
+  });
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data.items) ? data.items : [];
+}
 
 function escapeXml(value) {
   return String(value)
@@ -37,8 +78,31 @@ function buildSitemapXml(urls) {
   return `${lines.join('\n')}\n`;
 }
 
-export default async function handler() {
-  const xml = buildSitemapXml(URLS);
+export default async function handler(req) {
+  const origin = new URL(req.url).origin;
+  const stories = await fetchStories(origin);
+  const storyUrls = await Promise.all(
+    stories.map(async item => {
+      const storyId = await buildStoryId(item.url || item.link || '');
+      if (!storyId) return null;
+      return {
+        loc: `${SITE_URL}/story/${storyId}`,
+        changefreq: 'daily',
+        priority: '0.6',
+        lastmod: formatLastmod(item.publishedAt || item.pubDate),
+      };
+    })
+  );
+  const urls = [
+    {
+      loc: `${SITE_URL}/`,
+      changefreq: 'hourly',
+      priority: '1.0',
+      lastmod: new Date().toISOString().split('T')[0],
+    },
+    ...storyUrls.filter(Boolean),
+  ];
+  const xml = buildSitemapXml(urls);
   return new Response(xml, {
     status: 200,
     headers: {
