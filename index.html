@@ -178,6 +178,15 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--text-primary);
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+
+    .site-brand.is-hidden {
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
     }
 
     .site-brand img {
@@ -1285,7 +1294,7 @@
 <body>
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-brand" href="/">
+      <a class="site-brand is-hidden" href="/">
         <img src="Logo_qsd.png" alt="Qué Se Dice">
         Qué Se Dice
       </a>
@@ -1391,6 +1400,7 @@
     <button class="update-btn" id="updateBtn" type="button">Actualizar</button>
   </div>
 
+  <script src="/lib/resolve-story-image.js"></script>
   <script>
     // ═══════════════════════════════════════════
     // QUÉ SE DICE — Portal Engine
@@ -1843,28 +1853,77 @@
 
     const THUMB_VER = '2026-02-25a';
 
-    function buildThumbUrl(item) {
-      if (!item) return null;
+    const imageCache = new Map();
 
-      const params = new URLSearchParams();
+    function getItemImage(item) {
+      if (!item) return '';
+      const raw = item.image_url || item.imageUrl || '';
+      return typeof raw === 'string' ? raw : '';
+    }
 
-      if (item.edition) params.set('edition', item.edition);
-      if (item.category) params.set('category', item.category);
-      if (item.pubDate) {
-        const date = new Date(item.pubDate);
-        if (!Number.isNaN(date.getTime())) {
-          const dateStr = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
-          params.set('date', dateStr);
+    function applyItemImage(item, imageUrl) {
+      if (!item || !imageUrl) return;
+      const cards = document.querySelectorAll(`a[data-item-id="${item.item_id}"]`);
+      cards.forEach(card => {
+        if (card.classList.contains('hero-card')) {
+          if (card.querySelector('.hero-media img')) return;
+          const overlayClass = card.classList.contains('hero-card--main') ? 'hero-overlay--main' : 'hero-overlay--secondary';
+          const heroMedia = document.createElement('div');
+          heroMedia.className = 'hero-media';
+          heroMedia.innerHTML = `
+            <img class="qsd-hero__thumb" src="${escapeAttr(imageUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.parentNode && this.parentNode.remove()" />
+            <div class="hero-overlay ${overlayClass}"></div>
+          `;
+          const body = card.querySelector('.hero-body');
+          if (body) card.insertBefore(heroMedia, body);
+          return;
         }
-      }
-      const sourcesCount = Number(item.sources_count);
-      if (Number.isFinite(sourcesCount)) {
-        params.set('sources', String(sourcesCount));
-      }
+        if (card.querySelector('img.qsd-card__thumb')) return;
+        const body = card.querySelector('.news-card-body');
+        if (!body) return;
+        const img = document.createElement('img');
+        img.className = 'qsd-card__thumb';
+        img.src = imageUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.width = 640;
+        img.height = 360;
+        img.onerror = () => img.remove();
+        card.insertBefore(img, body);
+      });
+    }
 
-      params.set('v', THUMB_VER);
-      const query = params.toString();
-      return `/api/thumb?${query}`;
+    async function resolveItemImages(items) {
+      if (typeof window.resolveStoryImage !== 'function') return;
+      const origin = window.location.origin;
+      const queue = items.slice();
+      const workers = Array.from({ length: 4 }, async () => {
+        while (queue.length) {
+          const item = queue.shift();
+          if (!item || !item.link || !item.item_id) continue;
+          const cacheKey = item.link;
+          if (imageCache.has(cacheKey)) {
+            const cached = imageCache.get(cacheKey);
+            if (cached) {
+              item.image_url = cached;
+              applyItemImage(item, cached);
+            }
+            continue;
+          }
+          const imageUrl = await window.resolveStoryImage(item, {
+            origin,
+            useProxy: true,
+            timeoutMs: 6000,
+          });
+          imageCache.set(cacheKey, imageUrl || '');
+          if (imageUrl) {
+            item.image_url = imageUrl;
+            applyItemImage(item, imageUrl);
+          }
+        }
+      });
+      await Promise.all(workers);
     }
 
     // Detect PWA standalone mode (Android "Add to Home Screen" or iOS Safari)
@@ -2017,7 +2076,7 @@
       const heroShareUrl = item.resolvedLink || item.link;
       const heroHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
       const heroKicker = getFreshnessKicker(heroHours);
-      const heroThumbUrl = buildThumbUrl(item);
+      const heroThumbUrl = getItemImage(item);
       const isMain = variant === 'main';
 
       return `
@@ -2032,7 +2091,7 @@
            data-hours="${item.hours_since_publish ?? ''}">
           ${heroThumbUrl ? `
             <div class="hero-media">
-              <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+              <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.parentNode && this.parentNode.remove()" />
               <div class="hero-overlay ${isMain ? 'hero-overlay--main' : 'hero-overlay--secondary'}"></div>
 
             </div>
@@ -2203,7 +2262,7 @@
             });
             const itemHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
             const itemKicker = getFreshnessKicker(itemHours);
-            const itemThumbUrl = buildThumbUrl(item);
+            const itemThumbUrl = getItemImage(item);
             const sourcesCount = Number(item.sources_count);
             sectionHtml += `
               <a class="news-card" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
@@ -2217,7 +2276,7 @@
                  data-sources-count="${item.sources_count ?? ''}"
                  data-hours="${item.hours_since_publish ?? ''}">
                 ${itemThumbUrl ? `
-                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.remove()" />
                 ` : ''}
                 <div class="news-card-body">
                   <div class="news-card-meta">
@@ -2262,6 +2321,7 @@
         setupHeroWheelRotation(heroItems);
       });
 
+      void resolveItemImages(items);
       logItemsSeen(items);
       wireItemActions(items);
     }
@@ -2418,12 +2478,22 @@
 
     // ── Scroll to top ──
     const scrollTopBtn = document.getElementById('scrollTop');
+    const headerBrand = document.querySelector('.site-brand');
+    const brandRevealOffset = 120;
+
+    const updateHeaderBrand = () => {
+      if (!headerBrand) return;
+      headerBrand.classList.toggle('is-hidden', window.scrollY < brandRevealOffset);
+    };
+
     window.addEventListener('scroll', () => {
       scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+      updateHeaderBrand();
     });
     scrollTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+    updateHeaderBrand();
 
     // ── Saved + Backup Panels ──
     const savedBtn = document.getElementById('savedBtn');

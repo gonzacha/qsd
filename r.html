@@ -105,6 +105,21 @@
       z-index: 1;
     }
 
+    .reader-hero {
+      width: 100%;
+      margin: var(--space-lg) 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(201, 149, 58, 0.12);
+    }
+
+    .reader-hero img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
     .source-label {
       font-size: 0.65rem;
       letter-spacing: 0.22em;
@@ -259,6 +274,9 @@
   <main class="reader-shell">
     <div class="source-label">FUENTE ORIGINAL</div>
     <div class="source-name" id="sourceName">Fuente externa</div>
+    <div class="reader-hero" id="heroWrap" hidden>
+      <img id="heroImage" alt="" loading="lazy" decoding="async">
+    </div>
     <h1 class="reader-title" id="title">Título no disponible</h1>
     <div class="reader-meta" id="timestamp" hidden></div>
     <p class="reader-snippet" id="snippet" hidden></p>
@@ -279,6 +297,7 @@
     </a>
   </main>
 
+  <script src="/lib/resolve-story-image.js"></script>
   <script>
     function timeAgo(dateStr) {
       if (!dateStr) return '';
@@ -320,6 +339,26 @@
         timestampEl.textContent = stamp;
         timestampEl.hidden = false;
       }
+    }
+
+    const heroWrap = document.getElementById('heroWrap');
+    const heroImage = document.getElementById('heroImage');
+    if (heroImage) {
+      heroImage.onerror = () => {
+        if (heroWrap) heroWrap.hidden = true;
+      };
+    }
+
+    if (url && typeof window.resolveStoryImage === 'function') {
+      window.resolveStoryImage({ url }, { origin: window.location.origin, useProxy: true, timeoutMs: 6000 })
+        .then(imageUrl => {
+          if (imageUrl && heroImage) {
+            heroImage.src = imageUrl;
+            heroImage.alt = title;
+            if (heroWrap) heroWrap.hidden = false;
+          }
+        })
+        .catch(() => {});
     }
 
     const linkEl = document.getElementById('sourceLink');
