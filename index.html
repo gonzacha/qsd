@@ -70,10 +70,10 @@
       --bg-elevated: #1a2040;
       --bg-glass: rgba(17, 22, 39, 0.85);
 
-      --violet-primary: #7a5cff;
-      --violet-strong: #8f77ff;
-      --violet-dim: rgba(122, 92, 255, 0.45);
-      --violet-soft: rgba(122, 92, 255, 0.18);
+      --violet-primary: #6c5ce7;
+      --violet-strong: #7d6ff0;
+      --violet-dim: rgba(108, 92, 231, 0.45);
+      --violet-soft: rgba(108, 92, 231, 0.18);
       --amber-primary: #d39a3f;
       --amber-soft: rgba(211, 154, 63, 0.2);
       --teal-primary: #37a3a5;
@@ -129,17 +129,6 @@
       padding-top: var(--header-height);
     }
 
-    /* Subtle background texture */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: 
-        radial-gradient(ellipse at 18% 0%, rgba(122, 92, 255, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 82% 100%, rgba(55, 163, 165, 0.03) 0%, transparent 55%);
-      pointer-events: none;
-      z-index: 0;
-    }
 
     a { color: inherit; text-decoration: none; }
     img { max-width: 100%; display: block; }
@@ -1492,6 +1481,7 @@
     <button class="update-btn" id="updateBtn" type="button">Actualizar</button>
   </div>
 
+  <script src="/lib/vpe/compose.js"></script>
   <script src="/lib/resolve-story-image.js"></script>
   <script>
     // ═══════════════════════════════════════════
@@ -1953,6 +1943,13 @@
       return match ? match[1].trim() : '';
     }
 
+    function svgToDataUri(svg) {
+      const encoded = encodeURIComponent(svg)
+        .replace(/'/g, '%27')
+        .replace(/"/g, '%22');
+      return `data:image/svg+xml;charset=UTF-8,${encoded}`;
+    }
+
     function getItemImage(item) {
       if (!item) return '';
       const candidates = [
@@ -1974,6 +1971,21 @@
       return raw ? raw.trim() : '';
     }
 
+    function getCardSurface(item, { variant, score, hours, category } = {}) {
+      const itemImage = getItemImage(item);
+      if (itemImage) return { src: itemImage, fallback: false };
+      if (typeof window.composeCardSvg !== 'function') return { src: '', fallback: false };
+      const svg = window.composeCardSvg({
+        title: item?.title || '',
+        source: item?.source || '',
+        category: category || '',
+        score: Number.isFinite(score) ? score : null,
+        hours: Number.isFinite(hours) ? hours : null,
+        variant,
+      });
+      return svg ? { src: svgToDataUri(svg), fallback: true } : { src: '', fallback: false };
+    }
+
     function applyItemImage(item, imageUrl) {
       if (!item || !imageUrl) return;
       const cards = document.querySelectorAll(`a[data-item-id="${item.item_id}"]`);
@@ -1991,10 +2003,11 @@
           if (body) card.insertBefore(heroMedia, body);
           return;
         }
-        if (card.querySelector('img.qsd-card__thumb')) return;
+        const existing = card.querySelector('img.qsd-card__thumb');
+        if (existing && !existing.dataset.fallback) return;
         const body = card.querySelector('.news-card-body');
         if (!body) return;
-        const img = document.createElement('img');
+        const img = existing || document.createElement('img');
         img.className = 'qsd-card__thumb';
         img.src = imageUrl;
         img.alt = '';
@@ -2002,12 +2015,13 @@
         img.decoding = 'async';
         img.width = 640;
         img.height = 360;
+        img.removeAttribute('data-fallback');
         img.onerror = () => {
           card.classList.remove('news-card--with-thumb');
           img.remove();
         };
         card.classList.add('news-card--with-thumb');
-        card.insertBefore(img, body);
+        if (!existing) card.insertBefore(img, body);
       });
     }
 
@@ -2166,11 +2180,11 @@
       const isAnalysis = !isUrgent && !isSignal && isAnalysisItem(item);
       const isArchive = !isUrgent && !isSignal && (Number.isFinite(hours) && hours >= 6 || (score != null && score < 35));
 
-      if (isUrgent) return 'c-urgent';
-      if (isSignal) return 'c-signal';
-      if (isAnalysis) return 'c-analisis';
-      if (isArchive) return 'c-archivo';
-      return 'c-filo';
+      if (isUrgent) return 'urgent';
+      if (isSignal) return 'signal';
+      if (isAnalysis) return 'analisis';
+      if (isArchive) return 'archivo';
+      return 'filo';
     }
 
     function getScoreWidth(score) {
@@ -2244,7 +2258,7 @@
       const heroScore = getEditorialScore(item);
 
       return `
-        <a class="hero-card ${isMain ? 'hero-card--main' : 'hero-card--secondary'} ${heroVariant}" href="${escapeAttr(heroUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+        <a class="hero-card ${isMain ? 'hero-card--main' : 'hero-card--secondary'} c-${heroVariant}" href="${escapeAttr(heroUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
            style="--score-width: ${getScoreWidth(heroScore)};"
            data-item-id="${escapeAttr(item.item_id)}"
            data-original-url="${escapeAttr(item.link)}"
@@ -2409,6 +2423,7 @@
 
         rest.forEach(item => {
           const bucket = classifyItem(item);
+          item.qsd_bucket = bucket;
           if (bucket === 'argentina') argentinaRegionItems.push(item);
           else if (bucket === 'mundo') mundoItems.push(item);
           else masNoticiasItems.push(item);
@@ -2429,11 +2444,19 @@
             });
             const itemHours = Number.isFinite(item.hours_since_publish) ? item.hours_since_publish : (hoursSince(item) ?? 24);
             const itemKicker = getFreshnessKicker(itemHours);
-            const itemThumbUrl = getItemImage(item);
             const sourcesCount = getSourcesCount(item);
             const editorialScore = getEditorialScore(item);
-            const variantClass = getEditorialVariant(item, { index: i, hours: itemHours });
-            const urgentDot = variantClass === 'c-urgent' ? '<span class="urgent-dot" aria-hidden="true"></span>' : '';
+            const variantKey = getEditorialVariant(item, { index: i, hours: itemHours });
+            const variantClass = `c-${variantKey}`;
+            const surface = getCardSurface(item, {
+              variant: variantKey,
+              score: editorialScore,
+              hours: itemHours,
+              category: item.qsd_bucket,
+            });
+            const itemThumbUrl = surface.src;
+            const isFallback = surface.fallback;
+            const urgentDot = variantKey === 'urgent' ? '<span class="urgent-dot" aria-hidden="true"></span>' : '';
             sectionHtml += `
               <a class="news-card ${variantClass}${itemThumbUrl ? ' news-card--with-thumb' : ''}" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
                  style="--score-width: ${getScoreWidth(editorialScore)};"
@@ -2446,7 +2469,7 @@
                  data-sources-count="${item.sources_count ?? ''}"
                  data-hours="${item.hours_since_publish ?? ''}">
                 ${itemThumbUrl ? `
-                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.closest('.news-card')?.classList.remove('news-card--with-thumb'); this.remove()" />
+                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" ${isFallback ? 'data-fallback="true"' : ''} onerror="this.closest('.news-card')?.classList.remove('news-card--with-thumb'); this.remove()" />
                 ` : ''}
                 <div class="news-card-body">
                   <div class="news-card-meta">

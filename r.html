@@ -15,9 +15,9 @@
       --bg-primary: #0b0e1a;
       --bg-card: #111627;
       --bg-elevated: #1a2040;
-      --violet-primary: #7a5cff;
-      --violet-strong: #8f77ff;
-      --violet-soft: rgba(122, 92, 255, 0.18);
+      --violet-primary: #6c5ce7;
+      --violet-strong: #7d6ff0;
+      --violet-soft: rgba(108, 92, 231, 0.18);
       --gray-violet: #2a2f44;
       --gray-violet-soft: rgba(136, 144, 174, 0.2);
       --text-primary: #e8e4dc;
@@ -48,16 +48,6 @@
       padding: calc(var(--space-xl) + var(--header-height)) var(--space-md) var(--space-2xl);
     }
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse at 18% 0%, rgba(122, 92, 255, 0.05) 0%, transparent 55%),
-        radial-gradient(ellipse at 82% 100%, rgba(55, 163, 165, 0.03) 0%, transparent 55%);
-      pointer-events: none;
-      z-index: 0;
-    }
 
     .reader-header {
       width: 100%;
