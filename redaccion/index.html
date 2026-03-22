@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Redacción QSD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0c0f1a;
+      --bg-card: #121625;
+      --bg-card-hover: #171c30;
+      --text-bright: #f3f4f7;
+      --text-primary: #d6d9e2;
+      --text-muted: #9aa1b4;
+      --border-subtle: rgba(138, 146, 170, 0.18);
+      --violet-primary: #6c5ce7;
+      --violet-dim: rgba(108, 92, 231, 0.45);
+      --max-width: 1100px;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-headline: 'Libre Baskerville', Georgia, serif;
+      --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+    a { color: inherit; text-decoration: none; }
+
+    .rx-header {
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-xl) var(--space-lg) var(--space-lg);
+      text-align: center;
+    }
+    .rx-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--text-bright);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0 0 var(--space-sm);
+    }
+    .rx-subtitle {
+      font-family: var(--font-headline);
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .rx-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--violet-dim);
+      margin-top: var(--space-md);
+    }
+
+    .rx-main {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-lg) var(--space-xl);
+    }
+
+    .rx-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    .rx-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      transition: background 120ms ease, border-color 120ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .rx-card::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 2px;
+      width: 40%;
+      background: var(--violet-primary);
+      opacity: 0.35;
+    }
+    .rx-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(138, 146, 170, 0.3);
+    }
+
+    .rx-card-media {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0f1220;
+    }
+    .rx-card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .rx-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+    .rx-card-title {
+      font-family: var(--font-headline);
+      font-size: 1.05rem;
+      color: var(--text-bright);
+      line-height: 1.4;
+      margin: 0;
+    }
+    .rx-card-excerpt {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .rx-empty {
+      text-align: center;
+      color: var(--text-muted);
+      padding: var(--space-xl);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="rx-header">
+    <h1 class="rx-title">Redacción QSD</h1>
+    <p class="rx-subtitle">Notas editoriales y reportes especiales</p>
+    <a class="rx-home" href="/">Volver al feed</a>
+  </header>
+
+  <main class="rx-main">
+    <section class="rx-grid" data-list></section>
+    <div class="rx-empty" data-empty style="display:none;">No hay notas disponibles.</div>
+  </main>
+
+  <script>
+    const listEl = document.querySelector('[data-list]');
+    const emptyEl = document.querySelector('[data-empty]');
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderCard(item) {
+      const card = document.createElement('a');
+      card.className = 'rx-card';
+      card.href = `/redaccion/nota.html?slug=${encodeURIComponent(item.slug || item.id)}`;
+      const imageHtml = item.image ? `
+        <div class="rx-card-media">
+          <img src="${escapeHtml(item.image)}" alt="" loading="lazy" decoding="async" />
+        </div>
+      ` : '';
+
+      card.innerHTML = `
+        ${imageHtml}
+        <div class="rx-card-meta">
+          <span>${escapeHtml(item.category || 'editorial')}</span>
+          <span>${escapeHtml(item.published_at || item.date || '')}</span>
+        </div>
+        <h2 class="rx-card-title">${escapeHtml(item.title)}</h2>
+        ${item.excerpt ? `<p class="rx-card-excerpt">${escapeHtml(item.excerpt)}</p>` : ''}
+      `;
+      return card;
+    }
+
+    fetch('/redaccion/index.json', { cache: 'no-store' })
+      .then((res) => res.ok ? res.json() : [])
+      .then((items) => {
+        if (!Array.isArray(items) || items.length === 0) {
+          emptyEl.style.display = 'block';
+          return;
+        }
+        items.forEach((item) => listEl.appendChild(renderCard(item)));
+      })
+      .catch(() => {
+        emptyEl.style.display = 'block';
+      });
+  </script>
+</body>
+</html>

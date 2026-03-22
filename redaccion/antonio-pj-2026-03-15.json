@@ -1,0 +1,74 @@
+{
+  "id": "antonio-pj-2026-03-15",
+  "slug": "antonio-pj-2026-03-15",
+  "title": "No podemos estar conducidos por alguien que no está",
+  "author": "Redacción QSD",
+  "author_role": "Entrevista radial",
+  "date": "2026-03-15",
+  "published_at": "2026-03-22",
+  "category": "politica",
+  "image": "/redaccion/img/Taeta_1.jpeg",
+  "image_caption": "Antonio “Taeta” Haedo en diálogo radial tras su recuperación",
+  "source_ref": "LT7 Radio Corrientes",
+  "type": "original",
+  "format": "qa",
+  "presentation": "standard",
+  "featured": true,
+  "story_enabled": true,
+  "story_group": "antonio-haedo-radio",
+  "story_order": 1,
+  "body": [
+    {
+      "type": "paragraph",
+      "content": "Tras varios días de internación, Antonio “Taeta” Haedo volvió al aire en LT7 y habló sobre su estado de salud, su recuperación y la situación política del peronismo en Corrientes."
+    },
+    {
+      "type": "quote",
+      "content": "Estoy bien, recuperándome, fue un susto grande pero gracias a Dios ya estamos de vuelta."
+    },
+    {
+      "type": "paragraph",
+      "content": "Durante la entrevista, Haedo agradeció el acompañamiento recibido y destacó el apoyo de su entorno, mientras retomaba su participación en el espacio radial."
+    },
+    {
+      "type": "subheading",
+      "content": "El estado del PJ en Corrientes"
+    },
+    {
+      "type": "paragraph",
+      "content": "El dirigente también se refirió a la situación actual del Partido Justicialista, señalando la necesidad de reorganización y mayor presencia política."
+    },
+    {
+      "type": "quote",
+      "content": "No podemos estar conducidos por alguien que no está, que no figura, que no se hace presente."
+    },
+    {
+      "type": "paragraph",
+      "content": "En ese sentido, cuestionó la falta de conducción activa y remarcó la importancia de una estructura partidaria con liderazgo visible y compromiso territorial."
+    },
+    {
+      "type": "subheading",
+      "content": "Relación con el escenario nacional"
+    },
+    {
+      "type": "paragraph",
+      "content": "Consultado sobre el contexto nacional, Haedo mencionó la figura de Axel Kicillof y la necesidad de articular con liderazgos que representen una alternativa política clara."
+    },
+    {
+      "type": "quote",
+      "content": "Tiene que haber conducción real, alguien que esté, que se haga cargo y marque un rumbo."
+    },
+    {
+      "type": "subheading",
+      "content": "Una nueva etapa"
+    },
+    {
+      "type": "paragraph",
+      "content": "En el tramo final, Haedo destacó el trabajo en desarrollo junto a su hijo en el proyecto Qué Se Dice (QSD), al que definió como una nueva forma de periodismo digital."
+    },
+    {
+      "type": "quote",
+      "content": "Estamos trabajando en algo nuevo, una forma distinta de hacer periodismo digital, más directo y conectado con la realidad."
+    }
+  ]
+}
