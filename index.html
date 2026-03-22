@@ -840,6 +840,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: 50% 60%;
       display: block;
     }
 
@@ -852,9 +853,15 @@
 
     .redaccion-card-title {
       font-family: var(--font-headline);
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: var(--text-bright);
       line-height: 1.45;
+    }
+
+    .redaccion-excerpt {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      line-height: 1.6;
     }
 
     .redaccion-empty {
@@ -2087,11 +2094,15 @@
           <img src="${escapeAttr(item.image)}" alt="" loading="lazy" decoding="async" />
         </div>
       ` : '';
+      const excerptHtml = item.excerpt ? `
+          <div class="redaccion-excerpt">${escapeHtml(item.excerpt)}</div>
+        ` : '';
       return `
         <a class="redaccion-card" href="/redaccion/nota.html?slug=${encodeURIComponent(slug)}">
           ${imageHtml}
           <div class="redaccion-meta">${escapeHtml(item.category || 'editorial')}</div>
           <div class="redaccion-card-title">${escapeHtml(item.title || '')}</div>
+          ${excerptHtml}
         </a>
       `;
     }
