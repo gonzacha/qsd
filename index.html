@@ -515,6 +515,24 @@
       padding: var(--space-xl) var(--space-lg);
     }
 
+    .content-shell {
+      position: relative;
+      z-index: 10;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-lg);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    .content-shell .container {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+
     /* ═══════════════════════════════════════════
        HERO CARD
        ═══════════════════════════════════════════ */
@@ -746,6 +764,104 @@
       gap: var(--space-lg);
     }
 
+    .redaccion-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .redaccion-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+
+    .redaccion-title {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--violet-dim);
+    }
+
+    .redaccion-link {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      transition: color 120ms ease;
+    }
+
+    .redaccion-link:hover {
+      color: var(--violet-primary);
+    }
+
+    .redaccion-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .redaccion-card {
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      transition: border-color 120ms ease, background 120ms ease;
+    }
+
+    .redaccion-card:hover {
+      border-color: var(--violet-dim);
+      background: rgba(18, 22, 37, 0.8);
+    }
+
+    .redaccion-media {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #0f1220;
+    }
+
+    .redaccion-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .redaccion-meta {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+    }
+
+    .redaccion-card-title {
+      font-family: var(--font-headline);
+      font-size: 0.95rem;
+      color: var(--text-bright);
+      line-height: 1.45;
+    }
+
+    .redaccion-empty {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 10px;
+      padding: var(--space-md);
+      text-align: center;
+    }
+
     @media (max-width: 420px) {
       body.qsd-snap-enabled,
       html.qsd-snap-enabled {
@@ -758,6 +874,16 @@
         scroll-snap-align: start;
         scroll-snap-stop: normal;
         scroll-margin-top: 12px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .content-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .redaccion-panel {
+        order: 2;
       }
     }
 
@@ -1430,12 +1556,22 @@
   </div>
 
   <!-- Main Content -->
-  <main class="container" id="mainContent">
-    <div class="loading-state" id="loadingState">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">Cargando noticias...</div>
-    </div>
-  </main>
+  <div class="content-shell">
+    <main class="container" id="mainContent">
+      <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando noticias...</div>
+      </div>
+    </main>
+    <aside class="redaccion-panel" aria-labelledby="redaccionTitle">
+      <div class="redaccion-header">
+        <div class="redaccion-title" id="redaccionTitle">Redacción QSD</div>
+        <a class="redaccion-link" href="/redaccion">Ver todas</a>
+      </div>
+      <div class="redaccion-list" id="redaccionList"></div>
+      <div class="redaccion-empty" id="redaccionEmpty" style="display:none;">No hay notas editoriales.</div>
+    </aside>
+  </div>
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -1940,6 +2076,46 @@
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    }
+
+    function renderRedaccionCard(item) {
+      const slug = item.slug || item.id;
+      if (!slug) return '';
+      const imageHtml = item.image ? `
+        <div class="redaccion-media">
+          <img src="${escapeAttr(item.image)}" alt="" loading="lazy" decoding="async" />
+        </div>
+      ` : '';
+      return `
+        <a class="redaccion-card" href="/redaccion/nota.html?slug=${encodeURIComponent(slug)}">
+          ${imageHtml}
+          <div class="redaccion-meta">${escapeHtml(item.category || 'editorial')}</div>
+          <div class="redaccion-card-title">${escapeHtml(item.title || '')}</div>
+        </a>
+      `;
+    }
+
+    function loadRedaccion() {
+      const listEl = document.getElementById('redaccionList');
+      const emptyEl = document.getElementById('redaccionEmpty');
+      if (!listEl || !emptyEl) return;
+      fetch('/redaccion/index.json', { cache: 'no-store' })
+        .then(res => res.ok ? res.json() : [])
+        .then(items => {
+          if (!Array.isArray(items) || items.length === 0) {
+            emptyEl.style.display = 'block';
+            return;
+          }
+          const html = items.slice(0, 3).map(renderRedaccionCard).filter(Boolean).join('');
+          if (!html) {
+            emptyEl.style.display = 'block';
+            return;
+          }
+          listEl.innerHTML = html;
+        })
+        .catch(() => {
+          emptyEl.style.display = 'block';
+        });
     }
 
     const THUMB_VER = '2026-02-25a';
@@ -2886,6 +3062,7 @@
     ];
     renderNav(defaultCats);
     loadFeed(currentCategory);
+    loadRedaccion();
     startAutoRefresh();
 
     // Update date every minute
