@@ -521,6 +521,8 @@
     .container {
       position: relative;
       z-index: 10;
+      width: 100%;
+      min-width: 0;
       max-width: var(--max-width);
       margin: 0 auto;
       padding: var(--space-xl) var(--space-lg);
@@ -1426,22 +1428,14 @@
       }
 
       .news-grid {
-        display: flex;
-        grid-template-columns: none;
-        overflow-x: auto;
+        display: grid;
+        grid-template-columns: 1fr;
         gap: var(--space-lg);
-        padding: 0 var(--space-md) var(--space-md);
-        scroll-snap-type: x mandatory;
-        scroll-padding-left: var(--space-md);
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        padding: 0 0 var(--space-md);
       }
 
-      .news-grid::-webkit-scrollbar { display: none; }
-
       .news-card {
-        flex: 0 0 86%;
-        scroll-snap-align: start;
+        flex: none;
       }
 
       .news-card-desc,
