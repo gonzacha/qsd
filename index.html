@@ -2098,7 +2098,7 @@
           <div class="redaccion-excerpt">${escapeHtml(item.excerpt)}</div>
         ` : '';
       return `
-        <a class="redaccion-card" href="/redaccion/nota.html?slug=${encodeURIComponent(slug)}">
+        <a class="redaccion-card" href="/redaccion/${encodeURIComponent(slug)}.html">
           ${imageHtml}
           <div class="redaccion-meta">${escapeHtml(item.category || 'editorial')}</div>
           <div class="redaccion-card-title">${escapeHtml(item.title || '')}</div>

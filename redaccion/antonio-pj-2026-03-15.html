@@ -3,7 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redacción QSD</title>
+  <title>No podemos estar conducidos por alguien que no está — Redacción QSD</title>
+  <meta name="description" content="En una entrevista realizada el domingo 15 de marzo, tras varios días de internación, Antonio “Taeta” Haedo volvió al aire en LT7 y habló sobre su estado de salud, su recuperación y la situación del peronismo en Corrientes.">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Qué Se Dice">
+  <meta property="og:title" content="No podemos estar conducidos por alguien que no está">
+  <meta property="og:description" content="En una entrevista realizada el domingo 15 de marzo, tras varios días de internación, Antonio “Taeta” Haedo volvió al aire en LT7 y habló sobre su estado de salud, su recuperación y la situación del peronismo en Corrientes.">
+  <meta property="og:image" content="/redaccion/img/Taeta_1.jpeg">
+  <meta property="og:url" content="https://www.quesedice.com.ar/redaccion/antonio-pj-2026-03-15.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="No podemos estar conducidos por alguien que no está">
+  <meta name="twitter:description" content="En una entrevista realizada el domingo 15 de marzo, tras varios días de internación, Antonio “Taeta” Haedo volvió al aire en LT7 y habló sobre su estado de salud, su recuperación y la situación del peronismo en Corrientes.">
+  <meta name="twitter:image" content="/redaccion/img/Taeta_1.jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -146,14 +157,6 @@
       font-family: var(--font-headline);
       font-size: 1rem;
     }
-
-    .rx-empty {
-      text-align: center;
-      color: var(--text-muted);
-      padding: var(--space-xl);
-      border: 1px dashed var(--border-subtle);
-      border-radius: 12px;
-    }
   </style>
 </head>
 <body>
@@ -164,70 +167,29 @@
   </header>
 
   <main class="rx-main">
-    <article class="rx-hero" data-article></article>
-    <div class="rx-empty" data-empty style="display:none;">No se encontró la nota.</div>
+    <article class="rx-hero">
+      <div class="rx-hero-image">
+        <img src="/redaccion/img/Taeta_1.jpeg" alt="Antonio “Taeta” Haedo en diálogo radial tras su recuperación" loading="lazy" decoding="async" />
+      </div>
+      <div class="rx-meta">politica · Redacción QSD · 2026-03-22</div>
+      <h2 class="rx-hero-title">No podemos estar conducidos por alguien que no está</h2>
+      <p>En una entrevista realizada el domingo 15 de marzo, tras varios días de internación, Antonio “Taeta” Haedo volvió al aire en LT7 y habló sobre su estado de salud, su recuperación y la situación del peronismo en Corrientes.</p>
+      <div class="rx-body">
+        <p>Tras varios días de internación, Antonio “Taeta” Haedo volvió al aire en LT7 y habló sobre su estado de salud, su recuperación y la situación política del peronismo en Corrientes.</p>
+        <blockquote class="rx-quote">Estoy bien, recuperándome, fue un susto grande pero gracias a Dios ya estamos de vuelta.</blockquote>
+        <p>Durante la entrevista, Haedo agradeció el acompañamiento recibido y destacó el apoyo de su entorno, mientras retomaba su participación en el espacio radial.</p>
+        <h2>El estado del PJ en Corrientes</h2>
+        <p>El dirigente también se refirió a la situación actual del Partido Justicialista, señalando la necesidad de reorganización y mayor presencia política.</p>
+        <blockquote class="rx-quote">No podemos estar conducidos por alguien que no está, que no figura, que no se hace presente.</blockquote>
+        <p>En ese sentido, cuestionó la falta de conducción activa y remarcó la importancia de una estructura partidaria con liderazgo visible y compromiso territorial.</p>
+        <h2>Relación con el escenario nacional</h2>
+        <p>Consultado sobre el contexto nacional, Haedo mencionó la figura de Axel Kicillof y la necesidad de articular con liderazgos que representen una alternativa política clara.</p>
+        <blockquote class="rx-quote">Tiene que haber conducción real, alguien que esté, que se haga cargo y marque un rumbo.</blockquote>
+        <h2>Una nueva etapa</h2>
+        <p>En el tramo final, Haedo destacó el trabajo en desarrollo junto a su hijo en el proyecto Qué Se Dice (QSD), al que definió como una nueva forma de periodismo digital.</p>
+        <blockquote class="rx-quote">Estamos trabajando en algo nuevo, una forma distinta de hacer periodismo digital, más directo y conectado con la realidad.</blockquote>
+      </div>
+    </article>
   </main>
-
-  <script>
-    const articleEl = document.querySelector('[data-article]');
-    const emptyEl = document.querySelector('[data-empty]');
-
-    function escapeHtml(value) {
-      return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function renderBody(blocks) {
-      if (!Array.isArray(blocks)) return '';
-      return blocks.map((block) => {
-        if (!block || !block.type) return '';
-        const content = escapeHtml(block.content || '');
-        if (block.type === 'subheading') {
-          return `<h2>${content}</h2>`;
-        }
-        if (block.type === 'quote') {
-          return `<blockquote class="rx-quote">${content}</blockquote>`;
-        }
-        return `<p>${content}</p>`;
-      }).join('');
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const slug = params.get('slug');
-
-    if (!slug) {
-      emptyEl.style.display = 'block';
-    } else {
-      fetch(`/redaccion/${encodeURIComponent(slug)}.json`, { cache: 'no-store' })
-        .then((res) => res.ok ? res.json() : null)
-        .then((data) => {
-          if (!data) {
-            emptyEl.style.display = 'block';
-            return;
-          }
-          const imageHtml = data.image ? `
-            <div class="rx-hero-image">
-              <img src="${escapeHtml(data.image)}" alt="" loading="lazy" decoding="async" />
-            </div>
-          ` : '';
-          const metaParts = [data.category, data.author, data.published_at || data.date].filter(Boolean);
-
-          articleEl.innerHTML = `
-            ${imageHtml}
-            <div class="rx-meta">${metaParts.map(escapeHtml).join(' · ')}</div>
-            <h2 class="rx-hero-title">${escapeHtml(data.title)}</h2>
-            ${data.excerpt ? `<p>${escapeHtml(data.excerpt)}</p>` : ''}
-            <div class="rx-body">${renderBody(data.body)}</div>
-          `;
-        })
-        .catch(() => {
-          emptyEl.style.display = 'block';
-        });
-    }
-  </script>
 </body>
 </html>
