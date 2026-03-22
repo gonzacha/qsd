@@ -16,3 +16,5 @@ nordia-qa-main/
 .env.*
 
 .venv/
+
+/public/
