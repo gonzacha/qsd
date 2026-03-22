@@ -14,3 +14,5 @@ nordia-qa-main/
 
 .env.local
 .env.*
+
+.venv/
