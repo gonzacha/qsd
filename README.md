@@ -7,7 +7,7 @@ Proyecto editorial independiente enfocado en noticias, tendencias y conversació
 ---
 
 ## 🌐 Sitio
-https://quesedice.com.ar
+https://www.quesedice.com.ar
 
 ## ⚙️ Stack
 - Static HTML

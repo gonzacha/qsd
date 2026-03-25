@@ -13,6 +13,16 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "quesedice.com.ar" }
+      ],
+      "destination": "https://www.quesedice.com.ar/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/story/:id", "destination": "/api/story?id=:id" },

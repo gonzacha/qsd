@@ -2,7 +2,7 @@ import '../lib/resolve-story-image.js';
 
 export const config = { runtime: 'edge' };
 
-const SITE_URL = 'https://quesedice.com.ar';
+const SITE_URL = 'https://www.quesedice.com.ar';
 const STORIES_LIMIT = 120;
 const resolveStoryImage = globalThis.resolveStoryImage || (async () => '');
 

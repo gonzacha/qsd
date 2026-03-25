@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://quesedice.com.ar/sitemap.xml
+Sitemap: https://www.quesedice.com.ar/sitemap.xml

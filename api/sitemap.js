@@ -1,7 +1,8 @@
 export const config = { runtime: 'edge' };
 
-const SITE_URL = 'https://quesedice.com.ar';
+const SITE_URL = 'https://www.quesedice.com.ar';
 const STORIES_LIMIT = 120;
+const URL_CHECK_TIMEOUT_MS = 5000;
 
 function normalizeUrl(raw) {
   try {
@@ -52,6 +53,33 @@ async function fetchStories(origin) {
   return Array.isArray(data.items) ? data.items : [];
 }
 
+async function isUrlLive(url) {
+  let headStatus = null;
+  try {
+    const headRes = await fetch(url, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(URL_CHECK_TIMEOUT_MS),
+    });
+    headStatus = headRes.status;
+    if (headStatus === 200) return true;
+  } catch {
+    headStatus = null;
+  }
+
+  if (headStatus && headStatus !== 405 && headStatus !== 501) return false;
+
+  try {
+    const getRes = await fetch(url, {
+      method: 'GET',
+      headers: { 'Range': 'bytes=0-0' },
+      signal: AbortSignal.timeout(URL_CHECK_TIMEOUT_MS),
+    });
+    return getRes.status === 200 || getRes.status === 206;
+  } catch {
+    return false;
+  }
+}
+
 function escapeXml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -85,8 +113,10 @@ export default async function handler(req) {
     stories.map(async item => {
       const storyId = await buildStoryId(item.url || item.link || '');
       if (!storyId) return null;
+      const loc = `${SITE_URL}/story/${storyId}`;
+      if (!(await isUrlLive(loc))) return null;
       return {
-        loc: `${SITE_URL}/story/${storyId}`,
+        loc,
         changefreq: 'daily',
         priority: '0.6',
         lastmod: formatLastmod(item.publishedAt || item.pubDate),
