@@ -230,6 +230,23 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
       border-radius: 999px;
       font-weight: 600;
     }
+    .story-internal-links {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, .08);
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      opacity: .8;
+    }
+    .story-internal-links a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .story-internal-links a:hover {
+      text-decoration: underline;
+    }
     footer {
       margin-top: 32px;
       color: var(--muted);
@@ -253,6 +270,10 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
         : `<p class="desc">${safeDesc}</p>`
     }
     ${safeUrl ? `<a class="cta" href="${safeUrl}" rel="noopener noreferrer" target="_blank">Leer fuente original</a>` : ''}
+    <nav class="story-internal-links" aria-label="Navegación interna">
+      <a href="/">← Volver a portada</a>
+      <a href="/redaccion/">Redacción QSD</a>
+    </nav>
     <footer>
       <div>URL canónica: ${safeCanonical}</div>
     </footer>
