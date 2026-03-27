@@ -15,11 +15,11 @@
   ],
   "redirects": [
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "has": [
         { "type": "host", "value": "quesedice.com.ar" }
       ],
-      "destination": "https://www.quesedice.com.ar/$1",
+      "destination": "https://www.quesedice.com.ar/:path*",
       "permanent": true
     }
   ],
