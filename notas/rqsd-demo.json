@@ -1,0 +1,44 @@
+{
+  "$schema_version": "rqsd-note-v1",
+  "id": "rqsd-20260328T183047-a3f9-demo",
+  "created_at": "2026-03-28T18:30:47.000Z",
+  "updated_at": "2026-03-28T18:30:47.000Z",
+  "published_at": null,
+  "editor": {
+    "name": "Gonzalo",
+    "role": "editor"
+  },
+  "status": "borrador",
+  "source": {
+    "qsd_candidate_id": "demo-001",
+    "original_url": "https://example.com/nota-demo",
+    "original_title": "Nota demo de QSD",
+    "publisher": "example.com",
+    "published_at": "2026-03-28T15:00:00.000Z"
+  },
+  "editorial_content": {
+    "titulo": "Nota demo",
+    "bajada": "Bajada demo para RQSD V0",
+    "cuerpo": [
+      "Primer parrafo de la nota.",
+      "Segundo parrafo con mas contexto."
+    ],
+    "fuentes": [
+      "https://example.com/nota-demo"
+    ]
+  },
+  "workspace": {
+    "observaciones": "",
+    "tags": [
+      "demo",
+      "rqsd"
+    ],
+    "section": "redaccion"
+  },
+  "llm_provenance": {
+    "assistance_used": false,
+    "model_name": "",
+    "suggestion_raw": "",
+    "accepted_by_human": false
+  }
+}

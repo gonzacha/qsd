@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RQSD V0</title>
+    <style>
+      :root {
+        --bg: #0b0d13;
+        --panel: #141821;
+        --panel-soft: #1c2230;
+        --border: #2a3142;
+        --text: #f3f4f6;
+        --muted: #9aa4b2;
+        --accent: #8b5cf6;
+        --accent-soft: rgba(139, 92, 246, 0.16);
+        --shadow: rgba(0, 0, 0, 0.3);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        box-shadow: 0 6px 16px var(--shadow);
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .app {
+        display: flex;
+        height: calc(100vh - 50px);
+      }
+
+      .panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+        border-right: 1px solid var(--border);
+        background: var(--panel);
+        overflow: hidden;
+      }
+
+      .panel:last-child {
+        border-right: none;
+      }
+
+      .panel h2 {
+        margin: 0;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      .panel-left {
+        width: 26%;
+        min-width: 220px;
+        overflow: hidden;
+      }
+
+      .panel-center {
+        width: 48%;
+        min-width: 280px;
+      }
+
+      .panel-right {
+        width: 26%;
+        min-width: 240px;
+        overflow-y: auto;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      button {
+        padding: 8px 12px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+      }
+
+      button:hover {
+        background: #7c3aed;
+        transform: translateY(-1px);
+      }
+
+      button.secondary {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      button.secondary:hover {
+        background: var(--panel-soft);
+        border-color: var(--accent);
+      }
+
+      .status {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .source-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .source-actions a {
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .source-actions a:hover {
+        color: var(--text);
+        border-color: var(--accent);
+      }
+
+      .list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        overflow-y: auto;
+        border-top: 1px solid var(--border);
+        flex: 1;
+      }
+
+      .list li {
+        border-bottom: 1px solid var(--border);
+      }
+
+      .radar-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 12px 10px 12px 14px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        border-left: 4px solid transparent;
+      }
+
+      .radar-item:hover {
+        background: var(--panel-soft);
+      }
+
+      .radar-item.active {
+        background: var(--accent-soft);
+        border-left-color: var(--accent);
+      }
+
+      .radar-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      .radar-meta {
+        display: flex;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        flex-wrap: wrap;
+      }
+
+      .radar-date {
+        color: var(--muted);
+      }
+
+      .radar-empty {
+        padding: 12px 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      iframe {
+        border: 1px solid var(--border);
+        width: 100%;
+        flex: 1;
+        background: var(--panel-soft);
+        border-radius: 12px;
+      }
+
+      label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #0f1320;
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        background: #101627;
+      }
+
+      textarea {
+        min-height: 180px;
+        resize: vertical;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .editor-actions {
+        margin-top: auto;
+      }
+
+      .editor-block {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .preview-block {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #0f1220;
+      }
+
+      .preview-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .preview-deck {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0;
+      }
+
+      .preview-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .preview-placeholder {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      @media (max-width: 900px) {
+        .app {
+          flex-direction: column;
+          height: auto;
+        }
+
+        .panel {
+          width: 100%;
+          min-width: 0;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .panel:last-child {
+          border-bottom: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>RQSD V0</h1>
+    </header>
+
+    <main class="app">
+      <section class="panel panel-left">
+        <h2>Radar</h2>
+        <div class="toolbar">
+          <button id="loadBtn">Cargar</button>
+          <span class="status" id="status">Sin cargar</span>
+        </div>
+        <ul class="list" id="candidates"></ul>
+      </section>
+
+      <section class="panel panel-center">
+        <h2>Fuente</h2>
+        <div class="source-actions">
+          <a id="openSource" href="#" target="_blank" rel="noreferrer">Abrir fuente</a>
+        </div>
+        <iframe id="sourceFrame" title="Fuente" src="about:blank"></iframe>
+      </section>
+
+      <section class="panel panel-right">
+        <h2>Nota</h2>
+        <div class="editor-block">
+          <div class="field">
+            <label for="titulo">Titulo</label>
+            <input id="titulo" type="text" placeholder="Titulo" />
+          </div>
+          <div class="field">
+            <label for="bajada">Bajada</label>
+            <input id="bajada" type="text" placeholder="Bajada" />
+          </div>
+          <div class="field">
+            <label for="cuerpo">Cuerpo</label>
+            <textarea id="cuerpo" placeholder="Un parrafo por linea"></textarea>
+          </div>
+          <div class="editor-actions">
+            <button class="secondary" id="saveBtn">Guardar (mock)</button>
+          </div>
+        </div>
+        <div class="preview-block" id="preview">
+          <h3 class="preview-title" id="previewTitle">Titulo de la nota</h3>
+          <p class="preview-deck" id="previewDeck">Bajada o resumen corto.</p>
+          <div class="preview-body" id="previewBody">
+            <p class="preview-placeholder">El cuerpo aparece aca en tiempo real.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const loadBtn = document.getElementById('loadBtn');
+      const statusEl = document.getElementById('status');
+      const candidatesEl = document.getElementById('candidates');
+      const sourceFrame = document.getElementById('sourceFrame');
+      const openSource = document.getElementById('openSource');
+      const tituloEl = document.getElementById('titulo');
+      const bajadaEl = document.getElementById('bajada');
+      const cuerpoEl = document.getElementById('cuerpo');
+      const previewTitle = document.getElementById('previewTitle');
+      const previewDeck = document.getElementById('previewDeck');
+      const previewBody = document.getElementById('previewBody');
+      const saveBtn = document.getElementById('saveBtn');
+
+      let candidates = [];
+      let current = null;
+
+      function mapCurrentToSource(item) {
+        return {
+          qsd_candidate_id: item.id || item.guid || '',
+          original_url: item.link || '',
+          original_title: item.title || '',
+          publisher: item.source || item.publisher || '',
+          published_at: item.pubDate || item.published_at || null,
+        };
+      }
+
+      function compactTimestamp(iso) {
+        return iso.replace(/[-:]/g, '').replace(/\..*$/, '');
+      }
+
+      function slugify(value) {
+        const cleaned = String(value || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        return cleaned.slice(0, 32) || 'nota';
+      }
+
+      function formatDate(value) {
+        if (!value) return '';
+        const date = typeof value === 'number' ? new Date(value) : new Date(value);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleDateString('es-AR', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        });
+      }
+
+      function getItemDate(item) {
+        return item.pubDate || item.published_at || item.timestamp || '';
+      }
+
+      function renderCandidates() {
+        candidatesEl.innerHTML = '';
+        if (!candidates.length) {
+          const li = document.createElement('li');
+          const empty = document.createElement('div');
+          empty.className = 'radar-empty';
+          empty.textContent = 'Radar sin items. Proba recargar.';
+          li.appendChild(empty);
+          candidatesEl.appendChild(li);
+          return;
+        }
+
+        candidates.forEach((item, index) => {
+          const li = document.createElement('li');
+          const card = document.createElement('div');
+          card.className = 'radar-item';
+          if (current === item) {
+            card.classList.add('active');
+          }
+
+          const title = document.createElement('div');
+          title.className = 'radar-title';
+          title.textContent = item.title || '(sin titulo)';
+
+          const meta = document.createElement('div');
+          meta.className = 'radar-meta';
+
+          const source = document.createElement('span');
+          source.textContent = item.source || item.publisher || 'Fuente';
+
+          const dateText = formatDate(getItemDate(item));
+          if (dateText) {
+            const date = document.createElement('span');
+            date.className = 'radar-date';
+            date.textContent = dateText;
+            meta.appendChild(date);
+          }
+
+          meta.prepend(source);
+
+          card.addEventListener('click', () => {
+            current = item;
+            sourceFrame.src = item.link || 'about:blank';
+            openSource.href = item.link || '#';
+            if (!tituloEl.value.trim() && item.title) {
+              tituloEl.value = item.title;
+              updatePreview();
+            }
+            renderCandidates();
+          });
+
+          card.appendChild(title);
+          card.appendChild(meta);
+          li.appendChild(card);
+          candidatesEl.appendChild(li);
+        });
+      }
+
+      async function loadCandidates() {
+        statusEl.textContent = 'Cargando...';
+        candidatesEl.innerHTML = '';
+        if (window.location.protocol === 'file:') {
+          statusEl.textContent = 'Abrir desde servidor local';
+          const li = document.createElement('li');
+          const msg = document.createElement('div');
+          msg.className = 'radar-empty';
+          msg.textContent = 'RQSD debe abrirse desde el server local del proyecto, no desde file://';
+          li.appendChild(msg);
+          candidatesEl.appendChild(li);
+          return;
+        }
+        try {
+          let data = null;
+          let rankedItems = [];
+          try {
+            const rankResponse = await fetch('/api/rank?limit=60');
+            if (rankResponse.ok) {
+              data = await rankResponse.json();
+              rankedItems = Array.isArray(data.items) ? data.items : [];
+            }
+          } catch (err) {}
+
+          if (!rankedItems.length) {
+            const response = await fetch('/api/feeds');
+            if (!response.ok) {
+              throw new Error('Error al cargar');
+            }
+            const feedData = await response.json();
+            rankedItems = Array.isArray(feedData.items) ? feedData.items : [];
+          }
+
+          candidates = rankedItems
+            .filter(item => item && item.title && item.link)
+            .sort((a, b) => {
+              const aScore = a.editorial_score || a.score || a.sources_count || 0;
+              const bScore = b.editorial_score || b.score || b.sources_count || 0;
+              if (bScore !== aScore) return bScore - aScore;
+              const aTime = new Date(getItemDate(a)).getTime() || 0;
+              const bTime = new Date(getItemDate(b)).getTime() || 0;
+              return bTime - aTime;
+            })
+            .slice(0, 50);
+
+          current = null;
+          openSource.href = '#';
+          statusEl.textContent = candidates.length ? `Total: ${candidates.length}` : 'Sin resultados';
+          renderCandidates();
+        } catch (err) {
+          statusEl.textContent = 'Error de red/API';
+          const li = document.createElement('li');
+          const msg = document.createElement('div');
+          msg.className = 'radar-empty';
+          msg.textContent = 'No se pudo cargar el radar. Revisar server local y /api/rank.';
+          li.appendChild(msg);
+          candidatesEl.appendChild(li);
+        }
+      }
+
+      function updatePreview() {
+        const titleValue = tituloEl.value.trim();
+        const deckValue = bajadaEl.value.trim();
+        const bodyLines = cuerpoEl.value
+          .split(/\n+/)
+          .map(line => line.trim())
+          .filter(Boolean);
+
+        previewTitle.textContent = titleValue || 'Titulo de la nota';
+        previewDeck.textContent = deckValue || 'Bajada o resumen corto.';
+        previewBody.innerHTML = '';
+
+        if (!bodyLines.length) {
+          const placeholder = document.createElement('p');
+          placeholder.className = 'preview-placeholder';
+          placeholder.textContent = 'El cuerpo aparece aca en tiempo real.';
+          previewBody.appendChild(placeholder);
+          return;
+        }
+
+        bodyLines.forEach(line => {
+          const p = document.createElement('p');
+          p.textContent = line;
+          previewBody.appendChild(p);
+        });
+      }
+
+      function save() {
+        if (!current) {
+          alert('Selecciona una nota del radar');
+          return;
+        }
+
+        const now = new Date().toISOString();
+        const rand = Math.random().toString(36).slice(2, 6);
+        const slug = slugify(tituloEl.value);
+        const timestampCompacto = compactTimestamp(now);
+        const source = mapCurrentToSource(current);
+        const cuerpo = cuerpoEl.value
+          .split(/\n+/)
+          .map(line => line.trim())
+          .filter(Boolean);
+
+        const payload = {
+          $schema_version: 'rqsd-note-v1',
+          id: `rqsd-${timestampCompacto}-${rand}-${slug}`,
+          created_at: now,
+          updated_at: now,
+          published_at: null,
+          editor: {
+            name: 'Gonzalo',
+            role: 'editor',
+          },
+          status: 'borrador',
+          source,
+          editorial_content: {
+            titulo: tituloEl.value.trim(),
+            bajada: bajadaEl.value.trim(),
+            cuerpo,
+            fuentes: source.original_url ? [source.original_url] : [],
+          },
+          workspace: {
+            observaciones: '',
+            tags: [],
+            section: 'redaccion',
+          },
+          llm_provenance: {
+            assistance_used: false,
+            model_name: '',
+            suggestion_raw: '',
+            accepted_by_human: false,
+          },
+        };
+
+        console.log(JSON.stringify(payload, null, 2));
+        alert('Guardado (mock)');
+      }
+
+      loadBtn.addEventListener('click', loadCandidates);
+      saveBtn.addEventListener('click', save);
+      tituloEl.addEventListener('input', updatePreview);
+      bajadaEl.addEventListener('input', updatePreview);
+      cuerpoEl.addEventListener('input', updatePreview);
+      updatePreview();
+    </script>
+  </body>
+</html>
