@@ -8,6 +8,9 @@
 
 export const config = { runtime: 'edge' };
 
+// ── Recency Cap ───────────────────────────────────────────────
+const MAX_AGE_HOURS = 24;
+
 // ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
 const DICT_CAPITAL = [
   'polich',
@@ -434,12 +437,12 @@ function qualityEnrich(items) {
 
 // ── Factos Score ──────────────────────────────────────────────
 function parseHoursSince(publishedAt) {
-  if (!publishedAt) return 24;
+  if (!publishedAt) return null;
   try {
     const t = new Date(publishedAt).getTime();
-    if (isNaN(t)) return 24;
+    if (isNaN(t)) return null;
     return Math.max(0, (Date.now() - t) / 3_600_000);
-  } catch { return 24; }
+  } catch { return null; }
 }
 
 function convergenceScore(sources_count, agreement_ratio, contradiction_flag, hours) {
@@ -556,6 +559,13 @@ export default async function handler(req) {
       ...item,
       edition: item.edition || item.category || cat || 'unknown',
     }));
+
+    // Hard recency cap: discard invalid/missing dates and >24h before ranking
+    items = items.filter(item => {
+      const hours = parseHoursSince(item.publishedAt);
+      if (!Number.isFinite(hours)) return false;
+      return hours <= MAX_AGE_HOURS;
+    });
 
     // Quality enrich (cluster before dedup so sources_count reflects raw pool)
     const enriched = qualityEnrich(items);
