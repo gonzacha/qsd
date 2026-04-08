@@ -560,18 +560,18 @@ export default async function handler(req) {
       edition: item.edition || item.category || cat || 'unknown',
     }));
 
+    // Quality enrich (cluster before dedup so sources_count reflects raw pool)
+    const enriched = qualityEnrich(items);
+
     // Hard recency cap: discard invalid/missing dates and >24h before ranking
-    items = items.filter(item => {
+    const recencyFiltered = enriched.filter(item => {
       const hours = parseHoursSince(item.publishedAt);
       if (!Number.isFinite(hours)) return false;
       return hours <= MAX_AGE_HOURS;
     });
 
-    // Quality enrich (cluster before dedup so sources_count reflects raw pool)
-    const enriched = qualityEnrich(items);
-
     // Deduplicate (preserves per-item sources_count already set)
-    const deduped = deduplicateItems(enriched);
+    const deduped = deduplicateItems(recencyFiltered);
 
     // Score and rank
     let ranked = rankItems(deduped);
