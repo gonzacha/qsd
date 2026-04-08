@@ -10,7 +10,7 @@ export const config = { runtime: 'edge' };
 
 // ── Recency Cap ───────────────────────────────────────────────
 const MAX_AGE_HOURS = 24;
-const MIN_CORRIENTES = 6;
+const MIN_CORRIENTES = 20;
 
 // ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
 const DICT_CAPITAL = [
