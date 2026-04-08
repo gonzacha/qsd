@@ -10,6 +10,7 @@ export const config = { runtime: 'edge' };
 
 // ── Recency Cap ───────────────────────────────────────────────
 const MAX_AGE_HOURS = 24;
+const MIN_CORRIENTES = 6;
 
 // ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
 const DICT_CAPITAL = [
@@ -138,6 +139,7 @@ const FEED_SOURCES = [
   { url: 'https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es', category: 'portada' },
   { url: 'https://news.google.com/rss/search?q=Argentina&hl=es-419&gl=AR&ceid=AR:es', category: 'argentina' },
   { url: 'https://news.google.com/rss/search?q=Corrientes+Argentina&hl=es-419&gl=AR&ceid=AR:es', category: 'corrientes' },
+  { url: 'https://news.google.com/rss/search?q=NEA+Nordeste+Argentino&hl=es-419&gl=AR&ceid=AR:es', category: 'corrientes' },
   { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es', category: 'mundo' },
   { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp1ZEdvU0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es', category: 'deportes' },
   { url: 'https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtVnpHZ0pCVWlnQVAB?hl=es-419&gl=AR&ceid=AR:es', category: 'economia' },
@@ -455,6 +457,13 @@ function convergenceScore(sources_count, agreement_ratio, contradiction_flag, ho
   return Math.max(0, Math.min(1, (base * 0.4) + (ar * 0.4) + (freshness * 0.2) - penalty));
 }
 
+function isLocalItem(item) {
+  const text = normalizeText(`${item.title} ${item.description || ''}`);
+  return countHits(text, DICT_CORRIENTES_GENERAL_NORM) >= 1 ||
+         countHits(text, DICT_CAPITAL_NORM) >= 1 ||
+         countHits(text, DICT_PROVINCIA_NORM) >= 1;
+}
+
 // ── Editorial Rank ────────────────────────────────────────────
 function rankItems(enriched) {
   const scored = enriched.map(item => {
@@ -578,7 +587,25 @@ export default async function handler(req) {
 
     // Filter and limit
     if (minScore > 0) ranked = ranked.filter(r => r.editorial_score >= minScore);
-    ranked = ranked.slice(0, limit);
+    const applyLocalQuota = !cat || cat === 'portada';
+    if (applyLocalQuota && ranked.length > 0) {
+      const picked = [];
+      const pickedUrls = new Set();
+      for (const item of ranked) {
+        if (!isLocalItem(item)) continue;
+        picked.push(item);
+        pickedUrls.add(item.url);
+        if (picked.length >= MIN_CORRIENTES) break;
+      }
+      for (const item of ranked) {
+        if (pickedUrls.has(item.url)) continue;
+        picked.push(item);
+        if (picked.length >= limit) break;
+      }
+      ranked = picked;
+    } else {
+      ranked = ranked.slice(0, limit);
+    }
 
     const generatedAt = new Date().toISOString();
 
