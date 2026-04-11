@@ -382,3 +382,5 @@
 
 {"ts":"2026-04-10T19:04:53Z","run_id":"gh-24259332608","git_sha":"b442d97b72a1fcb4b8726cd63a9369a163e9532a","status":"PASS","exit_code":0,"layers":{"L1":"FAIL","L2":"PASS","L3":"PASS","L4":"PASS"},"artifacts":{"result":"tmp/qa_result.json","log":"tmp/qa_output.log"},"run_url":"https://github.com/gonzacha/qsd/actions/runs/24259332608"}
 
+{"ts":"2026-04-11T02:46:30Z","run_id":"gh-24272892743","git_sha":"b01e5dd5978d02663dbceebc452db030d0edb5c5","status":"FAIL","exit_code":1,"layers":{"L1":"FAIL","L2":"PASS","L3":"PASS","L4":"PASS"},"artifacts":{"result":"tmp/qa_result.json","log":"tmp/qa_output.log"},"run_url":"https://github.com/gonzacha/qsd/actions/runs/24272892743"}
+
