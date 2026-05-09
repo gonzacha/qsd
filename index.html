@@ -527,6 +527,9 @@
       max-width: var(--max-width);
       margin: 0 auto;
       padding: var(--space-xl) var(--space-lg);
+      background: #f4efe6;
+      border-radius: 16px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2);
     }
 
     .content-shell {
@@ -1582,7 +1585,7 @@
         <div class="topbar-date" id="currentDate"></div>
         <div class="topbar-live">
           <span class="pulse-dot"></span>
-          En vivo — Actualización automática
+          EN VIVO • Actualización automática
         </div>
         <div class="topbar-actions" id="installArea">
           <button class="tool-btn" id="savedBtn" type="button">Guardados</button>
@@ -1702,6 +1705,7 @@
     let currentCategory = 'portada';
     let categories = [];
     let refreshTimer = null;
+    let feedRequestSeq = 0;
     const debugUi = new URLSearchParams(window.location.search).get('debug_ui') === '1';
 
     // ── Date Formatting ──
@@ -2813,6 +2817,7 @@
     // ── Data Loading ──
     async function loadFeed(category) {
       const main = document.getElementById('mainContent');
+      const requestSeq = ++feedRequestSeq;
       main.innerHTML = `
         <div class="loading-state">
           <div class="loading-spinner"></div>
@@ -2824,7 +2829,7 @@
         let endpoint = '';
 
         if (category === 'portada') {
-          const rankRes = await fetch('/api/rank?limit=30');
+          const rankRes = await fetch('/api/rank?limit=30', { cache: 'no-store' });
           if (rankRes.ok) {
             const payload = await rankRes.json();
             const rankItems = (payload.items || []).map(item => ({
@@ -2838,6 +2843,16 @@
               sources_count: item.sources_count,
               hours_since_publish: item.hours_since_publish,
             }));
+            const freshRankItems = rankItems.filter(item => {
+              if (!item.pubDate) return false;
+              const ts = new Date(item.pubDate).getTime();
+              if (!Number.isFinite(ts)) return false;
+              const ageMs = Date.now() - ts;
+              return ageMs >= 0 && ageMs <= (24 * 60 * 60 * 1000);
+            });
+            if (freshRankItems.length === 0) {
+              throw new Error('No hay datos frescos para portada');
+            }
             data = { items: rankItems, trending: [], categories };
             endpoint = 'rank';
             const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
@@ -2855,12 +2870,19 @@
           data = await res.json();
           endpoint = 'feeds';
         }
+        if (requestSeq !== feedRequestSeq) return;
 
         // Store categories for nav
         if (data.categories && categories.length === 0) {
           categories = data.categories;
           renderNav(categories);
         }
+
+        const safeItems = Array.isArray(data.items) ? data.items.filter(isRenderableItem) : [];
+        if (safeItems.length === 0) {
+          throw new Error('No hay datos validos para renderizar');
+        }
+        data.items = safeItems;
 
         renderTrending(data.trending);
         await renderFeed(data);
@@ -2872,6 +2894,7 @@
           count: data.items ? data.items.length : 0,
         }));
       } catch (err) {
+        if (requestSeq !== feedRequestSeq) return;
         console.error('Feed load error:', err);
         main.innerHTML = `
           <div class="loading-state">

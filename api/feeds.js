@@ -567,27 +567,16 @@ export default async function handler(req) {
     allItems = deduplicateItems(allItems);
 
     // ── Age Filter ─────────────────────────────────────────────────
-    const MAX_AGE_HOURS = 72; // 3 días
+    const MAX_AGE_HOURS = 24;
     const now = Date.now();
 
     allItems = allItems.filter(item => {
-      // Keep items without timestamp (edge case)
-      if (!item.timestamp || item.timestamp === 0) {
-        console.warn(`[AGE_FILTER] Item sin timestamp: ${item.title?.substring(0, 50)}`);
-        return true;
-      }
+      if (!Number.isFinite(item.timestamp) || item.timestamp <= 0) return false;
 
       const ageHours = (now - item.timestamp) / (1000 * 60 * 60);
-
-      if (ageHours > MAX_AGE_HOURS) {
-        console.log(`[AGE_FILTER] REJECT age=${ageHours.toFixed(1)}h title="${item.title?.substring(0, 50)}"`);
-        return false;
-      }
-
-      return true;
+      if (!Number.isFinite(ageHours) || ageHours < 0) return false;
+      return ageHours <= MAX_AGE_HOURS;
     });
-
-    console.log(`[AGE_FILTER] Kept ${allItems.length} items within ${MAX_AGE_HOURS}h window`);
 
     // Extract trending from all items
     const trending = extractTrending(allItems);

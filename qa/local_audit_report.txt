@@ -1,0 +1,232 @@
+QSD Local Audit Report
+generated_at_utc: 2026-05-07T13:40:02Z
+base_url: http://localhost:3000
+
+=== ENDPOINT / ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.022832
+size_download_bytes: 103773
+expected_kind: html
+content_type_mismatch: no
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/feeds ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.014737
+size_download_bytes: 103773
+expected_kind: json
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/rank?limit=5 ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.010596
+size_download_bytes: 103773
+expected_kind: json
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/story?id=test ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.011502
+size_download_bytes: 103773
+expected_kind: json
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /sitemap.xml ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.010618
+size_download_bytes: 103773
+expected_kind: xml
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/r ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.007797
+size_download_bytes: 103773
+expected_kind: redirect
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/resolve ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.012215
+size_download_bytes: 103773
+expected_kind: json
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/share ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.010649
+size_download_bytes: 103773
+expected_kind: html
+content_type_mismatch: no
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/story-image ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.018492
+size_download_bytes: 103773
+expected_kind: json
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/thumb ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.010725
+size_download_bytes: 103773
+expected_kind: html
+content_type_mismatch: no
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/notas ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.010682
+size_download_bytes: 103773
+expected_kind: json
+content_type_mismatch: yes
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+
+=== ENDPOINT /api/og ===
+curl_exit: 0
+status: 200
+content_type: text/html; charset=utf-8
+time_total_s: 0.011734
+size_download_bytes: 103773
+expected_kind: html
+content_type_mismatch: no
+html_or_notfound_signature: yes
+-- response_head --
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qué Se Dice — Noticias de Corrientes, Argentina y el Mundo</title>
+  <meta name="description" content="Noticias de Corrientes, Argentina y el mundo en un solo lugar. Cobertura automática con actualización constante.">
+  <meta name="keywords" content="noticias, Corrientes, Argentina, mundo, deportes, economía, tecnología, espectáculos">
+

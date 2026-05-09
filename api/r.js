@@ -7,10 +7,44 @@
 
 export const config = { runtime: 'edge' };
 
+const ALLOWED_HOSTS = new Set([
+  'news.google.com',
+  'google.com',
+  'www.google.com',
+  'quesedice.com.ar',
+  'www.quesedice.com.ar',
+  'qsd-seven.vercel.app',
+]);
+
+const ALLOWED_SUFFIXES = [
+  '.com.ar',
+  '.com',
+  '.org',
+  '.net',
+  '.gob.ar',
+  '.gov.ar',
+  '.tv',
+  '.es',
+  '.co',
+  '.io',
+  '.news',
+];
+
 function isHttpUrl(raw) {
   try {
     const url = new URL(raw);
     return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedHost(raw) {
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.toLowerCase();
+    if (ALLOWED_HOSTS.has(host)) return true;
+    return ALLOWED_SUFFIXES.some(suffix => host.endsWith(suffix));
   } catch {
     return false;
   }
@@ -44,7 +78,7 @@ export default async function handler(req) {
   const { searchParams } = new URL(req.url);
   const rawUrl = searchParams.get('u');
 
-  if (!rawUrl || !isHttpUrl(rawUrl)) {
+  if (!rawUrl || !isHttpUrl(rawUrl) || !isAllowedHost(rawUrl)) {
     return new Response('Bad Request', {
       status: 400,
       headers: { 'Cache-Control': 'no-store' },
@@ -52,6 +86,12 @@ export default async function handler(req) {
   }
 
   const finalUrl = await resolveFinalUrl(rawUrl);
+  if (!isHttpUrl(finalUrl) || !isAllowedHost(finalUrl)) {
+    return new Response('Bad Request', {
+      status: 400,
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  }
   return new Response(null, {
     status: 302,
     headers: {

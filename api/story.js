@@ -4,7 +4,10 @@ export const config = { runtime: 'edge' };
 
 const SITE_URL = 'https://www.quesedice.com.ar';
 const STORIES_LIMIT = 120;
+const STORIES_CACHE_TTL_MS = 60 * 1000;
 const resolveStoryImage = globalThis.resolveStoryImage || (async () => '');
+const storyCache = globalThis.__qsdStoryCache || { expiresAt: 0, items: [], pending: null };
+globalThis.__qsdStoryCache = storyCache;
 
 function normalizeUrl(raw) {
   try {
@@ -283,12 +286,31 @@ function buildHtml({ title, description, source, publishedAt, url, category, can
 }
 
 async function fetchStories(origin) {
+  const now = Date.now();
+  if (storyCache.expiresAt > now && Array.isArray(storyCache.items) && storyCache.items.length > 0) {
+    return storyCache.items;
+  }
+  if (storyCache.pending) {
+    return storyCache.pending;
+  }
+
+  storyCache.pending = (async () => {
   const res = await fetch(`${origin}/api/rank?limit=${STORIES_LIMIT}`, {
     headers: { 'Accept': 'application/json' },
   });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return Array.isArray(data.items) ? data.items : [];
+    if (!res.ok) return [];
+    const data = await res.json();
+    const items = Array.isArray(data.items) ? data.items : [];
+    storyCache.items = items;
+    storyCache.expiresAt = Date.now() + STORIES_CACHE_TTL_MS;
+    return items;
+  })();
+
+  try {
+    return await storyCache.pending;
+  } finally {
+    storyCache.pending = null;
+  }
 }
 
 export default async function handler(req) {

@@ -1,0 +1,50 @@
+QSD_RUNTIME_AUDIT_REPORT
+generated_at_utc: 2026-05-09T12:10:40Z
+base_url: http://localhost:3000
+smoke_mode: 1
+
+=== environment (local) ===
+ts_utc: 2026-05-09T12:10:40Z
+base_url: http://localhost:3000
+
+-- processes matching vercel dev --
+  23079 gonza    rg [v]ercel dev|[n]px vercel dev|[n]pm exec vercel
+
+-- listening TCP (common dev ports) --
+(no matches or ss -p needs privileges)
+
+vercel_dev_process_lines: 0
+
+=== / ===
+http_code=000 content_type= size=0
+-- head --
+
+=== /index.html ===
+http_code=000 content_type= size=0
+-- head --
+
+=== /api/feeds ===
+http_code=000 content_type= size=0
+-- head --
+
+=== /api/rank?limit=5 ===
+http_code=000 content_type= size=0
+
+=== /api/story?id=test ===
+http_code=000 content_type= size=0
+-- body --
+
+
+=== /sitemap.xml ===
+http_code=000 content_type= size=0
+-- head --
+
+=== summary ===
+failures: 6
+warnings: 0
+FAIL: / curl error (exit 7)
+FAIL: /index.html curl error (exit 7)
+FAIL: /api/feeds curl error (exit 7) curl: (7) Failed to connect to localhost port 3000 after 0 ms: Couldn't connect to server 
+FAIL: /api/rank?limit=5 curl error (exit 7) curl: (7) Failed to connect to localhost port 3000 after 0 ms: Couldn't connect to server 
+FAIL: /api/story?id=test curl error (exit 7)
+FAIL: /sitemap.xml curl error (exit 7)

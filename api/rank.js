@@ -439,11 +439,22 @@ function qualityEnrich(items) {
 
 // ── Factos Score ──────────────────────────────────────────────
 function parseHoursSince(publishedAt) {
-  if (!publishedAt) return null;
+  const ts = parsePublishedTimestamp(publishedAt);
+  if (!Number.isFinite(ts)) return null;
+  return Math.max(0, (Date.now() - ts) / 3_600_000);
+}
+
+function parsePublishedTimestamp(...values) {
   try {
-    const t = new Date(publishedAt).getTime();
-    if (isNaN(t)) return null;
-    return Math.max(0, (Date.now() - t) / 3_600_000);
+    for (const value of values) {
+      if (!value) continue;
+      if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+        return value;
+      }
+      const ts = new Date(value).getTime();
+      if (Number.isFinite(ts) && ts > 0) return ts;
+    }
+    return null;
   } catch { return null; }
 }
 
@@ -467,7 +478,9 @@ function isLocalItem(item) {
 // ── Editorial Rank ────────────────────────────────────────────
 function rankItems(enriched) {
   const scored = enriched.map(item => {
-    const hours_since_publish = parseHoursSince(item.publishedAt);
+    const publishedAt = item.publishedAt || item.pubDate || null;
+    const published_ts = parsePublishedTimestamp(item.publishedAt, item.pubDate, item.timestamp);
+    const hours_since_publish = parseHoursSince(publishedAt);
     const se = item.sources_effective ?? Math.min(item.sources_count, 5);
     const seWeighted = Number.isFinite(item.weighted_sources_effective)
       ? item.weighted_sources_effective
@@ -505,12 +518,19 @@ function rankItems(enriched) {
       title: item.title,
       description: item.description || null,
       url: item.link,
-      publishedAt: item.publishedAt,
+      publishedAt,
+      published_ts,
       source: item.source,
     };
   });
 
-  scored.sort((a, b) => b.editorial_score - a.editorial_score);
+  scored.sort((a, b) => {
+    const scoreDiff = b.editorial_score - a.editorial_score;
+    if (scoreDiff !== 0) return scoreDiff;
+    const bt = Number.isFinite(b.published_ts) ? b.published_ts : 0;
+    const at = Number.isFinite(a.published_ts) ? a.published_ts : 0;
+    return bt - at;
+  });
   return scored.map((item, i) => ({ rank: i + 1, ...item }));
 }
 

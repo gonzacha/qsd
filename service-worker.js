@@ -1,9 +1,8 @@
-const CACHE = 'qsd-pwa-v0.0.2';
+const CACHE = 'qsd-pwa-v0.0.3';
 const PRECACHE_URLS = [
   '/',
   '/offline.html',
   '/manifest.webmanifest',
-  '/api/rank',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/Logo_qsd.png',
@@ -40,6 +39,11 @@ self.addEventListener('fetch', event => {
   const url = new URL(req.url);
   const isSameOrigin = url.origin === self.location.origin;
 
+  if (isSameOrigin && url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
       try {
@@ -54,32 +58,6 @@ self.addEventListener('fetch', event => {
         if (offline) return offline;
         return new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
       }
-    })());
-    return;
-  }
-
-  if (isSameOrigin && url.pathname === '/api/rank') {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const cached = await cache.match(req);
-      const fetchPromise = fetch(req)
-        .then(res => {
-          if (res && res.ok) cache.put(req, res.clone());
-          return res;
-        })
-        .catch(() => null);
-
-      if (cached) {
-        event.waitUntil(fetchPromise);
-        return cached;
-      }
-
-      const res = await fetchPromise;
-      if (res) return res;
-      return new Response(
-        JSON.stringify({ generatedAt: new Date().toISOString(), items: [] }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      );
     })());
     return;
   }
