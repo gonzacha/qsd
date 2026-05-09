@@ -1,6 +1,6 @@
 # QSD runtime findings (auto-generated)
 
-**Generated (UTC):** 2026-05-09T12:10:40Z  
+**Generated (UTC):** 2026-05-09T19:22:33Z  
 **Base URL:** `http://localhost:3000`  
 **Tooling:** `scripts/runtime-audit.sh` (curl + python3 JSON).  
 
@@ -27,16 +27,11 @@ See `qa/runtime_report.txt` section `environment (local)`.
 
 ## Deterministic results
 
-- **Overall:** `FAIL` — at least one FAIL below; do not treat as green build.
+- **Overall:** `PASS` (no FAIL/WARN lines).
 
 ### Issues (ordered)
 
-- `FAIL: / curl error (exit 7)`
-- `FAIL: /index.html curl error (exit 7)`
-- `FAIL: /api/feeds curl error (exit 7) curl: (7) Failed to connect to localhost port 3000 after 0 ms: Couldn't connect to server `
-- `FAIL: /api/rank?limit=5 curl error (exit 7) curl: (7) Failed to connect to localhost port 3000 after 0 ms: Couldn't connect to server `
-- `FAIL: /api/story?id=test curl error (exit 7)`
-- `FAIL: /sitemap.xml curl error (exit 7)`
+_No FAIL/WARN records._
 
 ## Risk priority (how to read)
 
