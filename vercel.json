@@ -7,6 +7,13 @@
       ]
     },
     {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+      ]
+    },
+    {
       "source": "/(.*).html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
@@ -41,7 +48,7 @@
       "destination": "/api/r"
     },
     {
-      "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/).*)",
+      "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/|icons/|manifest\\.webmanifest|Logo_qsd\\.png|service-worker\\.js|offline\\.html|r\\.html|robots\\.txt|favicon\\.ico).*)",
       "destination": "/index.html"
     }
   ]

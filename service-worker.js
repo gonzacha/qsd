@@ -1,4 +1,4 @@
-const CACHE = 'qsd-pwa-v0.0.3';
+const CACHE = 'qsd-pwa-v0.0.5';
 const PRECACHE_URLS = [
   '/',
   '/offline.html',
@@ -6,6 +6,7 @@ const PRECACHE_URLS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/Logo_qsd.png',
+  '/lib/resolve-story-image.js',
 ];
 
 self.addEventListener('install', event => {
@@ -62,7 +63,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  if (isSameOrigin && /\.(?:css|js|png|svg|woff2)$/.test(url.pathname)) {
+  if (isSameOrigin && /\.(?:css|js|png|svg|woff2|webmanifest)$/.test(url.pathname)) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE);
       const cached = await cache.match(req);

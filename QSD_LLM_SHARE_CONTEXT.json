@@ -1,0 +1,591 @@
+{
+  "llm_instructions": {
+    "primary_language": "es-AR",
+    "secondary_language_notes": "Code comments and some QA docs mix Spanish and English.",
+    "truth_policy": [
+      "Treat 'implemented' facts as grounded in the quesedice repository paths cited.",
+      "Do not invent features, integrations (Telegram bot, YouTube pipeline, etc.) unless listed under roadmap_or_not_in_repo.",
+      "When uncertain, state uncertainty and suggest verifying the file path in evidence_paths.",
+      "README version label ('V2') is marketing/versioning in README.md; internal product phase may differ (V0 Identity Epoch / V1 Commercial) — do not conflate without explicit user confirmation."
+    ],
+    "recommended_usage": [
+      "Paste this entire JSON as system or project context for ChatGPT, Gemini, Claude, etc.",
+      "For code edits, also attach the specific file(s) being changed.",
+      "For deployment questions, distinguish vercel.json production vs 'npx serve' local static-only."
+    ],
+    "response_style_requested_by_project": [
+      "Sober, execution-first, minimal buzzwords.",
+      "Prefer vanilla-first solutions; no React migration assumed.",
+      "Editorial integrity over engagement hacks."
+    ]
+  },
+  "document": {
+    "id": "QSD_LLM_SHARE_CONTEXT",
+    "schema_version": "1.1.0",
+    "generated_at_utc": "2026-05-11T17:55:21Z",
+    "repository_name": "quesedice",
+    "repository_root_hint": "Static site + Vercel serverless for Qué Se Dice (QSD), Argentina.",
+    "companion_artifact": "QSD_MASTER_CONTEXT_V1.json (operational snapshot; may be older timestamp than this file)",
+    "classification_legend": {
+      "implemented": "Present in repository files as described.",
+      "experimental": "Exists but not the main public product surface.",
+      "roadmap": "Strategic intent not fully implemented as a product module.",
+      "hypothesis": "Plausible but not proven in repo.",
+      "historical_audit": "Described in qa/*.md from a past date; re-verify before assuming current runtime."
+    }
+  },
+  "product_phases": {
+    "v0_identity_epoch": {
+      "classification": "roadmap",
+      "status": "Formally frozen by product decision (conversation 2026); micro-debugging of legacy visual debt (opacity, blur, palette edge cases) deprioritized unless it blocks production.",
+      "claimed_achievements_conversation_aligned": [
+        "Deterministic editorial doctrine (QA manifests, ranking windows, UI translation rules).",
+        "Local-first client memory (IndexedDB ledger; no external analytics in manifest).",
+        "Runtime QA philosophy (curl-first audits, SW caveats documented).",
+        "Editorial identity pages (sobre-qsd, redaccion, home stream/signal UI).",
+        "Operational pipeline (feeds, rank, story, sitemap, r redirect).",
+        "Automated ingestion/ranking (RSS + Google News RSS endpoints).",
+        "Human-in-the-loop validation (manual redaccion HTML/JSON; editorial QA scripts).",
+        "Conceptual foundation for scalable signal-processing (rank + stream + variants)."
+      ]
+    },
+    "v1_commercial_editorial_infrastructure": {
+      "classification": "roadmap",
+      "strategic_objective": "Commercial-grade editorial infrastructure: security runbooks, observability, partner-ready SLAs, selective distribution (e.g. Discord digest pattern), without rewriting architecture.",
+      "not_in_repo_as_product": [
+        "Dedicated multi-tenant SaaS control plane",
+        "Built-in Telegram/YouTube publishing pipelines",
+        "Managed APM (Sentry/Datadog) wiring in code"
+      ]
+    }
+  },
+  "identity": {
+    "legal_brand": "Qué Se Dice",
+    "sigla": "QSD",
+    "production_domain": "https://www.quesedice.com.ar",
+    "apex_redirect": "quesedice.com.ar -> www (permanent) via vercel.json host condition",
+    "positioning_implemented_in_copy": {
+      "sobre_qsd": "Editorial digital reader-first; territorial Corrientes/Argentina/regional-international; legacy Antonio Haedo; operator Gonzalo Haedo (Nordia).",
+      "index_public_strings": "Still contain 'Noticias', 'Portal', 'Agregador' in meta/masthead — tension with broader 'observatory' framing."
+    },
+    "positioning_labels_roadmap": [
+      "Observatorio editorial",
+      "Signal layer",
+      "Intelligence flow over sources",
+      "Live stream panel (QSD Stream)",
+      "Hybrid editorial system (auto + human redaccion)"
+    ]
+  },
+  "architecture": {
+    "classification": "implemented",
+    "pattern": "Monolithic static HTML shell + client JS + Vercel Edge (majority) and Node (filesystem notes) serverless handlers.",
+    "frontend": {
+      "main_entry": "index.html",
+      "characteristics": [
+        "Large inline <style> and <script> block (single file maintenance burden).",
+        "Google Fonts: Playfair Display, Libre Baskerville, Source Sans 3.",
+        "Shared CSS variables: css/qsd-tokens.css linked from index, redaccion, sobre-qsd.",
+        "Client fetches: /api/rank?limit=30 for portada with no-store; fallback /api/feeds?cat=; /redaccion/index.json for editorial rail.",
+        "PWA: service-worker.js registers; precache includes '/' — bump CACHE string when critical HTML must invalidate client caches."
+      ],
+      "service_worker_cache_id": "qsd-pwa-v0.0.4 (service-worker.js line 1 as of snapshot)",
+      "api_bypass_rule": "Same-origin /api/* uses fetch(req) without cache in SW (see service-worker.js)"
+    },
+    "backend": {
+      "platform": "Vercel",
+      "config_file": "vercel.json",
+      "rewrites_summary": [
+        "/sitemap.xml -> /api/sitemap",
+        "/story/:id and /story/:id/:slug -> /api/story?id=:id",
+        "/r -> /api/r",
+        "SPA fallback: negative lookahead excludes api/, css/, redaccion/, sobre-qsd/, rqsd/, qa/, lib/ then -> /index.html"
+      ],
+      "headers_summary": [
+        "Long cache for /assets/*",
+        "HTML *.html max-age=0 must-revalidate"
+      ]
+    },
+    "not_primary_product": {
+      "rqsd": "rqsd/index.html — RQSD V0 tool-like UI (experimental).",
+      "r_html": "r.html — reader/redirect related static page."
+    }
+  },
+  "api_inventory": {
+    "classification": "implemented",
+    "count": 13,
+    "endpoints": [
+      {
+        "path": "/api/feeds",
+        "file": "api/feeds.js",
+        "runtime": "edge",
+        "role": "RSS aggregation; FEEDS categories; MAX_AGE_HOURS 24 on handler output; deduplicateItems; parseRSSItems with feed_gate + isRenderReady."
+      },
+      {
+        "path": "/api/rank",
+        "file": "api/rank.js",
+        "runtime": "edge",
+        "role": "Nordia-style rank; MAX_AGE_HOURS 24; MIN_CORRIENTES; editorial_score 0..1 formula; sorts by editorial_score then published_ts."
+      },
+      {
+        "path": "/api/story",
+        "file": "api/story.js",
+        "runtime": "edge",
+        "role": "Story HTML by id; in-memory TTL cache 60s (globalThis) per README."
+      },
+      {
+        "path": "/api/sitemap",
+        "file": "api/sitemap.js",
+        "runtime": "edge",
+        "role": "XML sitemap; internal dependency on ranking/story URLs."
+      },
+      {
+        "path": "/api/r",
+        "file": "api/r.js",
+        "runtime": "edge",
+        "role": "Redirect resolver with host allowlist + TLD suffix allowlist."
+      },
+      {
+        "path": "/api/resolve",
+        "file": "api/resolve.js",
+        "runtime": "edge",
+        "role": "URL resolution; HIGH outbound-abuse risk documented in qa/QSD_FULL_AUDIT_REPORT.md — treat as sensitive."
+      },
+      {
+        "path": "/api/share",
+        "file": "api/share.js",
+        "runtime": "edge",
+        "role": "Share HTML helper."
+      },
+      {
+        "path": "/api/og",
+        "file": "api/og.js",
+        "runtime": "edge",
+        "role": "Open Graph image/HTML generation."
+      },
+      {
+        "path": "/api/thumb",
+        "file": "api/thumb.js",
+        "runtime": "edge",
+        "role": "SVG semantic thumb; states NOT a news photo."
+      },
+      {
+        "path": "/api/story-image",
+        "file": "api/story-image.js",
+        "runtime": "edge",
+        "role": "Image proxy/helper JSON for story thumbnails."
+      },
+      {
+        "path": "/api/notas",
+        "file": "api/notas.js",
+        "runtime": "nodejs",
+        "role": "Lists JSON files from /notas directory via fs.readdir."
+      },
+      {
+        "path": "/api/notas-save",
+        "file": "api/notas-save.js",
+        "runtime": "nodejs",
+        "role": "Filesystem write; gated by QSD_ALLOW_LOCAL_FS_WRITES per README."
+      },
+      {
+        "path": "/api/ingesta-save",
+        "file": "api/ingesta-save.js",
+        "runtime": "nodejs",
+        "role": "Filesystem write; gated by QSD_ALLOW_LOCAL_FS_WRITES per README."
+      }
+    ]
+  },
+  "feeds_pipeline_detail": {
+    "classification": "implemented",
+    "file": "api/feeds.js",
+    "parseRSSItems": "Extracts item title, link, pubDate, description, source; normalizes title; pushes items then feed_gate then isRenderReady.",
+    "feed_gate_reasons": [
+      "no_url",
+      "duplicate_url",
+      "repeat_title",
+      "blocked_domain",
+      "not_in_allowlist"
+    ],
+    "feed_gate_removed_legacy": [
+      "Spanish stopword heuristic gate (isSpanish) removed — curation belongs in rank/score not style regex.",
+      "Parse-time .gob.ar/.gov.ar skip removed from parseRSSItems loop.",
+      "Corrientes category post-map filter isCorreintesRelevant removed — rank/geo handles nuance."
+    ],
+    "deduplicateItems_fix": "Non-duplicate items with no words length>=4 after normalization are now kept (push even when words set empty).",
+    "isRenderReady_rules": "title len>=5; http(s) URL; non-empty source string; valid pubDate; age between 0 and 72 hours.",
+    "feed_categories_keys": [
+      "portada",
+      "argentina",
+      "corrientes",
+      "mundo",
+      "deportes",
+      "economia",
+      "tecnologia",
+      "espectaculos"
+    ]
+  },
+  "rank_pipeline_summary": {
+    "classification": "implemented",
+    "file": "api/rank.js",
+    "notes": [
+      "editorial_score = min(1, factos_final*0.7 + freshness*0.3 + geoBoost) with geoBoost 0.15 for Corrientes-dictionary hits in title+description.",
+      "Front-end getEditorialVariant uses threshold 75 for c-signal on score — may rarely trigger when data from rank is 0..1; known contract tension."
+    ]
+  },
+  "client_ui_surface": {
+    "classification": "implemented",
+    "file": "index.html",
+    "major_ui_blocks": [
+      "Fixed site-header; sticky nav; trending bar optional",
+      "Three-column content-shell: QSD Stream (sticky), main container (hero wheel + grids), Redacción QSD rail",
+      "Hero cards: hero-card--main / secondary; variants c-urgent, c-signal, c-analisis, c-archivo, c-filo from getEditorialVariant",
+      "News cards with same variant classes; semantic thumbnails when no remote image",
+      "Panels: saved, backup JSONL export/import, install tooltip, update toast for SW",
+      "debug_ui=1 reveals raw scoring labels per QA manifest"
+    ],
+    "visual_stabilization_notes": {
+      "classification": "implemented",
+      "c_archivo": ".c-archivo uses opacity 1; compound selectors a.hero-card.c-archivo and a.news-card.c-archivo with opacity 1 !important to defeat stale cached CSS; header/nav use backdrop-filter none explicitly in index.html.",
+      "deprioritized": "Further micro-tuning of glass/blur/palette per V0 freeze policy unless production-blocking."
+    }
+  },
+  "editorial_content": {
+    "classification": "implemented",
+    "redaccion": {
+      "index": "redaccion/index.json",
+      "listing_page": "redaccion/index.html",
+      "example_notes": [
+        "fec-rimi-ganancias-2026-05-11",
+        "antonio-pj-2026-03-15"
+      ],
+      "authors": "Entries use 'Redacción QSD' as author field in JSON"
+    },
+    "institutional": "sobre-qsd/index.html",
+    "footer_lineage": "Taetanoticias → Corrientes Dice → Qué Se Dice; since 2004; Antonio & Gonzalo Haedo"
+  },
+  "qa_and_quality_factory": {
+    "classification": "implemented",
+    "scripts": [
+      {
+        "path": "scripts/runtime-audit.sh",
+        "role": "Deterministic curl checks; writes qa/runtime_report.txt and qa/runtime_findings.md"
+      },
+      {
+        "path": "scripts/dev-smoke.sh",
+        "role": "Lightweight smoke on /, feeds, rank, story test, sitemap"
+      },
+      {
+        "path": "scripts/dev-reset.sh",
+        "role": "Documented in qa/QSD_RUNTIME_HARDENING.md for clean vercel dev"
+      },
+      {
+        "path": "scripts/runtime-clean.sh",
+        "role": "Referenced for killing duplicate vercel dev"
+      },
+      {
+        "path": "qa/run-all.sh",
+        "role": "Orchestrator; default BASE_URL https://qsd-seven.vercel.app; layers qa.sh, structure-validator, content-integrity, editorial-audit"
+      },
+      {
+        "path": "scripts/qa_notify_discord.sh",
+        "role": "Posts QA failure to Discord webhook env DISCORD_WEBHOOK_QA"
+      }
+    ],
+    "manifests": [
+      "qa/QA_UI_MANIFEST_QSD_v1.json",
+      "qa/QA_UI_MANIFEST_QSD_v1.md"
+    ],
+    "critical_docs": [
+      "qa/QSD_RUNTIME_HARDENING.md",
+      "qa/LOCAL_RUNTIME_NOTES.md",
+      "qa/SW_QA_GUIDE.md",
+      "qa/QSD_FULL_AUDIT_REPORT.md"
+    ],
+    "system_freeze_audit": "system-freeze-audit.sh outputs qa/system_audit_* snapshots (cpu, memory, dmesg grep, processes, etc.)"
+  },
+  "security_and_risk_register": {
+    "classification": "mixed_implemented_and_historical_audit",
+    "items": [
+      {
+        "topic": "/api/resolve outbound URLs",
+        "severity": "high",
+        "source": "qa/QSD_FULL_AUDIT_REPORT.md",
+        "v1_action": "Allowlist, internal proxy, or disable public surface."
+      },
+      {
+        "topic": "/api/r suffix allowlist",
+        "severity": "medium",
+        "source": "api/r.js",
+        "v1_action": "Tighten per partner requirements."
+      },
+      {
+        "topic": "Filesystem writes notas-save/ingesta-save",
+        "severity": "medium",
+        "source": "README.md",
+        "note": "Disabled by default in serverless; not durable multi-instance."
+      },
+      {
+        "topic": "story.js global cache",
+        "severity": "low_medium",
+        "source": "README + code",
+        "note": "Non-deterministic across instances."
+      },
+      {
+        "topic": "vercel dev vs production routing",
+        "severity": "operational",
+        "source": "qa/*",
+        "note": "Always verify with curl; single vercel dev process."
+      }
+    ]
+  },
+  "commercial_readiness": {
+    "already_viable_for": [
+      "Public reader product with ads/sponsorship conversation (site already live).",
+      "Demonstration of ranked regional signal to chambers, universities, SMEs (manual SLA).",
+      "Editorial supplement via redaccion/ static publishing workflow (git-based)."
+    ],
+    "not_yet_viable_for_without_work": [
+      "Legally sensitive automated advice (health, legal) — human sign-off and domain-specific compliance required.",
+      "Multi-tenant white-label SaaS",
+      "Guaranteed sub-second global API latency under arbitrary RSS fan-out"
+    ]
+  },
+  "v1_execution_priorities": {
+    "classification": "roadmap",
+    "ordered": [
+      "1. Security closure on resolve + policy review on r.",
+      "2. Minimal production monitoring: uptime checks + optional Discord alert reuse from qa_notify_discord pattern.",
+      "3. Written SLA template for partners (what rank guarantees vs what RSS third parties guarantee).",
+      "4. CI wiring: run qa/run-all.sh or runtime-audit against preview on each merge.",
+      "5. Content ops checklist for redaccion publishing + incident log when a source misbehaves.",
+      "6. Postpone: React migration, heavy design system, AI-generated article body as core product."
+    ]
+  },
+  "moat_and_differentiation": {
+    "classification": "roadmap_plus_implemented",
+    "structural_difference_vs_generic_ai_news": [
+      "Deterministic scoring and dictionaries tied to Corrientes/NEA entities in code, not a single LLM summarizer bolt-on.",
+      "Explicit UI doctrine forbidding dashboard leakage to readers (QA manifest).",
+      "Operational QA scripts treating the system as infrastructure, not a demo.",
+      "Human redaction path integrated in-site (redaccion rail + pages)."
+    ],
+    "scalable_pattern_to_other_verticals": {
+      "classification": "hypothesis",
+      "pattern": "Replace FEEDS sources + domain dictionaries + disclosure copy; keep rank+stream+manual notes architecture.",
+      "examples_verticals": [
+        "regulated health summaries (human final)",
+        "legal news radar (human final)",
+        "ISP incident stream"
+      ],
+      "caveat": "Each vertical requires compliance review; not automatic from this repo."
+    }
+  },
+  "package_and_tooling": {
+    "classification": "implemented",
+    "package_json_scripts": {
+      "dev": "npx serve .",
+      "start": "npx serve ."
+    },
+    "implication": "Local npm dev does NOT execute Vercel edge functions — use npx vercel dev for API-integrated local testing."
+  },
+  "evidence_paths": {
+    "core_files": [
+      "index.html",
+      "vercel.json",
+      "service-worker.js",
+      "README.md",
+      "package.json",
+      "css/qsd-tokens.css"
+    ],
+    "api_dir": "api/*.js (13 files)",
+    "editorial": [
+      "redaccion/index.json",
+      "redaccion/index.html",
+      "sobre-qsd/index.html"
+    ],
+    "qa_dir": "qa/",
+    "scripts_dir": "scripts/",
+    "strategy_companion": "QSD_MASTER_CONTEXT_V1.json"
+  },
+  "roadmap_or_not_in_repo": {
+    "telegram_digest_bot": "roadmap — not implemented in codebase.",
+    "youtube_pipeline": "roadmap — not in codebase.",
+    "rss_outbound_syndication_feed": "roadmap — product consumes RSS; generating outbound RSS would be new work.",
+    "managed_apm": "roadmap — no Sentry/Datadog SDK in repo."
+  },
+  "glossary": {
+    "QSD": "Qué Se Dice",
+    "Nordia": "Operator context name in sobre-qsd copy (Gonzalo Haedo).",
+    "EQF": "Referenced in commented pipeline diagram inside api/feeds.js — not a separate deployed service in repo.",
+    "Factos": "Colloquial naming in rank pipeline for convergence-related scoring fields exposed to client as factos_final / editorial_score."
+  },
+  "file_inventory": {
+    "qa_shell_and_docs": [
+      "qa/qa.sh",
+      "qa/run-all.sh",
+      "qa/structure-validator.sh",
+      "qa/content-integrity.sh",
+      "qa/editorial-audit.sh",
+      "qa/lib/qa-helpers.sh",
+      "qa/rules/editorial.json",
+      "qa/mock-feed.json",
+      "qa/QA_UI_MANIFEST_QSD_v1.json",
+      "qa/QA_UI_MANIFEST_QSD_v1.md",
+      "qa/QSD_RUNTIME_HARDENING.md",
+      "qa/LOCAL_RUNTIME_NOTES.md",
+      "qa/SW_QA_GUIDE.md",
+      "qa/QSD_FULL_AUDIT_REPORT.md",
+      "qa/runtime_findings.md",
+      "qa/public_index_experiment.md",
+      "qa/index.html",
+      "qa/system_audit_20260509_233116/SUMMARY.md",
+      "qa/system_audit_20260509_233216/SUMMARY.md"
+    ],
+    "scripts_shell": [
+      "scripts/runtime-audit.sh",
+      "scripts/dev-smoke.sh",
+      "scripts/dev-reset.sh",
+      "scripts/runtime-clean.sh",
+      "scripts/runtime-smoke.sh",
+      "scripts/qsd-local-audit.sh",
+      "scripts/qa_notify_discord.sh",
+      "scripts/qa_ui_gate.sh",
+      "scripts/qa_write_result.sh",
+      "scripts/qa_append_ledger.sh",
+      "system-freeze-audit.sh",
+      "qa.sh (repo root)"
+    ],
+    "html_pages": [
+      "index.html",
+      "r.html",
+      "offline.html",
+      "sobre-qsd/index.html",
+      "redaccion/index.html",
+      "redaccion/nota.html",
+      "redaccion/fec-rimi-ganancias-2026-05-11.html",
+      "redaccion/antonio-pj-2026-03-15.html",
+      "rqsd/index.html",
+      "qa/index.html"
+    ]
+  },
+  "vercel_json_full": {
+    "headers": [
+      {
+        "source": "/assets/(.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/(.*).html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=0, must-revalidate"
+          }
+        ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/:path*",
+        "has": [
+          {
+            "type": "host",
+            "value": "quesedice.com.ar"
+          }
+        ],
+        "destination": "https://www.quesedice.com.ar/:path*",
+        "permanent": true
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/sitemap.xml",
+        "destination": "/api/sitemap"
+      },
+      {
+        "source": "/story/:id",
+        "destination": "/api/story?id=:id"
+      },
+      {
+        "source": "/story/:id/:slug",
+        "destination": "/api/story?id=:id"
+      },
+      {
+        "source": "/r",
+        "destination": "/api/r"
+      },
+      {
+        "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/).*)",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "redaccion_index_json_schema_example": {
+    "classification": "implemented",
+    "path": "redaccion/index.json",
+    "record_fields": [
+      "id",
+      "slug",
+      "title",
+      "author",
+      "date",
+      "published_at",
+      "category",
+      "excerpt",
+      "image",
+      "featured"
+    ],
+    "current_record_count": 2
+  },
+  "client_constants_index_html": {
+    "classification": "implemented",
+    "approximate_constants": [
+      "API_BASE = '/api/feeds'",
+      "REFRESH_INTERVAL = 10 * 60 * 1000 (ms)",
+      "Portada fetch: GET /api/rank?limit=30 cache no-store",
+      "debug_ui from URL ?debug_ui=1"
+    ]
+  },
+  "indexeddb_ledger": {
+    "classification": "implemented",
+    "db_name": "qsd_ledger",
+    "stores": [
+      "events (indexes by_ts, by_event, by_item_id)",
+      "seen_hashes",
+      "saved"
+    ],
+    "purpose": "Append-only style local event log; export JSONL from UI backup panel.",
+    "event_types_emitted": [
+      "item_opened",
+      "item_saved",
+      "item_seen",
+      "rank_generated",
+      "feed_fetch"
+    ],
+    "item_opened_variants": [
+      "default card",
+      "via: stream"
+    ]
+  },
+  "environment_variables_documented": [
+    {
+      "name": "QSD_ALLOW_LOCAL_FS_WRITES",
+      "usage": "Must be set to enable notas-save/ingesta-save writes (README)",
+      "classification": "implemented"
+    },
+    {
+      "name": "DISCORD_WEBHOOK_QA",
+      "usage": "scripts/qa_notify_discord.sh",
+      "classification": "implemented"
+    },
+    {
+      "name": "BASE_URL",
+      "usage": "qa/run-all.sh and other QA scripts defaulting to preview host",
+      "classification": "implemented"
+    }
+  ]
+}

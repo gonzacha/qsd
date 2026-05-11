@@ -12,8 +12,8 @@
   <link rel="canonical" href="https://www.quesedice.com.ar/">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="Logo_qsd.png">
-  <link rel="apple-touch-icon" href="Logo_qsd.png">
+  <link rel="icon" type="image/png" href="/Logo_qsd.png">
+  <link rel="apple-touch-icon" href="/Logo_qsd.png">
   <link rel="manifest" href="/manifest.webmanifest">
 
   <!-- Open Graph -->
@@ -70,7 +70,7 @@
       --bg-card: #111627;
       --bg-card-hover: #161c33;
       --bg-elevated: #1a2040;
-      --bg-glass: rgba(17, 22, 39, 0.85);
+      --bg-glass: rgba(17, 22, 39, 0.96);
 
       --violet-primary: #7a5cff;
       --violet-strong: #8f77ff;
@@ -159,10 +159,10 @@
       height: var(--header-height);
       display: flex;
       align-items: center;
-      background: rgba(11, 14, 26, 0.7);
+      background: rgba(11, 14, 26, 0.94);
       border-bottom: 1px solid var(--border-light);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       z-index: 20;
     }
 
@@ -189,6 +189,12 @@
       opacity: 1;
       transform: translateY(0);
       transition: opacity 200ms ease, transform 200ms ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .site-brand-text {
+      line-height: 1.05;
     }
 
     .site-brand.is-hidden {
@@ -199,7 +205,9 @@
 
     .site-brand img {
       width: 26px;
-      height: auto;
+      height: 26px;
+      object-fit: contain;
+      flex-shrink: 0;
       filter: none;
     }
 
@@ -416,9 +424,9 @@
       top: 0;
       z-index: 100;
       background: var(--bg-glass);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       padding: 0 var(--space-lg);
     }
 
@@ -691,8 +699,7 @@
       font-size: 0.62rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--violet-primary);
-      opacity: 0.85;
+      color: rgba(122, 92, 255, 0.88);
     }
 
     /* Semantic thumbnails (sin foto de fuente) */
@@ -800,10 +807,6 @@
 
     .hero-wheel .hero-card {
       margin-bottom: 0;
-    }
-
-    .hero-wheel.is-rotating .hero-card {
-      opacity: 0.8;
     }
 
     .hero-card {
@@ -1210,7 +1213,7 @@
       border: 1px solid var(--border-subtle);
       border-radius: 10px;
       padding: 0;
-      transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+      transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
       text-decoration: none;
       overflow: hidden;
       position: relative;
@@ -1325,16 +1328,22 @@
     }
 
     .c-archivo {
-      opacity: 0.65;
+      opacity: 1;
       --left-bar-width: 0px;
       --score-opacity: 0.12;
       --score-hover-opacity: 0.2;
     }
 
     .c-archivo:hover {
-      opacity: 0.85;
+      opacity: 1;
     }
 
+    /* Hard override: archive variant is applied to both <a class="hero-card …"> and <a class="news-card …">.
+       Ensures full opacity even if an older cached stylesheet or extension still injects legacy 0.65. */
+    a.hero-card.c-archivo,
+    a.news-card.c-archivo {
+      opacity: 1 !important;
+    }
 
     .news-card-body {
       padding: var(--space-lg);
@@ -1686,6 +1695,7 @@
 
       .site-brand img {
         width: 22px;
+        height: 22px;
       }
 
       .site-header-meta {
@@ -1827,9 +1837,9 @@
 <body>
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-brand is-hidden" href="/">
-        <img src="Logo_qsd.png" alt="Qué Se Dice">
-        Qué Se Dice
+      <a class="site-brand is-hidden" href="/" aria-label="Qué Se Dice">
+        <img src="/Logo_qsd.png" alt="" width="26" height="26" decoding="async">
+        <span class="site-brand-text">Qué Se Dice</span>
       </a>
       <div class="site-header-meta">
         <div class="topbar-date" id="currentDate"></div>
@@ -1849,7 +1859,7 @@
 
   <!-- Masthead -->
   <header class="masthead">
-    <img src="Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo logo-wave">
+    <img src="/Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo logo-wave">
     <h1 class="masthead-title">Qué Se Dice</h1>
     <p class="masthead-tagline">El pulso informativo de Corrientes y el mundo</p>
     <p class="masthead-subtitle">Agregador editorial con actualización automática de noticias de Corrientes, Argentina y el mundo.</p>
@@ -2882,7 +2892,7 @@
             ${isMain && item.description ? `<p class="hero-desc">${escapeHtml(item.description)}</p>` : ''}
             <div class="hero-meta">
               <span class="hero-source">${escapeHtml(item.source)}</span>
-              <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+              <img src="/Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
               <span>${timeAgo(item.pubDate)}</span>
               <div class="hero-share" data-link="${escapeAttr(item.link)}">
                 ${shareButtons(item.title, heroShareUrl, item.source, item.description)}
@@ -3069,7 +3079,7 @@
                   ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
                   <div class="news-card-footer">
                     <div class="news-card-timegroup">
-                      <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+                      <img src="/Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
                       ${urgentDot}
                       <span class="news-card-time">${timeAgo(item.pubDate)}</span>
                     </div>
