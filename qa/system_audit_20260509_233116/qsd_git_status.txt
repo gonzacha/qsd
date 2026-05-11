@@ -1,0 +1,32 @@
+### COMMAND
+bash -c cd /home/gonza/dev/editorial/quesedice && git status
+
+### OUTPUT
+En la rama main
+Tu rama está adelantada a 'origin/main' por 2 commits.
+  (usa "git push" para publicar tus commits locales)
+
+Cambios no rastreados para el commit:
+  (usa "git add <archivo>..." para actualizar lo que será confirmado)
+  (usa "git restore <archivo>..." para descartar los cambios en el directorio de trabajo)
+	modificados:     api/thumb.js
+	modificados:     index.html
+	modificados:     qa/runtime_findings.md
+	modificados:     qa/runtime_report.txt
+	modificados:     redaccion/antonio-pj-2026-03-15.html
+	modificados:     redaccion/index.html
+	modificados:     redaccion/index.json
+	modificados:     redaccion/nota.html
+	modificados:     sobre-qsd/index.html
+	modificados:     vercel.json
+
+Archivos sin seguimiento:
+  (usa "git add <archivo>..." para incluirlo a lo que será confirmado)
+	css/
+	qa/system_audit_20260509_233116/
+	redaccion/fec-rimi-ganancias-2026-05-11.html
+	redaccion/fec-rimi-ganancias-2026-05-11.json
+	redaccion/img/fec-charla-rimi-ganancias-2026-05.png
+	system-freeze-audit.sh
+
+sin cambios agregados al commit (usa "git add" y/o "git commit -a")

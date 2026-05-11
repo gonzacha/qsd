@@ -1,0 +1,5 @@
+### COMMAND
+glxinfo -B
+
+### OUTPUT
+Error: unable to open display :0.0

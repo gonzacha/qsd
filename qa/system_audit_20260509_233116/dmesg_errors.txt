@@ -1,0 +1,28 @@
+### COMMAND
+bash -c dmesg -T | grep -Ei 'error|fail|warn|gpu|i915|amdgpu|nouveau|oom|thermal|segfault|lockup|hung|drm' | tail -300
+
+### OUTPUT
+[sáb may  9 22:45:11 2026] CPU0: Thermal monitoring enabled (TM1)
+[sáb may  9 22:45:11 2026] thermal_sys: Registered thermal governor 'fair_share'
+[sáb may  9 22:45:11 2026] thermal_sys: Registered thermal governor 'bang_bang'
+[sáb may  9 22:45:11 2026] thermal_sys: Registered thermal governor 'step_wise'
+[sáb may  9 22:45:11 2026] thermal_sys: Registered thermal governor 'user_space'
+[sáb may  9 22:45:11 2026] thermal_sys: Registered thermal governor 'power_allocator'
+[sáb may  9 22:45:11 2026] ACPI: bus type drm_connector registered
+[sáb may  9 22:45:11 2026] simple-framebuffer simple-framebuffer.0: [drm] Registered 1 planes with drm panic
+[sáb may  9 22:45:11 2026] [drm] Initialized simpledrm 1.0.0 for simple-framebuffer.0 on minor 0
+[sáb may  9 22:45:11 2026] simple-framebuffer simple-framebuffer.0: [drm] fb0: simpledrmdrmfb frame buffer device
+[sáb may  9 22:45:11 2026] RAS: Correctable Errors collector initialized.
+[sáb may  9 22:45:16 2026] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[sáb may  9 22:45:16 2026] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[sáb may  9 22:45:16 2026] systemd[1]: Finished modprobe@drm.service - Load Kernel Module drm.
+[sáb may  9 22:45:17 2026] ACPI Warning: SystemIO range 0x0000000000000428-0x000000000000042F conflicts with OpRegion 0x000000000000042C-0x000000000000042D (\GP2C) (20240827/utaddress-204)
+[sáb may  9 22:45:17 2026] RAPL PMU: hw unit of domain pp1-gpu 2^-16 Joules
+[sáb may  9 22:45:18 2026] i915 0000:00:02.0: [drm] Found sandybridge (device ID 0112) integrated display version 6.00 stepping N/A
+[sáb may  9 22:45:18 2026] i915 0000:00:02.0: vgaarb: deactivate vga console
+[sáb may  9 22:45:18 2026] [drm] Initialized i915 1.6.0 for 0000:00:02.0 on minor 1
+[sáb may  9 22:45:18 2026] fbcon: i915drmfb (fb0) is primary device
+[sáb may  9 22:45:18 2026] i915 0000:00:02.0: [drm] fb0: i915drmfb frame buffer device
+[sáb may  9 22:45:18 2026] snd_hda_intel 0000:00:1b.0: bound 0000:00:02.0 (ops i915_audio_component_bind_ops [i915])
+[sáb may  9 22:45:23 2026] vboxdrv: module verification failed: signature and/or required key missing - tainting kernel
+[sáb may  9 23:31:20 2026] audit: type=1400 audit(1778380280.646:133): apparmor="DENIED" operation="connect" class="file" info="Failed name lookup - disconnected path" error=-13 profile="cursor_sandbox" name="tmp/.X11-unix/X0" pid=5535 comm="glxinfo" requested_mask="wr" denied_mask="wr" fsuid=1001 ouid=0

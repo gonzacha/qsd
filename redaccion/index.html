@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/qsd-tokens.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -27,23 +28,24 @@
   </script>
   <style>
     :root {
-      --bg-primary: #0c0f1a;
-      --bg-card: #121625;
+      --bg-primary: var(--qsd-bg-deep, #0c0f1a);
+      --bg-card: var(--qsd-bg-card, #121625);
       --bg-card-hover: #171c30;
       --text-bright: #f3f4f7;
-      --text-primary: #d6d9e2;
+      --text-primary: var(--qsd-text-primary, #d6d9e2);
       --text-muted: #9aa1b4;
-      --border-subtle: rgba(138, 146, 170, 0.18);
-      --violet-primary: #6c5ce7;
-      --violet-dim: rgba(108, 92, 231, 0.45);
+      --border-subtle: var(--qsd-border, rgba(138, 146, 170, 0.18));
+      --violet-primary: var(--qsd-violet, #7a5cff);
+      --violet-dim: var(--qsd-violet-dim, rgba(122, 92, 255, 0.45));
       --max-width: 1100px;
       --space-sm: 0.5rem;
       --space-md: 1rem;
       --space-lg: 1.5rem;
       --space-xl: 2rem;
-      --font-display: 'Playfair Display', Georgia, serif;
-      --font-headline: 'Libre Baskerville', Georgia, serif;
-      --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+      --space-2xl: 2.75rem;
+      --font-display: var(--qsd-font-display, 'Playfair Display', Georgia, serif);
+      --font-headline: var(--qsd-font-headline, 'Libre Baskerville', Georgia, serif);
+      --font-body: var(--qsd-font-body, 'Source Sans 3', 'Segoe UI', sans-serif);
     }
 
     * { box-sizing: border-box; }
@@ -102,7 +104,7 @@
     .rx-main {
       max-width: var(--max-width);
       margin: 0 auto;
-      padding: var(--space-xl) var(--space-lg) var(--space-xl);
+      padding: var(--space-2xl) var(--space-lg) calc(var(--space-2xl) + 0.5rem);
     }
 
     .rx-grid {
@@ -114,8 +116,8 @@
     .rx-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: var(--space-md);
+      border-radius: var(--qsd-radius-lg, 12px);
+      padding: var(--space-lg);
       display: flex;
       flex-direction: column;
       gap: var(--space-md);

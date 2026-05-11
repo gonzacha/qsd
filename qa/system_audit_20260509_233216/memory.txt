@@ -1,0 +1,7 @@
+### COMMAND
+free -h
+
+### OUTPUT
+               total       usado       libre  compartido   búf/caché  disponible
+Mem:            15Gi       4,9Gi       8,9Gi       168Mi       2,2Gi        10Gi
+Inter:         2,0Gi          0B       2,0Gi

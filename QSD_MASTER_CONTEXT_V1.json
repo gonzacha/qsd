@@ -1,0 +1,703 @@
+{
+  "document": {
+    "id": "QSD_MASTER_CONTEXT_V1",
+    "schema_version": "1.0.0",
+    "generated_at_utc": "2026-05-10T17:41:51Z",
+    "workspace_path_observed": "/home/gonza/dev/editorial/quesedice",
+    "language": "es-AR",
+    "purpose": "Fotografía operacional total de Qué Se Dice (QSD) para onboarding, continuidad en chats nuevos, auditorías, roadmap y operación. Sin marketing.",
+    "classification_legend": {
+      "implemented": "Existe en código o contenido estático verificable en el repo.",
+      "experimental": "Código o superficie presente pero no consolidada como producto principal.",
+      "roadmap": "Intención o planificación explícita en este entregable o en docs; no confundir con implementado.",
+      "hypothesis": "Hipótesis operativa o técnica sin prueba formal en el repo.",
+      "historical_audit": "Estado descripto en auditorías pasadas; puede estar superado por el código actual; contrastar fechas."
+    },
+    "how_to_use": [
+      "Contrastar afirmaciones con rutas citadas en evidence_index.",
+      "Separar siempre implemented vs roadmap usando classification_legend.",
+      "Para runtime local: seguir qa/QSD_RUNTIME_HARDENING.md y scripts/dev-smoke.sh.",
+      "Para freezes de máquina: system-freeze-audit.sh y carpetas qa/system_audit_*."
+    ]
+  },
+  "project_identity": {
+    "nombre": "Qué Se Dice",
+    "sigla": "QSD",
+    "dominio_canonico_produccion": "https://www.quesedice.com.ar",
+    "descripcion_estrategica_solicitada": {
+      "classification": "roadmap",
+      "note": "Framing pedido para continuidad del proyecto: NO limitarse a 'portal de noticias'.",
+      "labels": [
+        "observatorio editorial",
+        "signal layer (capa de señales)",
+        "intelligence flow (flujo de inteligencia editorial sobre fuentes)",
+        "stream vivo (panel lateral de señales con refresco de lista)",
+        "sistema híbrido editorial (automático + redacción propia + capa reader-first)"
+      ]
+    },
+    "proposito_operativo_implemented": {
+      "classification": "implemented",
+      "sources": [
+        "sobre-qsd/index.html",
+        "index.html",
+        "README.md"
+      ],
+      "summary": "Organizar, jerarquizar y presentar información pública con foco Corrientes, Argentina y contexto regional/internacional; combinar curaduría automática (RSS/agregación) con piezas de Redacción QSD y una experiencia de lectura clara."
+    },
+    "filosofia_editorial_documentada": {
+      "classification": "implemented",
+      "sources": [
+        "sobre-qsd/index.html",
+        "qa/QA_UI_MANIFEST_QSD_v1.json"
+      ],
+      "points": [
+        "Reader-first y territorial (Corrientes / NEA) como ancla.",
+        "Claridad y honestidad informativa explícitas en copy institucional.",
+        "Prioridad a consistencia editorial y bajo mantenimiento técnico (declarado en sobre-qsd).",
+        "UI editorial-first sin sensación de dashboard en modo lector (manifest QA)."
+      ]
+    },
+    "vision_declarada_en_repo": {
+      "classification": "implemented",
+      "sources": [
+        "README.md"
+      ],
+      "readme_claim": "README declara 'V2 — Portal en evolución continua' y 'Proyecto editorial independiente'."
+    },
+    "diferenciadores_implementados": {
+      "classification": "implemented",
+      "items": [
+        "Ranking Nordia (/api/rank) con ventana de frescura 24h, diccionarios Corrientes 2.5, tiering de fuentes y señales de convergencia (scores expuestos al front; UI traduce términos en modo lector salvo debug_ui).",
+        "Panel 'QSD Stream' en portada: lista viva de ítems con hora, título y fuente, enlazando vía /r con metadatos.",
+        "Miniaturas semánticas cuando no hay imagen nativa: gradientes por bucket (Argentina / Mundo / Señales) y copy 'Visual editorial sin fotografía de la fuente'.",
+        "Endpoint /api/thumb genera SVG declarando 'VISUAL DE CONTEXTO · NO ES FOTO DE NOTA'.",
+        "PWA con service worker que NO cachea /api/* (fetch directo) para evitar datos stale en portada (README + service-worker.js).",
+        "Ledger local IndexedDB (qsd_ledger) para eventos sin beacons externos (alineado a manifest: local-first memory)."
+      ]
+    },
+    "que_NO_es_QSD_segun_documentacion": {
+      "classification": "implemented",
+      "sources": [
+        "sobre-qsd/index.html"
+      ],
+      "statements": [
+        "No se define como un simple feed de enlaces sin capa editorial: el copy institucional enfatiza orden y jerarquía.",
+        "No se posiciona como producto tipo CMS enterprise en el copy público."
+      ]
+    },
+    "que_SI_es_QSD_segun_stack": {
+      "classification": "implemented",
+      "items": [
+        "Sitio principal en HTML/CSS/JS vanilla servido como estático + funciones Vercel (Edge y Node según endpoint).",
+        "Producto híbrido: ingesta RSS + render de rank + sección Redacción QSD estática (JSON + HTML).",
+        "Herramienta de QA operativa (shell scripts + manifests) para validar estructura y runtime."
+      ]
+    },
+    "tension_identidad_vs_strings_legacy": {
+      "classification": "implemented",
+      "note": "index.html y metadatos aún usan lenguaje 'Noticias', 'Portal', 'Agregador editorial' en title/description/masthead. sobre-qsd y este master context usan framing más amplio. Conviven hasta unificar copy.",
+      "examples": [
+        "index.html title: 'Qué Se Dice — Noticias de Corrientes...'",
+        "JSON-LD WebSite description: 'Portal informativo...'",
+        "Masthead subtitle: 'Agregador editorial con actualización automática...'"
+      ]
+    }
+  },
+  "technical_state": {
+    "stack_real": {
+      "classification": "implemented",
+      "frontend": "HTML monolítico (index.html ~100k+ con CSS inline + JS inline), fuentes Google (Playfair Display, Libre Baskerville, Source Sans 3), css/qsd-tokens.css para tokens compartidos.",
+      "backend": "Vercel Serverless: api/*.js con runtime 'edge' (mayoría) o 'nodejs' (notas, saves).",
+      "local_dev": "package.json: 'dev'/'start' = npx serve . (sirve estático; NO ejecuta Edge functions). Para APIs: vercel dev documentado en qa/*.",
+      "data_ingestion": "RSS y Google News RSS en api/feeds.js; pipeline paralelo en api/rank.js.",
+      "pwa": "service-worker.js, offline.html, manifest.webmanifest (referenciado en index.html)."
+    },
+    "repo_structure_high_level": {
+      "classification": "implemented",
+      "paths": {
+        "/": "index.html portada, r.html, offline.html, manifest, assets raíz",
+        "/api": "13 handlers JS (feeds, rank, story, sitemap, r, resolve, share, og, thumb, story-image, notas, notas-save, ingesta-save)",
+        "/css": "qsd-tokens.css",
+        "/lib": "resolve-story-image.js (cliente)",
+        "/redaccion": "index.html, index.json, notas HTML/JSON, /img",
+        "/sobre-qsd": "Quiénes somos",
+        "/rqsd": "RQSD V0 — interfaz tipo herramienta (experimental)",
+        "/qa": "scripts QA, manifests, reportes runtime, auditorías sistema",
+        "/scripts": "runtime-audit.sh, dev-smoke.sh, dev-reset.sh, runtime-clean.sh, qsd-local-audit.sh, runtime-smoke.sh, qa_*",
+        "/notas": "JSON para /api/notas (filesystem)"
+      }
+    },
+    "vercel_configuration": {
+      "classification": "implemented",
+      "file": "vercel.json",
+      "headers": [
+        "Cache-Control largo para /assets/*",
+        "HTML (*.html) max-age=0 must-revalidate"
+      ],
+      "redirects": [
+        "apex quesedice.com.ar -> https://www.quesedice.com.ar (permanent) con condición has host"
+      ],
+      "rewrites": [
+        "/sitemap.xml -> /api/sitemap",
+        "/story/:id y /story/:id/:slug -> /api/story?id=:id",
+        "/r -> /api/r",
+        "SPA fallback: patrón negativo que excluye api/, css/, redaccion/, sobre-qsd/, rqsd/, qa/, lib/ -> /index.html"
+      ],
+      "notes": [
+        "qa/QSD_RUNTIME_HARDENING.md documenta simplificación respecto a config legacy que capturaba /api/* con fallback HTML.",
+        "VERCEL_DEV_NOTE.md advierte comportamiento histórico de redirects con host en vercel dev; el vercel.json actual SÍ incluye redirects — validar en práctica local vs producción."
+      ]
+    },
+    "api_inventory": {
+      "classification": "implemented",
+      "edge": {
+        "/api/feeds": "Agregación RSS, diccionarios Corrientes, categorías, filtro 24h (ver código).",
+        "/api/rank": "Rank Nordia, MAX_AGE_HOURS=24, MIN_CORRIENTES, scoring editorial y convergencia.",
+        "/api/story": "HTML de historia vía id; cache en memoria globalThis TTL 60s (ver api/story.js).",
+        "/api/sitemap": "XML sitemap; acopla a rank internamente.",
+        "/api/r": "Redirect tracker con allowlist hosts + sufijos TLD; resuelve redirects.",
+        "/api/resolve": "Resolución de URLs (riesgo SSRF-like documentado en QSD_FULL_AUDIT_REPORT.md).",
+        "/api/share": "Página/utilidad share (edge).",
+        "/api/og": "Open Graph generator (edge).",
+        "/api/thumb": "SVG miniatura semántica por categoría/fecha/edición.",
+        "/api/story-image": "Proxy/helper JSON para imagen de historia (edge)."
+      },
+      "nodejs": {
+        "/api/notas": "Lista JSON desde notas/*.json en filesystem.",
+        "/api/notas-save": "Escritura disco; protegida por QSD_ALLOW_LOCAL_FS_WRITES (README).",
+        "/api/ingesta-save": "Escritura disco; misma guarda README."
+      }
+    },
+    "client_data_flow_portada": {
+      "classification": "implemented",
+      "file": "index.html",
+      "flow": [
+        "Categoría 'portada' intenta GET /api/rank?limit=30 con cache no-store.",
+        "Filtra ítems con pubDate dentro de 24h para validar frescura; si vacío lanza error y cae a retry.",
+        "Si rank no arma data, fetch /api/feeds?cat=...",
+        "Tras render: resolveItemUrls en background; hidrata imágenes vía lib/resolve-story-image.js y lógica asociada.",
+        "Auto-refresh cada 10 minutos; error retry 15s sin backoff exponencial documentado."
+      ]
+    },
+    "qa_scripts_and_audits": {
+      "classification": "implemented",
+      "runtime_audit": {
+        "path": "scripts/runtime-audit.sh",
+        "behavior": "curl determinístico; valida /, /index.html, /api/feeds, /api/rank, /api/story?id=test, /sitemap.xml; escribe qa/runtime_report.txt y qa/runtime_findings.md; modo --smoke.",
+        "last_committed_snapshot": "qa/runtime_findings.md muestra PASS al 2026-05-09T22:59:21Z contra http://localhost:3000"
+      },
+      "dev_smoke": {
+        "path": "scripts/dev-smoke.sh",
+        "endpoints": [
+          "/",
+          "/api/feeds",
+          "/api/rank?limit=5",
+          "/api/story?id=test",
+          "/sitemap.xml"
+        ]
+      },
+      "editorial_factory": {
+        "path": "qa/run-all.sh",
+        "default_base_url": "https://qsd-seven.vercel.app",
+        "layers": [
+          "qa.sh blocking",
+          "structure-validator.sh blocking",
+          "content-integrity.sh",
+          "editorial-audit.sh"
+        ]
+      },
+      "system_freeze_audit": {
+        "path": "system-freeze-audit.sh",
+        "output": "qa/system_audit_YYYYMMDD_HHMMSS/ con cpu, memory, dmesg grep, journal, processes, etc.",
+        "snapshots_in_repo": [
+          "qa/system_audit_20260509_233116/",
+          "qa/system_audit_20260509_233216/"
+        ]
+      },
+      "other_scripts": [
+        "scripts/runtime-clean.sh — limpieza procesos vercel dev (referenciado en runtime-audit)",
+        "scripts/dev-reset.sh — diagnóstico entorno (QSD_RUNTIME_HARDENING.md)",
+        "scripts/qsd-local-audit.sh — mencionado en QSD_FULL_AUDIT_REPORT.md",
+        "scripts/runtime-smoke.sh — presente en repo",
+        "qa.sh, qa_ui_gate.sh, editorial-audit.sh, content-integrity.sh, structure-validator.sh"
+      ]
+    },
+    "thumb_strategy": {
+      "classification": "implemented",
+      "sources": [
+        "api/thumb.js",
+        "index.html renderCardVisual/renderHeroVisual"
+      ],
+      "points": [
+        "Preferencia por imagen remota cuando existe URL válida en el ítem.",
+        "Si no hay miniatura nativa: bloque semántico CSS con gradientes por bucket Argentina/Mundo/Señales (tokens en css/qsd-tokens.css).",
+        "thumb.js SVG explicita que no es foto de nota."
+      ]
+    },
+    "semantic_blocks": {
+      "classification": "implemented",
+      "css_tokens": "css/qsd-tokens.css — --qsd-semantic-argentina-*, --qsd-semantic-mundo-*, --qsd-semantic-more-*",
+      "runtime_labels": "classifyItem() en index.html asigna buckets argentina | mundo | more; etiquetas humanas en renderSemanticFill."
+    },
+    "redaccion_technical": {
+      "classification": "implemented",
+      "index": "/redaccion/index.json — lista de notas con id, slug, title, author, dates, category, excerpt, image, featured",
+      "home_integration": "index.html fetch /redaccion/index.json para panel lateral Redacción QSD",
+      "note_pages": "HTML por slug en /redaccion/*.html con JSON opcional hermano"
+    },
+    "experimental_surfaces": {
+      "classification": "experimental",
+      "rqsd": {
+        "path": "/rqsd/index.html",
+        "title": "RQSD V0",
+        "description": "UI tipo panel con system-ui; no comparte qsd-tokens; tratamiento como laboratorio / herramienta interna."
+      }
+    },
+    "historical_local_routing_audit": {
+      "classification": "historical_audit",
+      "source": "qa/QSD_FULL_AUDIT_REPORT.md",
+      "summary": "Documenta estado donde múltiples /api/* devolvían HTML de portada por fallback SPA y vercel dev inconsistente. Hoy el hardening y vercel.json actual buscan evitar captura de /api/*.",
+      "action": "No usar ese reporte como verdad de runtime actual sin re-ejecutar scripts/runtime-audit.sh en el entorno vigente."
+    },
+    "http_caching": {
+      "classification": "implemented",
+      "api_feeds_response": "Cache-Control public max-age=600 s-maxage=600 stale-while-revalidate=300 (api/feeds.js)",
+      "comment_header": "Comentario en api/feeds.js: 10 min CDN + stale-while-revalidate",
+      "static_assets": "vercel.json: /assets/* immutable largo; *.html must-revalidate",
+      "api_thumb": "api/thumb.js Cache-Control public max-age=86400"
+    },
+    "deployment_urls_observed": {
+      "classification": "implemented",
+      "production": "https://www.quesedice.com.ar",
+      "qa_default_preview": "https://qsd-seven.vercel.app (qa/run-all.sh BASE_URL default)",
+      "api_r_allowlist_hosts": [
+        "qsd-seven.vercel.app",
+        "quesedice.com.ar",
+        "www.quesedice.com.ar"
+      ]
+    },
+    "feed_categories_api": {
+      "classification": "implemented",
+      "source": "api/feeds.js FEEDS keys",
+      "categories": [
+        "portada",
+        "argentina",
+        "corrientes",
+        "mundo",
+        "deportes",
+        "economia",
+        "tecnologia",
+        "espectaculos"
+      ]
+    },
+    "ranking_constants": {
+      "classification": "implemented",
+      "source": "api/rank.js",
+      "MAX_AGE_HOURS": 24,
+      "MIN_CORRIENTES": 20,
+      "ordering_note": "scored.sort: primero editorial_score DESC, desempate published_ts DESC (api/rank.js).",
+      "editorial_score_range": "Enriquecimiento: editorial_score = Math.min(1, (factos_final * 0.7) + (freshness * 0.3) + geoBoost) — magnitud 0..1 en API; index.html getEditorialScore asume número y lo clamp-ea 0..100 (convención front/API a vigilar)."
+    },
+    "client_surface_features": {
+      "classification": "implemented",
+      "source": "index.html",
+      "features": [
+        "Navegación por categorías poblada desde feeds cuando categories llegan por API",
+        "Tendencias (trending) cuando payload incluye trending",
+        "Guardados en panel + almacenamiento local asociado",
+        "Backup export/import JSONL del ledger",
+        "Compartir vía /api/share query params",
+        "Scroll to top, install tooltip PWA, update toast cuando nueva versión SW",
+        "Modo snap qsd_snap localStorage",
+        "device_id persistente en localStorage para ledger",
+        "Enlace institucional /sobre-qsd y /redaccion/"
+      ]
+    },
+    "security_notes_from_audit": {
+      "classification": "historical_audit",
+      "source": "qa/QSD_FULL_AUDIT_REPORT.md",
+      "items": [
+        "api/resolve permite fetch outbound a URL arbitraria — riesgo SSRF-like",
+        "api/r sufijos TLD amplios — política permisiva",
+        "Historial: backup .env sensible; audit dice mitigado en estado auditado"
+      ]
+    }
+  },
+  "ui_ux_state": {
+    "strategy_dark_light": {
+      "classification": "implemented",
+      "dark": "Tema oscuro editorial dominante (paleta en index.html :root y tokens). theme-color #0b0f14.",
+      "light": "No hay tema claro como producto principal documentado en QA_UI_MANIFEST (se preserva dark).",
+      "shared_tokens": "css/qsd-tokens.css unifica home, redacción, sobre-qsd."
+    },
+    "signal_layer": {
+      "classification": "implemented",
+      "file": "index.html",
+      "behavior": "Variante de tarjeta 'c-signal' cuando editorial_score alto en primeros ítems (getEditorialVariant). Capa de métricas oculta en producción salvo ?debug_ui=1 (QA manifest).",
+      "threshold_consistency_note": {
+        "classification": "implemented",
+        "observation": "getEditorialVariant marca c-signal si editorial_score >= 75; /api/rank entrega editorial_score en rango ~0..1 (Math.min(1, ...) en api/rank.js). Para ítems de rank, el umbral 75 casi nunca se cumple salvo otra ruta de datos.",
+        "implication": "Variante c-signal puede activarse principalmente en flujos donde scores vienen en escala 0..100 o desde feeds crudos; conviene unificar contrato numérico."
+      }
+    },
+    "read_layer": {
+      "classification": "implemented",
+      "elements": [
+        "Hero con titular dominante",
+        "rejilla de cards",
+        "tipografía display/headline/body",
+        "footer con legado 2004 y enlaces institucionales"
+      ]
+    },
+    "stream_editorial": {
+      "classification": "implemented",
+      "id": "qsdStreamPanel",
+      "semantics": "Título 'QSD Stream', meta 'Señales' / conteo de ítems, hasta 22 filas renderStream, pulse animation en actualización."
+    },
+    "semantic_thumbnails": {
+      "classification": "implemented",
+      "see": "technical_state.semantic_blocks y thumb_strategy"
+    },
+    "visual_language": {
+      "classification": "implemented",
+      "traits": [
+        "Violeta y ámbar como acentos",
+        "oro/ámbar reservado a highlights (manifest)",
+        "bordes sutiles gray-violet",
+        "grid editorial en SVG thumb"
+      ]
+    },
+    "mobile_strategy": {
+      "classification": "implemented",
+      "evidence": "viewport meta, media queries en index.html (ej. .qsd-stream-panel responsive), PWA install tooltip orientado a Chrome, scroll-top, nav populated by JS"
+    },
+    "redaccion_ux": {
+      "classification": "implemented",
+      "collection_page": "redaccion/index.html — cabecera tipográfica alineada a tokens, grid de cards",
+      "integration_home": "Panel lateral en portada con enlace /redaccion/"
+    },
+    "quienes_somos_ux": {
+      "classification": "implemented",
+      "path": "/sobre-qsd/index.html",
+      "traits": [
+        "Layout estrecho legible",
+        "card única",
+        "sección legado Antonio Haedo",
+        "firma Gonzalo Haedo Nordia"
+      ]
+    },
+    "problemas_detectados_y_fixes_documentados": {
+      "classification": "implemented",
+      "routing_local": "qa/LOCAL_RUNTIME_NOTES.md + QSD_RUNTIME_HARDENING.md — fallback SPA capturaba APIs o rompía /; ajuste de rewrites negativos y exclusión de paths estáticos.",
+      "service_worker_confusion": "qa/SW_QA_GUIDE.md — curl primero; SW puede enmascarar problemas.",
+      "nav_empty_on_portada": "index.html comentario: portada vía rank no trae categories; guard para no renderNav([]) destructivo."
+    },
+    "direccion_aprobada_qa": {
+      "classification": "implemented",
+      "source": "qa/QA_UI_MANIFEST_QSD_v1.json",
+      "headline_rules": [
+        "No debug labels en producción",
+        "No analytics externos; ledger local",
+        "Una acción primaria por card (abrir); secundarias guardar/compartir/copiar"
+      ]
+    },
+    "known_ui_copy_issues": {
+      "classification": "implemented",
+      "items": [
+        {
+          "location": "index.html update toast",
+          "text_observed": "Nueva version disponible",
+          "issue": "Ortografía: debería ser 'versión'"
+        }
+      ]
+    }
+  },
+  "editorial_state": {
+    "redaccion_qsd": {
+      "classification": "implemented",
+      "home_panel_label": "Redacción QSD",
+      "index": "/redaccion/index.json",
+      "current_notes_count": 2,
+      "notes": [
+        {
+          "id": "fec-rimi-ganancias-2026-05-11",
+          "category": "economia",
+          "author": "Redacción QSD"
+        },
+        {
+          "id": "antonio-pj-2026-03-15",
+          "category": "politica",
+          "author": "Redacción QSD",
+          "topic": "Entrevista LT7 Antonio Haedo — copy en excerpt"
+        }
+      ]
+    },
+    "notas_manuales_vs_feed": {
+      "classification": "implemented",
+      "automatic": "Portada principal impulsada por /api/rank y /api/feeds",
+      "manual_static": "Piezas en /redaccion/ como HTML+JSON",
+      "filesystem_api": "/api/notas lista archivos en /notas (demo rqsd-demo.json presente)"
+    },
+    "periodistas_opinion": {
+      "classification": "implemented",
+      "antonio_haedo": {
+        "role": "Legado y referencia editorial citada en sobre-qsd; pieza de opinión/cobertura en redacción sobre entrevista marzo 2026.",
+        "public_copy": "sobre-qsd: 'Antonio Haedo — padre del proyecto y referencia periodística; impronta en rigor y respeto al lector.'"
+      },
+      "gonzalo_haedo": {
+        "role": "Impulso operativo del proyecto desde Nordia; base Corrientes (copy sobre-qsd).",
+        "schema_founder": "JSON-LD NewsMediaOrganization founder Person Gonzalo Haedo en sobre-qsd"
+      }
+    },
+    "footer_legado": {
+      "classification": "implemented",
+      "lines": [
+        "Antonio & Gonzalo Haedo",
+        "Desde 2004 · Corrientes, Argentina",
+        "Taetanoticias → Corrientes Dice → Qué Se Dice"
+      ]
+    },
+    "continuidad_humana": {
+      "classification": "implemented",
+      "source": "sobre-qsd/index.html",
+      "paraphrase": "Continuidad como compromiso editorial entre legado y actualidad; producto digital estable y honesto."
+    },
+    "futuro_ecosistema_editorial": {
+      "classification": "roadmap",
+      "note": "Verticalización QSD Business / Health / observatorios / TV solicitada en especificación de este JSON; no hay implementación en repo bajo esos nombres al 2026-05-10."
+    },
+    "taxonomy_ui": {
+      "classification": "implemented",
+      "card_variants": [
+        "c-urgent",
+        "c-signal",
+        "c-analisis",
+        "c-archivo",
+        "c-filo"
+      ],
+      "source": "index.html getEditorialVariant"
+    }
+  },
+  "operational_state": {
+    "auditoria_sistema_2026_05_09": {
+      "classification": "implemented",
+      "os": "Linux Mint 22.2 (Zara) per qa/system_audit_*/os_release.txt",
+      "memory_sample": "~15 Gi total, uso variable per memory.txt snapshot",
+      "gpu": "Intel i915 Sandybridge (dmesg_errors.txt en auditoría)",
+      "dmesg_notes": "Mayoría entradas térmicas/drm de boot; apparmor denegado a glxinfo por perfil cursor_sandbox en snapshot",
+      "process_snapshot": "node_processes.txt lista Chrome + Cursor (Electron) bajo usuario openclaw con uso significativo de RAM en renderer"
+    },
+    "hardware_limitado": {
+      "classification": "hypothesis",
+      "note": "Repo no define presupuesto de hardware; snapshots muestran máquina con GPU integrada antigua y RAM finita — implica techo de paralelismo browser/IDE.",
+      "sata_dual_disk": {
+        "classification": "hypothesis",
+        "evidence": "lsblk en auditoría lista sda y sdb (~232G cada uno)",
+        "hypothesis": "Posible latencia o contención de I/O en escenarios de build/cache pesado; NO hay benchmark en repo que lo confirme como causa de freezes."
+      }
+    },
+    "freezes_y_diagnostico": {
+      "classification": "implemented",
+      "tool": "system-freeze-audit.sh captura dmesg/journal/top para correlación manual",
+      "guidance": "SUMMARY.md de auditoría apunta a revisar dmesg_errors, top_mem, sensors, journal_errors"
+    },
+    "chromium_electron_pressure": {
+      "classification": "implemented",
+      "evidence": "qa/system_audit_*/node_processes.txt — Google Chrome multi-proceso + Cursor/Electron",
+      "impact": "Presión concurrente de renderers contra RAM y CPU en la misma sesión de trabajo."
+    },
+    "split_usuarios_linux_workspace": {
+      "classification": "implemented",
+      "observation": "Código y workspace bajo /home/gonza/...; procesos de auditoría bajo usuario openclaw. Indica entorno multi-usuario o agente/sandbox distinto del dueño del repo.",
+      "implication": "Scripts que asumen $HOME único deben validarse; permisos y rutas pueden diferir."
+    },
+    "openclaw": {
+      "classification": "implemented",
+      "description": "Usuario aparece en artefactos de auditoría (procesos Chrome/Cursor). Asociado a sesiones de desarrollo/agente en esta máquina, no a lógica de QSD en producción."
+    },
+    "estrategia_futura_entorno_dev": {
+      "classification": "roadmap",
+      "grounded_recommendations_from_docs": [
+        "Un solo vercel dev listener; scripts/runtime-clean.sh antes de auditar",
+        "Separar validación curl vs navegador por SW (SW_QA_GUIDE.md)",
+        "Reevaluar workaround local si se abandona vercel dev (LOCAL_RUNTIME_NOTES.md)"
+      ]
+    }
+  },
+  "roadmap": {
+    "meta": {
+      "classification": "roadmap",
+      "note": "Bloques V1/V1.1/V2/V3 siguientes mezclan hechos del repo con organización solicitada en el brief. Cada bullet lleva tag implícito en texto."
+    },
+    "v1_comercial_implemented_baseline": {
+      "classification": "implemented",
+      "scope": [
+        "Portada con rank + feeds + stream + redacción panel + PWA",
+        "Redacción QSD con al menos dos notas destacadas",
+        "Institucional /sobre-qsd",
+        "Dominio www.quesedice.com.ar y despliegue Vercel",
+        "QA: runtime-audit + manifests"
+      ]
+    },
+    "v1_1_near_term_engineering": {
+      "classification": "roadmap",
+      "from_technical_debt_and_docs": [
+        "Endurecer /api/resolve frente a abuso SSRF (riesgo ALTO en audit histórico)",
+        "Revisar política de sufijos en /api/r para permisividad",
+        "Backoff en retry de loadFeed tras errores",
+        "Reducir monolito HTML o introducir build incremental (performance ALTA en audit)",
+        "Unificar copy público con framing observatorio/signal (tension_identity)"
+      ]
+    },
+    "v2_declarado_readme": {
+      "classification": "roadmap",
+      "readme": "README declara 'V2 — Portal en evolución continua' sin desglose técnico",
+      "plausible_direction": "Profundizar ranking, más señales editoriales, mejor separación lector/operador — inferencia débil; marcar como hipótesis de producto si se usa fuera de README.",
+      "product_hypothesis": {
+        "classification": "hypothesis",
+        "text": "Evolución del mismo núcleo vanilla+hardening sin migración React (decisión explícita del brief usuario)."
+      }
+    },
+    "v3_ecosistema_y_verticals_solicitadas": {
+      "classification": "roadmap",
+      "items_solicitados_en_brief": [
+        "QSD Business",
+        "QSD Health",
+        "Observatorios temáticos",
+        "TV / live",
+        "Stream avanzado (más allá del panel lateral actual)",
+        "White-label / editorial engine reusable"
+      ],
+      "implemented_today": "Ninguno de esos productos existe como módulo o ruta dedicada en el repo al generar este archivo."
+    }
+  },
+  "decisions_importantes": {
+    "no_react_migration_principal": {
+      "classification": "roadmap",
+      "source": "brief usuario + ausencia de React en portada",
+      "detail": "Portada productiva es vanilla; rqsd es HTML standalone sin React."
+    },
+    "vanilla_first": {
+      "classification": "implemented",
+      "evidence": "index.html inline engine"
+    },
+    "no_overengineering_framework": {
+      "classification": "implemented",
+      "evidence": "package.json mínimo; sin bundler en scripts npm"
+    },
+    "local_first_ledger": {
+      "classification": "implemented",
+      "evidence": "IndexedDB qsd_ledger + QA manifest forbids external analytics"
+    },
+    "deterministic_qa": {
+      "classification": "implemented",
+      "evidence": "runtime-audit.sh curl+json parse"
+    },
+    "no_placeholders_rotos_operativos": {
+      "classification": "implemented",
+      "note": "QA factory y smoke buscan detectar HTML fallback y NOT_FOUND; filosofía explícita en brief reflejada en tooling"
+    },
+    "semantic_visuals_deliberados": {
+      "classification": "implemented",
+      "evidence": "semantic blocks + thumb SVG disclaimer"
+    },
+    "service_worker_no_cache_api": {
+      "classification": "implemented",
+      "evidence": "service-worker.js fetch /api/* passthrough"
+    },
+    "filesystem_writes_disabled_default": {
+      "classification": "implemented",
+      "evidence": "README api ingesta-save / notas-save"
+    },
+    "vercel_json_simplificado": {
+      "classification": "implemented",
+      "evidence": "QSD_RUNTIME_HARDENING.md"
+    },
+    "debug_ui_gated": {
+      "classification": "implemented",
+      "evidence": "QA_UI_MANIFEST_QSD_v1.json, index.html debugUi flag"
+    }
+  },
+  "risks_and_limitations": {
+    "hardware": [
+      "GPU integrada clase Sandy Bridge limita aceleración gráfica moderna",
+      "RAM finita + Chrome + Electron IDE = riesgo de presión de memoria en sesiones largas"
+    ],
+    "performance": [
+      "index.html monolítico grande: parse y TTFB en móviles (documentado QSD_FULL_AUDIT_REPORT.md)",
+      "/api/rank y /api/feeds hacen múltiples fetch RSS por request",
+      "/api/sitemap valida URLs vivas — costo crece con corpus"
+    ],
+    "vercel_limits": [
+      "Cuotas serverless, cold starts, y límites de tiempo en edge/node",
+      "Escritura FS en notas-save/ingesta-save no persistente en serverless típico"
+    ],
+    "browser_pressure": [
+      "Auto-refresh 10 min + resolve background + imágenes puede tensionar redes lentas",
+      "Service worker puede enmascarar diagnósticos si se ignora SW_QA_GUIDE"
+    ],
+    "technical_debt": [
+      "api/resolve superficie amplia outbound",
+      "Cache global en api/story no determinista entre instancias",
+      "Dependencia rank->story/sitemap encadena latencias",
+      "Tensión entre README/audit antiguo y vercel.json actual — riesgo de documentación obsoleta si no se re-audita"
+    ],
+    "risks_ui": [
+      "Modo debug_ui expone señales crudas — debe permanecer off en producción",
+      "Si rank falla y feeds también, UI entra en loop de retry 15s"
+    ],
+    "operational_constraints": [
+      "vercel dev debe ser único por puerto — múltiples procesos contaminan QA",
+      "npx serve . no valida edge functions — riesgo de falsos positivos en desarrollo",
+      "Entorno multi-usuario Linux puede complicar paths y permisos"
+    ]
+  },
+  "evidence_index": {
+    "core": [
+      "index.html",
+      "vercel.json",
+      "service-worker.js",
+      "css/qsd-tokens.css",
+      "README.md",
+      "package.json"
+    ],
+    "api": [
+      "api/feeds.js",
+      "api/rank.js",
+      "api/story.js",
+      "api/sitemap.js",
+      "api/r.js",
+      "api/resolve.js",
+      "api/share.js",
+      "api/og.js",
+      "api/thumb.js",
+      "api/story-image.js",
+      "api/notas.js",
+      "api/notas-save.js",
+      "api/ingesta-save.js"
+    ],
+    "editorial_pages": [
+      "sobre-qsd/index.html",
+      "redaccion/index.html",
+      "redaccion/index.json"
+    ],
+    "qa": [
+      "qa/QSD_RUNTIME_HARDENING.md",
+      "qa/LOCAL_RUNTIME_NOTES.md",
+      "qa/QSD_FULL_AUDIT_REPORT.md",
+      "qa/runtime_findings.md",
+      "qa/SW_QA_GUIDE.md",
+      "qa/QA_UI_MANIFEST_QSD_v1.json",
+      "qa/run-all.sh"
+    ],
+    "scripts": [
+      "scripts/runtime-audit.sh",
+      "scripts/dev-smoke.sh",
+      "system-freeze-audit.sh"
+    ],
+    "audits": [
+      "qa/system_audit_20260509_233116/SUMMARY.md",
+      "qa/system_audit_20260509_233216/SUMMARY.md"
+    ]
+  }
+}

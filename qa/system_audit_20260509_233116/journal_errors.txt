@@ -1,0 +1,5 @@
+### COMMAND
+bash -c journalctl -p 3 -xb | tail -300
+
+### OUTPUT
+-- No entries --

@@ -1,0 +1,5 @@
+### COMMAND
+uptime
+
+### OUTPUT
+ 23:31:16 up 46 min,  0 user,  load average: 1,55, 1,16, 0,68

@@ -1,6 +1,6 @@
 # QSD runtime findings (auto-generated)
 
-**Generated (UTC):** 2026-05-09T19:22:33Z  
+**Generated (UTC):** 2026-05-09T22:59:21Z  
 **Base URL:** `http://localhost:3000`  
 **Tooling:** `scripts/runtime-audit.sh` (curl + python3 JSON).  
 

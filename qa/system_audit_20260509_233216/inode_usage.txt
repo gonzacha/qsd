@@ -1,0 +1,13 @@
+### COMMAND
+df -i
+
+### OUTPUT
+S.ficheros      Nodos-i NUsados  NLibres NUso% Montado en
+tmpfs           2036071    1112  2034959    1% /run
+efivarfs              0       0        0     - /sys/firmware/efi/efivars
+/dev/sdb3      14622720 1367361 13255359   10% /
+tmpfs           2036071     132  2035939    1% /dev/shm
+tmpfs           2036071       5  2036066    1% /run/lock
+tmpfs           2036071       1  2036070    1% /run/qemu
+/dev/sdb2             0       0        0     - /boot/efi
+tmpfs            407214     141   407073    1% /run/user/1001

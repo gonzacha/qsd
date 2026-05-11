@@ -1,0 +1,5 @@
+### COMMAND
+bash -c du -sh /home/gonza/dev/editorial/quesedice
+
+### OUTPUT
+540M	/home/gonza/dev/editorial/quesedice

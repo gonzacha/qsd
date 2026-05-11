@@ -1,0 +1,13 @@
+### COMMAND
+df -h
+
+### OUTPUT
+S.ficheros     Tamaño Usados  Disp Uso% Montado en
+tmpfs            1,6G   1,7M  1,6G   1% /run
+efivarfs          64K   1,2K   58K   3% /sys/firmware/efi/efivars
+/dev/sdb3        219G   146G   62G  71% /
+tmpfs            7,8G    33M  7,8G   1% /dev/shm
+tmpfs            5,0M   8,0K  5,0M   1% /run/lock
+tmpfs            7,8G      0  7,8G   0% /run/qemu
+/dev/sdb2        512M   6,2M  506M   2% /boot/efi
+tmpfs            1,6G   140K  1,6G   1% /run/user/1001

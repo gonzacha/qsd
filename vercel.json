@@ -41,7 +41,7 @@
       "destination": "/api/r"
     },
     {
-      "source": "/((?!api/|index\\.html$).*)",
+      "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/).*)",
       "destination": "/index.html"
     }
   ]

@@ -1,0 +1,26 @@
+### COMMAND
+ss -tulpn
+
+### OUTPUT
+Netid State  Recv-Q Send-Q                      Local Address:Port  Peer Address:PortProcess                                  
+udp   UNCONN 0      0                             224.0.0.251:5353       0.0.0.0:*    users:(("chrome",pid=2653,fd=442))      
+udp   UNCONN 0      0                             224.0.0.251:5353       0.0.0.0:*    users:(("chrome",pid=2653,fd=421))      
+udp   UNCONN 0      0                                 0.0.0.0:5353       0.0.0.0:*                                            
+udp   UNCONN 0      0                              127.0.0.54:53         0.0.0.0:*                                            
+udp   UNCONN 0      0                           127.0.0.53%lo:53         0.0.0.0:*                                            
+udp   UNCONN 0      0                                 0.0.0.0:52140      0.0.0.0:*                                            
+udp   UNCONN 0      0                                    [::]:5353          [::]:*                                            
+udp   UNCONN 0      0      [fe80::1f15:7b80:adb6:9977]%enp1s0:546           [::]:*                                            
+udp   UNCONN 0      0                                    [::]:58399         [::]:*                                            
+tcp   LISTEN 0      4096                            127.0.0.1:35065      0.0.0.0:*                                            
+tcp   LISTEN 0      4096                            127.0.0.1:11434      0.0.0.0:*                                            
+tcp   LISTEN 0      511                             127.0.0.1:45005      0.0.0.0:*    users:(("cursor",pid=4769,fd=66))       
+tcp   LISTEN 0      511                             127.0.0.1:41349      0.0.0.0:*    users:(("cursor",pid=4661,fd=45))       
+tcp   LISTEN 0      4096                            127.0.0.1:631        0.0.0.0:*                                            
+tcp   LISTEN 0      4096                        127.0.0.53%lo:53         0.0.0.0:*                                            
+tcp   LISTEN 0      128                             127.0.0.1:42335      0.0.0.0:*    users:(("cursorsandbox",pid=5448,fd=12))
+tcp   LISTEN 0      4096                            127.0.0.1:28791      0.0.0.0:*                                            
+tcp   LISTEN 0      4096                            127.0.0.1:28789      0.0.0.0:*                                            
+tcp   LISTEN 0      4096                            127.0.0.1:46483      0.0.0.0:*    users:(("cursorsandbox",pid=5448,fd=11))
+tcp   LISTEN 0      4096                           127.0.0.54:53         0.0.0.0:*                                            
+tcp   LISTEN 0      4096                                [::1]:631           [::]:*                                            
