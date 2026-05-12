@@ -1826,6 +1826,280 @@
 
     .scroll-top svg { width: 18px; height: 18px; }
 
+    /* ═══════════════════════════════════════════
+       QSD SIGNAL TERMINAL V1 (commercial layer)
+       Evolución visual sobre runtime existente.
+       ═══════════════════════════════════════════ */
+    body.qsd-signal-terminal {
+      --bg-deep: #080a0f;
+      --bg-primary: #0b0e16;
+      --bg-card: #101522;
+      --bg-card-hover: #151a2a;
+      --bg-elevated: #1a2133;
+      --border-subtle: rgba(136, 144, 174, 0.12);
+      --border-light: rgba(136, 144, 174, 0.2);
+      --text-primary: #ece8df;
+      --text-secondary: #9a968c;
+      --text-muted: #5c5a54;
+      --text-bright: #f7f4ec;
+      --violet-primary: #c9a227;
+      --violet-strong: #e0b84a;
+      --violet-dim: rgba(201, 162, 39, 0.45);
+      --violet-soft: rgba(201, 162, 39, 0.12);
+      --amber-primary: #d39a3f;
+      --qsd-sig-urgent: #e24a4a;
+      --qsd-sig-alert: #e8943a;
+      --qsd-sig-trend: #4a8fd9;
+      --qsd-sig-base: #4b5568;
+    }
+
+    body.qsd-signal-terminal .masthead {
+      background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-deep) 100%);
+      border-bottom-color: var(--border-subtle);
+    }
+
+    body.qsd-signal-terminal .site-header {
+      background: rgba(8, 10, 15, 0.97);
+    }
+
+    body.qsd-signal-terminal .nav {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    body.qsd-signal-terminal .nav-btn.active {
+      color: var(--violet-strong);
+      border-bottom-color: var(--violet-primary);
+    }
+
+    body.qsd-signal-terminal .container {
+      border-color: var(--border-subtle);
+      border-radius: 2px;
+      box-shadow: none;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-panel {
+      border-radius: 2px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-light);
+      box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.04);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-title {
+      font-family: var(--font-body);
+      letter-spacing: 0.14em;
+      color: var(--violet-strong);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-row {
+      border-radius: 0;
+      border-left: 2px solid transparent;
+      border-bottom-color: var(--border-subtle);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-urgente { border-left-color: var(--qsd-sig-urgent); }
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-alerta { border-left-color: var(--qsd-sig-alert); }
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-tendencia { border-left-color: var(--qsd-sig-trend); }
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-base { border-left-color: rgba(75, 85, 104, 0.5); }
+
+    body.qsd-signal-terminal .qsd-stream-time {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      color: var(--violet-strong);
+      font-size: 0.7rem;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-tier {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 1px;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-tier--urgente { background: rgba(226, 74, 74, 0.15); color: var(--qsd-sig-urgent); }
+    body.qsd-signal-terminal .qsd-stream-tier--alerta { background: rgba(232, 148, 58, 0.15); color: var(--qsd-sig-alert); }
+    body.qsd-signal-terminal .qsd-stream-tier--tendencia { background: rgba(74, 143, 217, 0.15); color: var(--qsd-sig-trend); }
+
+    body.qsd-signal-terminal .qsd-stream-cat {
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-line {
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-src {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .qsd-ticker-shell {
+      position: relative;
+      z-index: 12;
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .qsd-ticker-inner {
+      max-width: min(var(--max-width), 1320px);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 6px var(--space-lg);
+      min-height: 34px;
+    }
+
+    .qsd-ticker-brand {
+      flex-shrink: 0;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      color: var(--violet-strong);
+    }
+
+    .qsd-ticker-viewport {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+    }
+
+    .qsd-ticker-track {
+      overflow: hidden;
+    }
+
+    .qsd-ticker__marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: qsdTickerMarquee 48s linear infinite;
+    }
+
+    @keyframes qsdTickerMarquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .qsd-tick-item {
+      display: inline;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+
+    .qsd-tick-time {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      color: var(--violet-strong);
+      margin-right: 4px;
+    }
+
+    .qsd-tick-tier {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-right: 6px;
+    }
+
+    .qsd-tick-tier.qsd-tick-urgente { color: var(--qsd-sig-urgent); }
+    .qsd-tick-tier.qsd-tick-alerta { color: var(--qsd-sig-alert); }
+    .qsd-tick-tier.qsd-tick-tendencia { color: var(--qsd-sig-trend); }
+
+    .qsd-tick-sep {
+      display: inline;
+      margin: 0 10px;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .qsd-hub-strip-wrap {
+      position: relative;
+      z-index: 11;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .qsd-hub-strip {
+      max-width: min(var(--max-width), 1320px);
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px var(--space-lg) 10px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .qsd-hub-strip::-webkit-scrollbar { display: none; }
+
+    .qsd-hub-btn {
+      flex: 0 0 auto;
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      background: var(--bg-card);
+      padding: 6px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .qsd-hub-btn:hover {
+      color: var(--text-bright);
+      border-color: var(--violet-dim);
+      background: var(--bg-elevated);
+    }
+
+    .qsd-hub-btn.is-active {
+      color: var(--violet-strong);
+      border-color: var(--violet-primary);
+      background: rgba(201, 162, 39, 0.08);
+    }
+
+    body.qsd-signal-terminal .hero-card--main .hero-title {
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      letter-spacing: 0.02em;
+    }
+
+    body.qsd-signal-terminal .hero-terminal-kicker {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--qsd-sig-urgent);
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .qsd-ticker-inner {
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+      }
+      .qsd-hub-strip {
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       * {
         animation: none !important;
@@ -1834,7 +2108,7 @@
     }
   </style>
 </head>
-<body>
+<body class="qsd-signal-terminal">
   <header class="site-header">
     <div class="site-header-inner">
       <a class="site-brand is-hidden" href="/" aria-label="Qué Se Dice">
@@ -1872,6 +2146,25 @@
       <!-- Populated by JS -->
     </div>
   </nav>
+
+  <div class="qsd-ticker-shell" id="qsdTickerShell" hidden>
+    <div class="qsd-ticker-inner">
+      <span class="qsd-ticker-brand">TICKER</span>
+      <div class="qsd-ticker-viewport" role="marquee" aria-live="polite">
+        <div class="qsd-ticker-track" id="qsdTickerTrack"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="qsd-hub-strip-wrap" id="qsdHubWrap">
+    <div class="qsd-hub-strip" id="qsdHubStrip" role="navigation" aria-label="Módulos editoriales">
+      <button type="button" class="qsd-hub-btn" data-hub-cat="deportes">Deportes · motor / NBA</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="economia">Negocios</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="corrientes">Corrientes</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="argentina">NEA · clima</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="tecnologia">Tecnología</button>
+    </div>
+  </div>
 
   <!-- Trending -->
   <div class="trending-bar" id="trendingBar" style="display:none;">
@@ -2056,7 +2349,7 @@
       const metaEl = document.getElementById('qsdStreamMeta');
       if (!listEl || !panel) return;
       const slice = items.slice(0, 22).filter(isRenderableItem);
-      if (metaEl) metaEl.textContent = slice.length ? `${slice.length} ítems` : '';
+      if (metaEl) metaEl.textContent = slice.length ? `${slice.length} señales` : '';
       listEl.innerHTML = slice.map((item) => {
         const redirectUrl = buildRedirectUrl(item.link, item.title, {
           source: item.source,
@@ -2065,11 +2358,17 @@
           score: getEditorialScore(item),
           sources: getSourcesCount(item),
         });
+        const sig = signalUrgencyFromScore(item);
+        const bucket = streamBucketLabel(item);
+        const tierHtml = sig.label
+          ? `<span class="qsd-stream-tier qsd-stream-tier--${sig.tierKey}">${escapeHtml(sig.label)}</span>`
+          : '';
         return `
-          <a class="qsd-stream-row" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+          <a class="qsd-stream-row ${sig.rowClass}" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
              data-item-id="${escapeAttr(item.item_id)}">
             <span class="qsd-stream-time">${escapeHtml(formatClock(item.pubDate))}</span>
             <span class="qsd-stream-body">
+              <span class="qsd-stream-meta-row">${tierHtml}<span class="qsd-stream-cat">${escapeHtml(bucket)}</span></span>
               <span class="qsd-stream-line">${escapeHtml(item.title)}</span>
               <span class="qsd-stream-src">${escapeHtml(item.source || '')}</span>
             </span>
@@ -2769,6 +3068,73 @@
       return Math.min(100, Math.max(0, score));
     }
 
+    /** Urgencia determinística desde score editorial 0–100 (sin datos falsos). */
+    function signalUrgencyFromScore(item) {
+      const s = getEditorialScore(item);
+      if (!Number.isFinite(s)) {
+        return { rowClass: 'qsd-sig-base', tierKey: '', label: '' };
+      }
+      if (s > 75) return { rowClass: 'qsd-sig-urgente', tierKey: 'urgente', label: 'URGENTE' };
+      if (s > 55) return { rowClass: 'qsd-sig-alerta', tierKey: 'alerta', label: 'ALERTA' };
+      if (s > 35) return { rowClass: 'qsd-sig-tendencia', tierKey: 'tendencia', label: 'TENDENCIA' };
+      return { rowClass: 'qsd-sig-base', tierKey: '', label: '' };
+    }
+
+    function streamBucketLabel(item) {
+      const b = classifyItem(item);
+      if (b === 'argentina') return 'REGIÓN';
+      if (b === 'mundo') return 'MUNDO';
+      return 'SEÑAL';
+    }
+
+    function syncHubStripActive() {
+      const strip = document.getElementById('qsdHubStrip');
+      if (!strip) return;
+      strip.querySelectorAll('.qsd-hub-btn').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.hubCat === currentCategory);
+      });
+    }
+
+    function wireHubStrip() {
+      const strip = document.getElementById('qsdHubStrip');
+      if (!strip) return;
+      strip.querySelectorAll('[data-hub-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentCategory = btn.dataset.hubCat;
+          const inner = document.getElementById('navInner');
+          if (inner) {
+            inner.querySelectorAll('.nav-btn').forEach(b => {
+              b.classList.toggle('active', b.dataset.cat === currentCategory);
+            });
+          }
+          syncHubStripActive();
+          loadFeed(currentCategory);
+        });
+      });
+    }
+
+    function renderSignalTicker(items) {
+      const shell = document.getElementById('qsdTickerShell');
+      const track = document.getElementById('qsdTickerTrack');
+      if (!shell || !track) return;
+      const top = items.slice(0, 18).filter(isRenderableItem);
+      if (!top.length) {
+        shell.hidden = true;
+        track.innerHTML = '';
+        return;
+      }
+      const seg = top.map(item => {
+        const sig = signalUrgencyFromScore(item);
+        const clk = formatClock(item.pubDate);
+        const tier = sig.label && sig.tierKey
+          ? `<span class="qsd-tick-tier qsd-tick-${sig.tierKey}">${escapeHtml(sig.label)}</span>`
+          : '';
+        return `<span class="qsd-tick-item">${tier}<span class="qsd-tick-time">${escapeHtml(clk)}</span> ${escapeHtml(item.title)}</span><span class="qsd-tick-sep">·</span>`;
+      }).join('');
+      track.innerHTML = `<div class="qsd-ticker__marquee">${seg}${seg}</div>`;
+      shell.hidden = false;
+    }
+
     function getSourcesCount(item) {
       const count = Number(item?.sources_count);
       return Number.isFinite(count) && count > 0 ? count : null;
@@ -2829,9 +3195,11 @@
           currentCategory = btn.dataset.cat;
           inner.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
+          syncHubStripActive();
           loadFeed(currentCategory);
         });
       });
+      syncHubStripActive();
     }
 
     function renderTrending(trending) {
@@ -2882,6 +3250,7 @@
            data-pub="${escapeAttr(item.pubDate || '')}">
           ${renderHeroVisual(item, heroThumbUrl, variant)}
           <div class="hero-body">
+            ${isMain ? '<div class="hero-terminal-kicker">En foco</div>' : ''}
             ${heroKicker ? `
               <div class="hero-badge">
                 <span class="hero-badge-dot"></span>
@@ -3009,6 +3378,7 @@
             <div class="loading-text">No hay noticias disponibles en este momento</div>
           </div>`;
         renderStream([]);
+        renderSignalTicker([]);
         return;
       }
 
@@ -3114,6 +3484,7 @@
       });
 
       renderStream(items);
+      renderSignalTicker(items);
       void resolveItemImages(items);
       logItemsSeen(items);
       wireItemActions(items);
@@ -3232,15 +3603,8 @@
               sources_count: item.sources_count,
               hours_since_publish: item.hours_since_publish,
             }));
-            const freshRankItems = rankItems.filter(item => {
-              if (!item.pubDate) return false;
-              const ts = new Date(item.pubDate).getTime();
-              if (!Number.isFinite(ts)) return false;
-              const ageMs = Date.now() - ts;
-              return ageMs >= 0 && ageMs <= (24 * 60 * 60 * 1000);
-            });
-            if (freshRankItems.length === 0) {
-              throw new Error('No hay datos frescos para portada');
+            if (rankItems.length === 0) {
+              throw new Error('No hay datos de ranking para portada');
             }
             data = { items: rankItems, trending: [], categories };
             endpoint = 'rank';
@@ -3508,6 +3872,8 @@
       { key: 'espectaculos', label: 'Espectáculos' },
     ];
     renderNav(defaultCats);
+    wireHubStrip();
+    syncHubStripActive();
     loadFeed(currentCategory);
     loadRedaccion();
     startAutoRefresh();

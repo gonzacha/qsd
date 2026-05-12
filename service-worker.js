@@ -1,4 +1,4 @@
-const CACHE = 'qsd-pwa-v0.0.5';
+const CACHE = 'qsd-pwa-v0.0.6';
 const PRECACHE_URLS = [
   '/',
   '/offline.html',

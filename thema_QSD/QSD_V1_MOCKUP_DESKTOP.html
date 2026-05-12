@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QSD — Qué Se Dice · V1 Commercial Mockup</title>
+<style>
+:root {
+  --bg:       #0e0d0b;
+  --surface:  #161512;
+  --surface2: #1e1d1a;
+  --border:   #2c2b27;
+  --border2:  #3a3935;
+  --text:     #ede9e1;
+  --text2:    #9a9590;
+  --text3:    #5c5a54;
+  --qsd:      #f59e0b;
+  --qsd-dim:  #92600a;
+  --urgent:   #ef4444;
+  --alerta:   #f97316;
+  --tendencia:#3b82f6;
+  --base:     #6b7280;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  --sans: system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* ─── NAV ─── */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 20px;
+  height: 52px;
+}
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-right: 32px;
+  flex-shrink: 0;
+}
+.brand-logo {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--qsd);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.brand-sub {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.brand-sub span:first-child {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.brand-sub span:last-child {
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.03em;
+}
+.nav-cats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.nav-cat {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding: 0 14px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.nav-cat:hover { color: var(--text); }
+.nav-cat.active { color: var(--qsd); border-color: var(--qsd); }
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a0a0a;
+  border: 1px solid #5a1a1a;
+  color: var(--urgent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--urgent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ─── LAYOUT ─── */
+.layout {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 280px 1fr 260px;
+  gap: 1px;
+  background: var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+.col { background: var(--bg); }
+
+/* ─── STREAM COLUMN ─── */
+.stream-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 52px;
+  background: var(--bg);
+  z-index: 10;
+}
+.stream-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.stream-live {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--urgent);
+}
+.stream-list { overflow: hidden; }
+.stream-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  border-bottom: 1px solid var(--border);
+  border-left: 2px solid transparent;
+  transition: background 0.1s;
+  cursor: pointer;
+}
+.stream-item:hover { background: var(--surface); }
+.stream-item.urgent { border-left-color: var(--urgent); }
+.stream-item.alerta { border-left-color: var(--alerta); }
+.stream-item.tendencia { border-left-color: var(--tendencia); }
+.stream-item.base { border-left-color: var(--border2); }
+.stream-time {
+  padding: 12px 0 12px 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.8;
+}
+.stream-body { padding: 12px 14px 12px 10px; }
+.stream-cat {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 1px;
+  margin-bottom: 4px;
+}
+.cat-politica { background: #1e1030; color: #a78bfa; }
+.cat-economia { background: #102018; color: #4ade80; }
+.cat-sociedad { background: #101828; color: #60a5fa; }
+.cat-deportes { background: #181010; color: #f87171; }
+.cat-tecnologia { background: #121820; color: #38bdf8; }
+.cat-corrientes { background: #1a1400; color: #fbbf24; }
+.stream-headline {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.stream-src {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.stream-more {
+  padding: 14px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qsd);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.stream-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.metodologia {
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.6;
+  border-left: 2px solid var(--border2);
+  padding-left: 10px;
+}
+.metodologia strong { color: var(--text2); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+
+/* ─── MAIN COLUMN ─── */
+.hero {
+  position: relative;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  min-height: 340px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.hero:hover .hero-img { transform: scale(1.02); }
+.hero-content {
+  padding: 28px 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 2;
+}
+.en-foco {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--qsd);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.18;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+.hero-deck {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 18px;
+  max-width: 380px;
+}
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.hero-meta span {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+.hero-meta span::before { content: '·'; margin-right: 12px; }
+.hero-meta span:first-child::before { content: ''; margin-right: 0; }
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--qsd);
+  color: var(--qsd);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  cursor: pointer;
+  width: fit-content;
+  transition: background 0.15s;
+}
+.hero-cta:hover { background: var(--qsd); color: #000; }
+.hero-img-wrap {
+  overflow: hidden;
+}
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  filter: brightness(0.75) saturate(0.9);
+}
+.hero-img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1710 0%, #2a2520 50%, #1e1c18 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+/* ─── DESTACADAS ─── */
+.section-header {
+  padding: 16px 24px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.section-title::before {
+  content: '+';
+  color: var(--qsd);
+  font-size: 14px;
+  font-weight: 300;
+}
+.section-link {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--qsd);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.card {
+  background: var(--bg);
+  cursor: pointer;
+  transition: background 0.1s;
+  overflow: hidden;
+}
+.card:hover { background: var(--surface); }
+.card-thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: var(--surface2);
+  position: relative;
+  overflow: hidden;
+}
+.card-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  opacity: 0.25;
+}
+.card-thumb-bg-politica { background: linear-gradient(135deg, #1e1030, #130d20); }
+.card-thumb-bg-economia { background: linear-gradient(135deg, #0d1f15, #071410); }
+.card-thumb-bg-sociedad { background: linear-gradient(135deg, #0d1828, #08111e); }
+.card-thumb-bg-deportes { background: linear-gradient(135deg, #1f0e0e, #150808); }
+.card-thumb-bg-tecnologia { background: linear-gradient(135deg, #0d1a24, #081218); }
+.card-body { padding: 12px; }
+.card-cat { display: inline-block; margin-bottom: 6px; }
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.card-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+}
+
+/* ─── REGION PANEL ─── */
+.region-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.region-card {
+  background: var(--bg);
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.region-card:hover { background: var(--surface); }
+.region-map {
+  font-size: 22px;
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+.region-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.region-name.corrientes { color: var(--qsd); }
+.region-name.chaco { color: #f97316; }
+.region-name.misiones { color: #4ade80; }
+.region-name.formosa { color: #a78bfa; }
+.region-name.entre-rios { color: #60a5fa; }
+.region-desc {
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+.region-link {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─── SIGNALS COLUMN ─── */
+.signals-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: 52px;
+  background: var(--bg);
+  z-index: 10;
+}
+.signals-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.signal-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+.signal-item:hover { background: var(--surface); }
+.signal-item.urgent { border-left-color: var(--urgent); }
+.signal-item.alerta { border-left-color: var(--alerta); }
+.signal-item.tendencia { border-left-color: var(--tendencia); }
+.signal-item.base { border-left-color: var(--border2); }
+.signal-body { overflow: hidden; }
+.signal-tier {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 1px;
+  margin-bottom: 5px;
+}
+.tier-urgente { background: #2a0808; color: var(--urgent); }
+.tier-alerta { background: #2a1408; color: var(--alerta); }
+.tier-tendencia { background: #081428; color: var(--tendencia); }
+.tier-base { background: var(--surface2); color: var(--base); }
+.signal-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.signal-src {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.signal-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+.signals-more {
+  padding: 14px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--qsd);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── TENDENCIAS SIDEBAR ─── */
+.tend-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tend-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.tend-item {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.tend-item:hover { background: var(--surface); }
+.tend-n {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  text-align: right;
+}
+.tend-text { font-size: 12px; color: var(--text2); }
+.tend-text strong { color: var(--text); font-weight: 600; }
+
+/* ─── TICKER ─── */
+.ticker-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  z-index: 200;
+  overflow: hidden;
+}
+.ticker-brand {
+  flex-shrink: 0;
+  background: var(--qsd);
+  color: #000;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 14px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.ticker-track-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.ticker-track {
+  display: flex;
+  animation: ticker 55s linear infinite;
+  width: max-content;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 28px;
+  white-space: nowrap;
+  font-size: 11px;
+  border-right: 1px solid var(--border2);
+}
+.ticker-timestamp {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+}
+.ticker-cat {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 1px;
+}
+.ticker-text { color: var(--text2); }
+.ticker-text.urgent { color: var(--urgent); font-weight: 600; }
+.ticker-sep {
+  color: var(--qsd);
+  font-size: 16px;
+  font-weight: 100;
+  padding: 0 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="brand-logo">QSD</span>
+      <div class="brand-sub">
+        <span>Qué Se Dice</span>
+        <span>Señales reales. Información que importa.</span>
+      </div>
+    </div>
+    <div class="nav-cats">
+      <div class="nav-cat active">HOY</div>
+      <div class="nav-cat">ARGENTINA</div>
+      <div class="nav-cat">NEA</div>
+      <div class="nav-cat">MUNDO</div>
+      <div class="nav-cat">ECONOMÍA</div>
+      <div class="nav-cat">POLÍTICA</div>
+      <div class="nav-cat">SOCIEDAD</div>
+      <div class="nav-cat">DEPORTES</div>
+    </div>
+    <div class="nav-right">
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        QSD STREAM
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── MAIN LAYOUT ─── -->
+<div class="layout">
+
+  <!-- ═══ STREAM COLUMN ═══ -->
+  <div class="col">
+    <div class="stream-header">
+      <div class="stream-title">
+        <span>QSD Stream</span>
+      </div>
+      <div class="stream-live">
+        <span class="live-dot"></span>
+        EN VIVO
+      </div>
+    </div>
+
+    <div class="stream-list">
+
+      <div class="stream-item urgent">
+        <div class="stream-time">10:25</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-corrientes">CORRIENTES</span>
+          <div class="stream-headline">Corte total en Ruta 12 por accidente entre camiones en Goya</div>
+          <div class="stream-src">SMN</div>
+        </div>
+      </div>
+
+      <div class="stream-item alerta">
+        <div class="stream-time">10:21</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-economia">ECONOMÍA</span>
+          <div class="stream-headline">Dólar blue cae a $1.120 en cuevas de la city porteña</div>
+          <div class="stream-src">DÓLAR HOY</div>
+        </div>
+      </div>
+
+      <div class="stream-item alerta">
+        <div class="stream-time">10:18</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-sociedad">SOCIEDAD</span>
+          <div class="stream-headline">Tormentas fuertes en Corrientes y alerta naranja en el litoral</div>
+          <div class="stream-src">SMN</div>
+        </div>
+      </div>
+
+      <div class="stream-item tendencia">
+        <div class="stream-time">10:15</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-deportes">DEPORTES</span>
+          <div class="stream-headline">Boca vence a Newell's y se mete en puestos de clasificación</div>
+          <div class="stream-src">TYC SPORTS</div>
+        </div>
+      </div>
+
+      <div class="stream-item tendencia">
+        <div class="stream-time">10:12</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-tecnologia">TECNOLOGÍA</span>
+          <div class="stream-headline">SpaceX lanza con éxito su misión Starlink desde Florida</div>
+          <div class="stream-src">SPACE.COM</div>
+        </div>
+      </div>
+
+      <div class="stream-item tendencia">
+        <div class="stream-time">10:09</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-economia">ECONOMÍA</span>
+          <div class="stream-headline">Inflación de abril: 2,8% según datos privados</div>
+          <div class="stream-src">INDEC</div>
+        </div>
+      </div>
+
+      <div class="stream-item base">
+        <div class="stream-time">10:03</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-politica">POLÍTICA</span>
+          <div class="stream-headline">Senado aprueba en primera vuelta modificaciones al Código Penal</div>
+          <div class="stream-src">CÁMARA</div>
+        </div>
+      </div>
+
+      <div class="stream-item base">
+        <div class="stream-time">09:58</div>
+        <div class="stream-body">
+          <span class="stream-cat cat-corrientes">CORRIENTES</span>
+          <div class="stream-headline">Municipio de Corrientes lanza licitación para refacción del Canning</div>
+          <div class="stream-src">MCTES</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="stream-more">Ver stream completo →</div>
+
+    <div class="stream-footer">
+      <div class="metodologia">
+        <strong>Editado por humanos</strong>
+        Sin IA generativa. Sin resúmenes automáticos. Verificamos, jerarquizamos, publicamos.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN COLUMN ═══ -->
+  <div class="col">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-content">
+        <div class="en-foco">EN FOCO</div>
+        <h1 class="hero-title">Milei anuncia baja de impuestos para pymes exportadoras</h1>
+        <p class="hero-deck">El presidente confirmó la medida en un acto en Casa Rosada. Aseguró que busca impulsar la competitividad y el crecimiento del sector productivo nacional.</p>
+        <div class="hero-meta">
+          <span>Hace 15 minutos</span>
+          <span>Fuente: Ámbito</span>
+        </div>
+        <div class="hero-cta">Leer más →</div>
+      </div>
+      <div class="hero-img-wrap">
+        <div class="hero-img-placeholder" style="background: linear-gradient(135deg, #1a1520 0%, #0e1520 100%); font-size: 0;">
+          <div style="width:100%;height:100%;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,0.01) 40px,rgba(255,255,255,0.01) 80px);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DESTACADAS -->
+    <div class="section-header">
+      <div class="section-title">Destacadas del día</div>
+      <div class="section-link">Ver todas →</div>
+    </div>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-thumb card-thumb-bg-economia">
+          <div class="card-thumb-placeholder">📈</div>
+        </div>
+        <div class="card-body">
+          <span class="stream-cat cat-economia card-cat">ECONOMÍA</span>
+          <div class="card-title">El dólar blue cae a $1.120 en cuevas de la city porteña</div>
+          <div class="card-meta">DÓLAR HOY · Hace 1 hora</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-thumb card-thumb-bg-sociedad">
+          <div class="card-thumb-placeholder">⛈️</div>
+        </div>
+        <div class="card-body">
+          <span class="stream-cat cat-sociedad card-cat">SOCIEDAD</span>
+          <div class="card-title">Tormentas fuertes y alerta naranja en el litoral</div>
+          <div class="card-meta">SMN · Hace 35 min</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-thumb card-thumb-bg-deportes">
+          <div class="card-thumb-placeholder">⚽</div>
+        </div>
+        <div class="card-body">
+          <span class="stream-cat cat-deportes card-cat">DEPORTES</span>
+          <div class="card-title">Boca vence a Newell's y se mete en puestos de clasificación</div>
+          <div class="card-meta">TYC SPORTS · Hace 42 min</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-thumb card-thumb-bg-tecnologia">
+          <div class="card-thumb-placeholder">🛰️</div>
+        </div>
+        <div class="card-body">
+          <span class="stream-cat cat-tecnologia card-cat">TECNOLOGÍA</span>
+          <div class="card-title">Amazon invertirá USD 1.000M en infraestructura en Argentina</div>
+          <div class="card-meta">INFOBAE · Hace 2 horas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COBERTURA POR REGIÓN -->
+    <div class="section-header">
+      <div class="section-title">Cobertura por región</div>
+      <div class="section-link">Ver mapa →</div>
+    </div>
+    <div class="region-grid">
+      <div class="region-card">
+        <div class="region-map">🗺️</div>
+        <div class="region-name corrientes">CORRIENTES</div>
+        <div class="region-desc">Alerta naranja por tormentas. Corte en Ruta 12.</div>
+        <div class="region-link">Ver más →</div>
+      </div>
+      <div class="region-card">
+        <div class="region-map">🗺️</div>
+        <div class="region-name chaco">CHACO</div>
+        <div class="region-desc">Alerta por lluvias y actividad eléctrica.</div>
+        <div class="region-link">Ver más →</div>
+      </div>
+      <div class="region-card">
+        <div class="region-map">🗺️</div>
+        <div class="region-name misiones">MISIONES</div>
+        <div class="region-desc">Se esperan lluvias para la tarde.</div>
+        <div class="region-link">Ver más →</div>
+      </div>
+      <div class="region-card">
+        <div class="region-map">🗺️</div>
+        <div class="region-name formosa">FORMOSA</div>
+        <div class="region-desc">Sin alertas oficiales por el momento.</div>
+        <div class="region-link">Ver más →</div>
+      </div>
+      <div class="region-card">
+        <div class="region-map">🗺️</div>
+        <div class="region-name entre-rios">ENTRE RÍOS</div>
+        <div class="region-desc">Crecida del río Uruguay en monitoreo.</div>
+        <div class="region-link">Ver más →</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ SIGNALS COLUMN ═══ -->
+  <div class="col">
+
+    <!-- SEÑALES EN TIEMPO REAL -->
+    <div class="signals-header">
+      <span style="color:var(--qsd);font-size:12px;">⚡</span>
+      <div class="signals-title">Señales en tiempo real</div>
+    </div>
+
+    <div class="signal-item urgent">
+      <div class="signal-body">
+        <span class="signal-tier tier-urgente">URGENTE</span>
+        <div class="signal-text">Corte total en Ruta 12 por accidente entre camiones en Goya</div>
+        <div class="signal-src">VIALIDAD / SMN</div>
+      </div>
+      <div class="signal-time">10:25</div>
+    </div>
+
+    <div class="signal-item alerta">
+      <div class="signal-body">
+        <span class="signal-tier tier-alerta">ALERTA</span>
+        <div class="signal-text">Alerta naranja por tormentas fuertes en Corrientes, Chaco y Misiones</div>
+        <div class="signal-src">SMN</div>
+      </div>
+      <div class="signal-time">10:20</div>
+    </div>
+
+    <div class="signal-item tendencia">
+      <div class="signal-body">
+        <span class="signal-tier tier-tendencia">TENDENCIA</span>
+        <div class="signal-text">Aumentan menciones sobre economía en redes sociales en el NEA</div>
+        <div class="signal-src">QSD</div>
+      </div>
+      <div class="signal-time">10:18</div>
+    </div>
+
+    <div class="signal-item tendencia">
+      <div class="signal-body">
+        <span class="signal-tier tier-tendencia">POLÍTICA</span>
+        <div class="signal-text">Reunión de gabinete en Casa Rosada tras el anuncio económico</div>
+        <div class="signal-src">TÉLAM</div>
+      </div>
+      <div class="signal-time">10:17</div>
+    </div>
+
+    <div class="signal-item base">
+      <div class="signal-body">
+        <span class="signal-tier tier-base">ECONOMÍA</span>
+        <div class="signal-text">Bonos argentinos abren al alza en mercados de Nueva York</div>
+        <div class="signal-src">BLOOMBERG</div>
+      </div>
+      <div class="signal-time">10:10</div>
+    </div>
+
+    <div class="signal-item base">
+      <div class="signal-body">
+        <span class="signal-tier tier-base">NEA</span>
+        <div class="signal-text">Municipio de Posadas anuncia plan de emergencia hídrica</div>
+        <div class="signal-src">MISIONES ONLINE</div>
+      </div>
+      <div class="signal-time">10:04</div>
+    </div>
+
+    <div class="signals-more">Ver todas las señales →</div>
+
+    <!-- TENDENCIAS -->
+    <div class="tend-header">
+      <span style="color:var(--qsd);font-size:12px;">↗</span>
+      <div class="tend-title">Tendencias</div>
+    </div>
+
+    <div class="tend-item">
+      <div class="tend-n">1</div>
+      <div class="tend-text"><strong>Milei</strong></div>
+    </div>
+    <div class="tend-item">
+      <div class="tend-n">2</div>
+      <div class="tend-text"><strong>Dólar Blue</strong></div>
+    </div>
+    <div class="tend-item">
+      <div class="tend-n">3</div>
+      <div class="tend-text"><strong>Boca</strong></div>
+    </div>
+    <div class="tend-item">
+      <div class="tend-n">4</div>
+      <div class="tend-text"><strong>Corrientes</strong></div>
+    </div>
+    <div class="tend-item">
+      <div class="tend-n">5</div>
+      <div class="tend-text"><strong>Alerta naranja</strong></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── TICKER ─── -->
+<div class="ticker-bar">
+  <div class="ticker-brand">TICKER QSD</div>
+  <div class="ticker-track-wrap">
+    <div class="ticker-track" id="ticker">
+      <!-- Se duplica para loop continuo -->
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:25</span>
+        <span class="ticker-cat cat-corrientes" style="font-size:8px;padding:1px 5px;border-radius:1px;">URGENTE</span>
+        <span class="ticker-text urgent">Corte total en Ruta 12 por accidente entre camiones en Goya</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:21</span>
+        <span class="ticker-cat cat-economia" style="font-size:8px;padding:1px 5px;border-radius:1px;">DÓLAR BLUE</span>
+        <span class="ticker-text">$1.120</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:18</span>
+        <span class="ticker-cat cat-sociedad" style="font-size:8px;padding:1px 5px;border-radius:1px;">ALERTA</span>
+        <span class="ticker-text">Tormentas fuertes en el litoral</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:15</span>
+        <span class="ticker-cat cat-deportes" style="font-size:8px;padding:1px 5px;border-radius:1px;">BOCA</span>
+        <span class="ticker-text">Vence a Newell's y entra a zona de clasificación</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:09</span>
+        <span class="ticker-cat cat-economia" style="font-size:8px;padding:1px 5px;border-radius:1px;">INFLACIÓN</span>
+        <span class="ticker-text">Abril: 2,8% según datos privados</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:03</span>
+        <span class="ticker-cat cat-politica" style="font-size:8px;padding:1px 5px;border-radius:1px;">SENADO</span>
+        <span class="ticker-text">Aprueba en primera vuelta modificaciones al Código Penal</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <!-- Duplicado para loop -->
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:25</span>
+        <span class="ticker-cat cat-corrientes" style="font-size:8px;padding:1px 5px;border-radius:1px;">URGENTE</span>
+        <span class="ticker-text urgent">Corte total en Ruta 12 por accidente entre camiones en Goya</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:21</span>
+        <span class="ticker-cat cat-economia" style="font-size:8px;padding:1px 5px;border-radius:1px;">DÓLAR BLUE</span>
+        <span class="ticker-text">$1.120</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:18</span>
+        <span class="ticker-cat cat-sociedad" style="font-size:8px;padding:1px 5px;border-radius:1px;">ALERTA</span>
+        <span class="ticker-text">Tormentas fuertes en el litoral</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:15</span>
+        <span class="ticker-cat cat-deportes" style="font-size:8px;padding:1px 5px;border-radius:1px;">BOCA</span>
+        <span class="ticker-text">Vence a Newell's y entra a zona de clasificación</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:09</span>
+        <span class="ticker-cat cat-economia" style="font-size:8px;padding:1px 5px;border-radius:1px;">INFLACIÓN</span>
+        <span class="ticker-text">Abril: 2,8% según datos privados</span>
+      </div>
+      <div class="ticker-sep">·</div>
+      <div class="ticker-item">
+        <span class="ticker-timestamp">10:03</span>
+        <span class="ticker-cat cat-politica" style="font-size:8px;padding:1px 5px;border-radius:1px;">SENADO</span>
+        <span class="ticker-text">Aprueba en primera vuelta modificaciones al Código Penal</span>
+      </div>
+      <div class="ticker-sep">·</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

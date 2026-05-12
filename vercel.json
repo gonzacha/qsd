@@ -48,7 +48,7 @@
       "destination": "/api/r"
     },
     {
-      "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/|icons/|manifest\\.webmanifest|Logo_qsd\\.png|service-worker\\.js|offline\\.html|r\\.html|robots\\.txt|favicon\\.ico).*)",
+      "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/|icons/|manifest\\.webmanifest|Logo_qsd\\.png|og_qsd_1200x630_v1\\.png|service-worker\\.js|offline\\.html|r\\.html|robots\\.txt|favicon\\.ico).*)",
       "destination": "/index.html"
     }
   ]
