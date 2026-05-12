@@ -499,7 +499,7 @@
           } catch (err) {}
 
           if (!rankedItems.length) {
-            const response = await fetch('/api/feeds');
+            const response = await fetch('/api/feeds?cat=portada', { cache: 'no-store' });
             if (!response.ok) {
               throw new Error('Error al cargar');
             }

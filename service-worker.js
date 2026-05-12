@@ -1,4 +1,4 @@
-const CACHE = 'qsd-pwa-v0.0.6';
+const CACHE = 'qsd-pwa-v0.0.7';
 const PRECACHE_URLS = [
   '/',
   '/offline.html',
@@ -45,13 +45,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Navigations: always network-first. Do not cache document responses — prevents stale
+  // index.html after deploy. Offline: fall back to last cached shell if present.
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
       try {
-        const res = await fetch(req);
-        const cache = await caches.open(CACHE);
-        cache.put('/', res.clone());
-        return res;
+        return await fetch(req);
       } catch {
         const cached = await caches.match('/');
         if (cached) return cached;

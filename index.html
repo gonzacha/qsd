@@ -3113,6 +3113,48 @@
       });
     }
 
+    /**
+     * TASK-0002: operational freshness watchdog (homepage hero >24h).
+     * Console + CustomEvent hook + at most one IndexedDB ledger line per local calendar day.
+     */
+    function runFreshnessWatchdog(heroItem) {
+      const main = document.getElementById('mainContent');
+      if (main) delete main.dataset.qsdHeroStale;
+
+      if (currentCategory !== 'portada' || !heroItem) return;
+
+      const hours = Number.isFinite(heroItem.hours_since_publish)
+        ? heroItem.hours_since_publish
+        : hoursSince(heroItem);
+
+      if (hours == null || hours <= 24) return;
+
+      if (main) main.dataset.qsdHeroStale = '1';
+
+      const detail = {
+        age_hours: Math.round(hours * 10) / 10,
+        item_id: heroItem.item_id || null,
+        title_snip: (heroItem.title || '').slice(0, 120),
+      };
+      console.warn('[QSD] Freshness watchdog: hero editorial >24h', detail);
+
+      try {
+        window.dispatchEvent(new CustomEvent('qsd:freshness-stale', { detail }));
+      } catch (err) { /* ignore */ }
+
+      const dayKey = `qsd_fw_ledger_${new Date().toISOString().slice(0, 10)}`;
+      try {
+        if (!localStorage.getItem(dayKey)) {
+          void ledgerAppend(buildEvent('freshness_stale', heroItem, {
+            age_hours: detail.age_hours,
+            watchdog: true,
+            surface: 'homepage_hero',
+          }));
+          localStorage.setItem(dayKey, '1');
+        }
+      } catch (err) { /* private mode / quota */ }
+    }
+
     function renderSignalTicker(items) {
       const shell = document.getElementById('qsdTickerShell');
       const track = document.getElementById('qsdTickerTrack');
@@ -3489,6 +3531,7 @@
       logItemsSeen(items);
       wireItemActions(items);
       wireThumbFallbacks(main);
+      runFreshnessWatchdog(heroItems[0]);
     }
 
     function logItemsSeen(items) {
@@ -3603,17 +3646,20 @@
               sources_count: item.sources_count,
               hours_since_publish: item.hours_since_publish,
             }));
-            if (rankItems.length === 0) {
-              throw new Error('No hay datos de ranking para portada');
+            if (rankItems.length > 0) {
+              data = { items: rankItems, trending: [], categories };
+              endpoint = 'rank';
+              const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
+              void ledgerAppend(buildEvent('rank_generated', null, {
+                count: rankItems.length,
+                min_score: scores.length ? Math.min(...scores) : null,
+                max_score: scores.length ? Math.max(...scores) : null,
+              }));
+            } else {
+              console.warn('[QSD] /api/rank devolvió 0 ítems; portada usa fallback /api/feeds');
             }
-            data = { items: rankItems, trending: [], categories };
-            endpoint = 'rank';
-            const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
-            void ledgerAppend(buildEvent('rank_generated', null, {
-              count: rankItems.length,
-              min_score: scores.length ? Math.min(...scores) : null,
-              max_score: scores.length ? Math.max(...scores) : null,
-            }));
+          } else {
+            console.warn('[QSD] /api/rank no OK (' + rankRes.status + '); portada usa fallback /api/feeds');
           }
         }
 
