@@ -2267,6 +2267,13 @@
     let refreshTimer = null;
     let feedRequestSeq = 0;
     const debugUi = new URLSearchParams(window.location.search).get('debug_ui') === '1';
+    /** ?qsd_debug_boot=1 — traza BOOT → SW → FETCH → RENDER en consola (solo diagnóstico). */
+    const qsdDebugBoot = new URLSearchParams(window.location.search).get('qsd_debug_boot') === '1';
+    function qsdBootLog(label, detail = {}) {
+      if (!qsdDebugBoot) return;
+      const sw = navigator.serviceWorker?.controller?.scriptURL ?? null;
+      console.log('[QSD_BOOT]', label, new Date().toISOString(), { ...detail, sw_controller: sw });
+    }
 
     // ── Date Formatting ──
     function formatDate() {
@@ -3621,6 +3628,7 @@
     async function loadFeed(category) {
       const main = document.getElementById('mainContent');
       const requestSeq = ++feedRequestSeq;
+      qsdBootLog('loadFeed_start', { category, requestSeq });
       main.innerHTML = `
         <div class="loading-state">
           <div class="loading-spinner"></div>
@@ -3632,9 +3640,18 @@
         let endpoint = '';
 
         if (category === 'portada') {
-          const rankRes = await fetch('/api/rank?limit=30', { cache: 'no-store' });
+          const rankRes = await fetch('/api/rank?limit=30', {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+          });
           if (rankRes.ok) {
             const payload = await rankRes.json();
+            qsdBootLog('rank_json_parsed', {
+              generatedAt: payload.generatedAt ?? null,
+              itemCount: Array.isArray(payload.items) ? payload.items.length : 0,
+              firstPublishedAt: payload.items?.[0]?.publishedAt ?? null,
+              firstTitle: (payload.items?.[0]?.title || '').slice(0, 80),
+            });
             const rankItems = (payload.items || []).map(item => ({
               title: item.title,
               link: item.url,
@@ -3664,7 +3681,7 @@
         }
 
         if (!data) {
-          const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`);
+          const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`, { cache: 'no-store' });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           data = await res.json();
           endpoint = 'feeds';
@@ -3685,8 +3702,17 @@
         }
         data.items = safeItems;
 
+        qsdBootLog('before_render', {
+          endpoint,
+          category,
+          count: data.items.length,
+          firstPubDate: data.items[0]?.pubDate || null,
+          firstTitle: (data.items[0]?.title || '').slice(0, 80),
+        });
+
         renderTrending(data.trending);
         await renderFeed(data);
+        qsdBootLog('after_render', { endpoint, category });
         resolveItemUrls(data.items); // Background URL resolve
 
         void ledgerAppend(buildEvent('feed_fetch', null, {

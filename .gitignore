@@ -19,3 +19,4 @@ nordia-qa-main/
 node_modules/
 
 /public/
+qa/runtime/reports/*.md
