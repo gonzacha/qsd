@@ -2972,9 +2972,10 @@
     function renderRedaccionCard(item) {
       const slug = item.slug || item.id;
       if (!slug) return '';
+      const imagePos = item.image_position || '50% 35%';
       const imageHtml = item.image ? `
         <div class="redaccion-media">
-          <img src="${escapeAttr(item.image)}" alt="" loading="lazy" decoding="async" />
+          <img src="${escapeAttr(item.image)}" alt="${escapeAttr(item.title || '')}" loading="lazy" decoding="async" style="object-position:${escapeAttr(imagePos)}" />
         </div>
       ` : '';
       const excerptHtml = item.excerpt ? `

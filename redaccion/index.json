@@ -1,5 +1,18 @@
 [
   {
+    "id": "aws-ctes-16-05-2026",
+    "slug": "aws-ctes-16-05-2026",
+    "title": "Amazon, AWS y Corrientes: qué significa realmente el acuerdo tecnológico anunciado por el Gobierno",
+    "author": "Redacción QSD",
+    "date": "2026-05-16",
+    "published_at": "2026-05-16",
+    "category": "tecnologia",
+    "excerpt": "El Gobierno de Corrientes anunció una alianza con Amazon Web Services. Más allá de los titulares sobre IA y millones en créditos cloud, la nota separa qué se firmó realmente: formación, programas para startups y articulación regional, sin data centers ni inversión en efectivo.",
+    "image": "/redaccion/img/aws-ctes.jpg",
+    "image_position": "50% 62%",
+    "featured": true
+  },
+  {
     "id": "fec-rimi-ganancias-2026-05-11",
     "slug": "fec-rimi-ganancias-2026-05-11",
     "title": "Charla sobre RIMI y cambios en Ganancias en la FEC",
