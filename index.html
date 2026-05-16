@@ -2418,9 +2418,25 @@
     let categories = [];
     let refreshTimer = null;
     let feedRequestSeq = 0;
-    const debugUi = new URLSearchParams(window.location.search).get('debug_ui') === '1';
+
+    // Preview-safety flags: keep false in production preview; URL params can still enable boot log.
+    const ENABLE_RUNTIME_DEBUG = false;
+    const ENABLE_BOOT_LOG = false;
+    const ENABLE_EXPERIMENTAL_UI = false;
+
+    const debugUi = ENABLE_EXPERIMENTAL_UI
+      || new URLSearchParams(window.location.search).get('debug_ui') === '1';
     /** ?qsd_debug_boot=1 — traza BOOT → SW → FETCH → RENDER en consola (solo diagnóstico). */
-    const qsdDebugBoot = new URLSearchParams(window.location.search).get('qsd_debug_boot') === '1';
+    const qsdDebugBoot = ENABLE_BOOT_LOG
+      || new URLSearchParams(window.location.search).get('qsd_debug_boot') === '1';
+
+    function safeRuntimeTelemetry(fn) {
+      if (!ENABLE_RUNTIME_DEBUG) return;
+      try { fn(); } catch (err) {
+        console.warn('[QSD] runtime telemetry disabled', err);
+      }
+    }
+
     function qsdBootLog(label, detail = {}) {
       if (!qsdDebugBoot) return;
       const sw = navigator.serviceWorker?.controller?.scriptURL ?? null;
@@ -3751,7 +3767,11 @@
       logItemsSeen(items);
       wireItemActions(items);
       wireThumbFallbacks(main);
-      runFreshnessWatchdog(heroItems[0]);
+      try {
+        runFreshnessWatchdog(heroItems[0]);
+      } catch (err) {
+        console.warn('[QSD] freshness watchdog disabled', err);
+      }
     }
 
     function logItemsSeen(items) {
@@ -3880,11 +3900,13 @@
               data = { items: rankItems, trending: [], categories };
               endpoint = 'rank';
               const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
-              void ledgerAppend(buildEvent('rank_generated', null, {
-                count: rankItems.length,
-                min_score: scores.length ? Math.min(...scores) : null,
-                max_score: scores.length ? Math.max(...scores) : null,
-              }));
+              safeRuntimeTelemetry(() => {
+                void ledgerAppend(buildEvent('rank_generated', null, {
+                  count: rankItems.length,
+                  min_score: scores.length ? Math.min(...scores) : null,
+                  max_score: scores.length ? Math.max(...scores) : null,
+                }));
+              });
             } else {
               console.warn('[QSD] /api/rank devolvió 0 ítems; portada usa fallback /api/feeds');
             }
@@ -3928,11 +3950,13 @@
         qsdBootLog('after_render', { endpoint, category });
         resolveItemUrls(data.items); // Background URL resolve
 
-        void ledgerAppend(buildEvent('feed_fetch', null, {
-          endpoint,
-          category,
-          count: data.items ? data.items.length : 0,
-        }));
+        safeRuntimeTelemetry(() => {
+          void ledgerAppend(buildEvent('feed_fetch', null, {
+            endpoint,
+            category,
+            count: data.items ? data.items.length : 0,
+          }));
+        });
       } catch (err) {
         if (requestSeq !== feedRequestSeq) return;
         console.error('Feed load error:', err);
@@ -4159,7 +4183,11 @@
     renderNav(defaultCats);
     wireHubStrip();
     syncHubStripActive();
-    initPortadaModeToggle();
+    try {
+      initPortadaModeToggle();
+    } catch (err) {
+      console.warn('[QSD] portada mode toggle disabled', err);
+    }
     loadFeed(currentCategory);
     loadRedaccion();
     startAutoRefresh();
@@ -4171,9 +4199,13 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => listenForUpdates(reg))
-          .catch(() => {});
+        try {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => listenForUpdates(reg))
+            .catch(() => {});
+        } catch (err) {
+          console.warn('[QSD] service worker registration disabled', err);
+        }
       });
     }
 
