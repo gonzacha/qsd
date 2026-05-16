@@ -8,8 +8,8 @@
 
 export const config = { runtime: 'edge' };
 
-// ── Recency Cap ───────────────────────────────────────────────
-const MAX_AGE_HOURS = 24;
+// ── Recency Cap (alineado con api/feeds.js ingest) ─────────────
+const MAX_AGE_HOURS = 72;
 const MIN_CORRIENTES = 20;
 
 // ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
@@ -263,7 +263,8 @@ function parseRSSItems(xml, category) {
     const link  = extractTag(b, 'link');
     if (!title || !link) continue;
     const normalTitle = normalizeTitle(decodeEntities(title));
-    if (!normalTitle || isRepeatedTitle(normalTitle)) continue;
+    // isRepeatedTitle OFF — misma política que feeds (coyuntura regional)
+    if (!normalTitle) continue;
     try { new URL(link); } catch { continue; }
     const pubDate = extractTag(b, 'pubDate') || null;
     const description = extractTag(b, 'description');
@@ -488,10 +489,11 @@ function rankItems(enriched) {
     const arWeighted = Number.isFinite(item.weighted_agreement_ratio)
       ? item.weighted_agreement_ratio
       : item.agreement_ratio;
+    const hours_for_scoring = Number.isFinite(hours_since_publish) ? hours_since_publish : 72;
     const factos_final = convergenceScore(
-      seWeighted, arWeighted, item.contradiction_flag, hours_since_publish
+      seWeighted, arWeighted, item.contradiction_flag, hours_for_scoring
     );
-    const freshness = Math.max(0, 1 - hours_since_publish / 24);
+    const freshness = Math.max(0, 1 - hours_for_scoring / 24);
 
     // Geo-boost: contenido de Corrientes/NEA sube en portada
     const text = normalizeText(`${item.title} ${item.description || ''}`);
@@ -592,10 +594,12 @@ export default async function handler(req) {
     // Quality enrich (cluster before dedup so sources_count reflects raw pool)
     const enriched = qualityEnrich(items);
 
-    // Hard recency cap: discard invalid/missing dates and >24h before ranking
+    // Recency: admitir undated (sin timestamp válido); fechas válidas ≤72h
     const recencyFiltered = enriched.filter(item => {
+      const ts = parsePublishedTimestamp(item.publishedAt, item.pubDate, item.timestamp);
+      if (!Number.isFinite(ts) || ts <= 0) return true;
       const hours = parseHoursSince(item.publishedAt);
-      if (!Number.isFinite(hours)) return false;
+      if (!Number.isFinite(hours) || hours < 0) return false;
       return hours <= MAX_AGE_HOURS;
     });
 
@@ -604,6 +608,15 @@ export default async function handler(req) {
 
     // Score and rank
     let ranked = rankItems(deduped);
+
+    console.log(JSON.stringify({
+      qsd_ingest: 'rank',
+      cat: cat || 'all',
+      merged: items.length,
+      afterRecency: recencyFiltered.length,
+      afterDedup: deduped.length,
+      rankedOut: ranked.length,
+    }));
 
     // Filter and limit
     if (minScore > 0) ranked = ranked.filter(r => r.editorial_score >= minScore);
@@ -626,6 +639,12 @@ export default async function handler(req) {
     } else {
       ranked = ranked.slice(0, limit);
     }
+
+    console.log(JSON.stringify({
+      qsd_ingest: 'rank_final',
+      cat: cat || 'all',
+      sentToClient: ranked.length,
+    }));
 
     const generatedAt = new Date().toISOString();
 

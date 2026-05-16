@@ -20,3 +20,10 @@ node_modules/
 
 /public/
 qa/runtime/reports/*.md
+qa/_vercel_*.log
+
+# operational telemetry (append-only, local)
+data/ledger/ops.jsonl
+
+# python
+angelus/__pycache__/

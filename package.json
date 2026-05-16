@@ -4,7 +4,7 @@
   "description": "Qué Se Dice — Portal informativo de Corrientes y el mundo",
   "private": true,
   "scripts": {
-    "dev": "npx vercel dev --listen 3000",
+    "dev": "npx serve . -l 3000",
     "dev:static": "npx serve . -l 3000",
     "start": "npx serve ."
   }

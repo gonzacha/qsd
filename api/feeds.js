@@ -125,7 +125,7 @@ const FEEDS = {
 };
 
 // ── XML Parser (lightweight, edge-compatible) ─────────────────
-function parseRSSItems(xml) {
+function parseRSSItems(xml, ingestStats) {
   const items = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match;
@@ -141,6 +141,7 @@ function parseRSSItems(xml) {
     const sourceUrl = extractAttr(block, 'source', 'url');
 
     if (title && link) {
+      if (ingestStats) ingestStats.rawTitleLink++;
       const normalizedTitle = normalizeTitle(decodeEntities(title));
 
       const sourceDomain = source ? decodeEntities(source).toLowerCase() : extractDomain(link);
@@ -162,6 +163,7 @@ function parseRSSItems(xml) {
   const filteredItems = items.filter(item => {
     const gate = feed_gate(item, seenUrls);
     if (!gate.pass) {
+      if (ingestStats) ingestStats.tunnelReject++;
       // Log para auditoría (no bloquea el pipeline)
       console.log(`[TUNEL] REJECT reason=${gate.reason} url=${item.link || item.url}`);
       return false;
@@ -170,7 +172,21 @@ function parseRSSItems(xml) {
   });
 
   // [ PURGATORIO ] Render gate (técnico)
-  return filteredItems.filter(item => isRenderReady(item));
+  return filteredItems.filter(item => {
+    const ok = isRenderReady(item);
+    if (!ok && ingestStats) {
+      ingestStats.renderReject++;
+      const link = item && item.link ? String(item.link).trim() : '';
+      let urlOk = false;
+      try {
+        const u = new URL(link);
+        urlOk = u.protocol === 'http:' || u.protocol === 'https:';
+      } catch { /* invalid */ }
+      if (!urlOk) ingestStats.invalidUrl++;
+      else ingestStats.renderRejectOther++;
+    }
+    return ok;
+  });
 }
 
 function extractTag(xml, tag) {
@@ -268,7 +284,7 @@ function isRepeatedTitle(title) {
 //                 Sin curación de estilo/idioma (eso es ranking/scoring).
 //       ↓
 //  [ PURGATORIO ] isRenderReady() — gate técnico (render-ready)
-//                 Reglas de estructura, campos requeridos, fecha válida
+//                 Reglas de estructura y URL; pubDate opcional (undated pasa al scoring)
 //       ↓
 //  [ SCORING ]    scoreItem() — ranking factos + editorial_score
 //                 Convergencia de fuentes, frescura, relevancia
@@ -315,8 +331,8 @@ function feed_gate(item, seenUrls) {
   if (seenUrls.has(url)) return { pass: false, reason: 'duplicate_url' };
   seenUrls.add(url);
 
-  // 3. Repeated title check (structural dedup)
-  if (isRepeatedTitle(item.title || '')) return { pass: false, reason: 'repeat_title' };
+  // 3. Repeated title check — TEMP OFF (evitar falsos negativos coyuntura regional)
+  // if (isRepeatedTitle(item.title || '')) return { pass: false, reason: 'repeat_title' };
 
   // 4. Blocked / optional allowlist (domain)
   const domain = getDomain(url);
@@ -352,9 +368,11 @@ function isRenderReady(item) {
   const source = item && typeof item.source === 'string' ? item.source.trim() : '';
   if (!source) return false;
   const pubDate = item && item.pubDate ? new Date(item.pubDate) : null;
-  if (!pubDate || Number.isNaN(pubDate.getTime())) return false;
+  if (!pubDate || Number.isNaN(pubDate.getTime())) return true;
   const hoursAgo = (Date.now() - pubDate.getTime()) / 3600000;
-  if (hoursAgo < 0 || hoursAgo > 72) return false;
+  if (!Number.isFinite(hoursAgo)) return false;
+  if (hoursAgo < 0) return false;
+  if (hoursAgo > 72) return false;
   return true;
 }
 
@@ -469,6 +487,14 @@ export default async function handler(req) {
   }
 
   try {
+    const ingestStats = {
+      rawTitleLink: 0,
+      tunnelReject: 0,
+      renderReject: 0,
+      invalidUrl: 0,
+      renderRejectOther: 0,
+    };
+
     // Fetch all feeds in parallel
     const feedPromises = feedConfig.feeds.map(async (feedUrl) => {
       try {
@@ -487,7 +513,7 @@ export default async function handler(req) {
 
         if (!response.ok) return [];
         const xml = await response.text();
-        return parseRSSItems(xml);
+        return parseRSSItems(xml, ingestStats);
       } catch (err) {
         console.error(`Feed error: ${feedUrl}`, err.message);
         return [];
@@ -496,24 +522,42 @@ export default async function handler(req) {
 
     const feedResults = await Promise.all(feedPromises);
     let allItems = feedResults.flat();
+    const afterParseFlat = allItems.length;
 
     // Sort by date (newest first)
     allItems.sort((a, b) => b.timestamp - a.timestamp);
 
     // Deduplicate
     allItems = deduplicateItems(allItems);
+    const afterDedup = allItems.length;
 
-    // ── Age Filter ─────────────────────────────────────────────────
-    const MAX_AGE_HOURS = 24;
+    // ── Age Filter (72h; undated timestamp<=0 admitido) ────────────
+    const MAX_AGE_HOURS = 72;
     const now = Date.now();
+    let undatedAdmitted = 0;
 
     allItems = allItems.filter(item => {
-      if (!Number.isFinite(item.timestamp) || item.timestamp <= 0) return false;
-
-      const ageHours = (now - item.timestamp) / (1000 * 60 * 60);
+      const ts = item.timestamp;
+      if (!Number.isFinite(ts)) return false;
+      if (ts <= 0) {
+        undatedAdmitted++;
+        return true;
+      }
+      const ageHours = (now - ts) / (1000 * 60 * 60);
       if (!Number.isFinite(ageHours) || ageHours < 0) return false;
       return ageHours <= MAX_AGE_HOURS;
     });
+    const afterAge = allItems.length;
+
+    console.log(JSON.stringify({
+      qsd_ingest: 'feeds',
+      cat: category,
+      afterParseFlat,
+      afterDedup,
+      undatedAdmitted,
+      afterAge,
+      ingestStats,
+    }));
 
     // Extract trending from all items
     const trending = extractTrending(allItems);
@@ -529,6 +573,11 @@ export default async function handler(req) {
 
     // Limit results
     const items = mappedItems.slice(0, 50);
+    console.log(JSON.stringify({
+      qsd_ingest: 'feeds_final',
+      cat: category,
+      sentToClient: items.length,
+    }));
 
     return new Response(JSON.stringify({
       category,
