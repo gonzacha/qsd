@@ -27,3 +27,6 @@ data/ledger/ops.jsonl
 
 # python
 angelus/__pycache__/
+
+# local IDE (never commit)
+.claude/settings.local.json
