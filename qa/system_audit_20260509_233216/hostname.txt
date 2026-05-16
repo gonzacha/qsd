@@ -1,0 +1,17 @@
+### COMMAND
+hostnamectl
+
+### OUTPUT
+ Static hostname: gonza-H67N-USB3-B3
+       Icon name: computer-desktop
+         Chassis: desktop 🖥️
+      Machine ID: 6bac55a938094e3a937e60940ee4af1b
+         Boot ID: e9ec5749a0334c0ab7b1df71b5638e70
+Operating System: Linux Mint 22.2
+          Kernel: Linux 6.14.0-29-generic
+    Architecture: x86-64
+ Hardware Vendor: Gigabyte Technology Co., Ltd.
+  Hardware Model: H67N-USB3-B3
+Firmware Version: F9
+   Firmware Date: Tue 2012-03-27
+    Firmware Age: 14y 1month 1w 6d

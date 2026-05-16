@@ -1,0 +1,11 @@
+### COMMAND
+df -i
+
+### OUTPUT
+S.ficheros      Nodos-i NUsados  NLibres NUso% Montado en
+/dev/sdb3      14622720 1367320 13255400   10% /
+none            2036071       1  2036070    1% /dev/shm
+none            2036071       1  2036070    1% /run
+efivarfs              0       0        0     - /sys/firmware/efi/efivars
+/dev/sdb2             0       0        0     - /boot/efi
+none            2036071      13  2036058    1% /dev

@@ -8,8 +8,8 @@
 
 export const config = { runtime: 'edge' };
 
-// ── Recency Cap ───────────────────────────────────────────────
-const MAX_AGE_HOURS = 24;
+// ── Recency Cap (alineado con api/feeds.js ingest) ─────────────
+const MAX_AGE_HOURS = 72;
 const MIN_CORRIENTES = 20;
 
 // ── Corrientes 2.5 Dictionaries (deterministic) ───────────────
@@ -263,7 +263,8 @@ function parseRSSItems(xml, category) {
     const link  = extractTag(b, 'link');
     if (!title || !link) continue;
     const normalTitle = normalizeTitle(decodeEntities(title));
-    if (!normalTitle || isRepeatedTitle(normalTitle)) continue;
+    // isRepeatedTitle OFF — misma política que feeds (coyuntura regional)
+    if (!normalTitle) continue;
     try { new URL(link); } catch { continue; }
     const pubDate = extractTag(b, 'pubDate') || null;
     const description = extractTag(b, 'description');
@@ -439,11 +440,22 @@ function qualityEnrich(items) {
 
 // ── Factos Score ──────────────────────────────────────────────
 function parseHoursSince(publishedAt) {
-  if (!publishedAt) return null;
+  const ts = parsePublishedTimestamp(publishedAt);
+  if (!Number.isFinite(ts)) return null;
+  return Math.max(0, (Date.now() - ts) / 3_600_000);
+}
+
+function parsePublishedTimestamp(...values) {
   try {
-    const t = new Date(publishedAt).getTime();
-    if (isNaN(t)) return null;
-    return Math.max(0, (Date.now() - t) / 3_600_000);
+    for (const value of values) {
+      if (!value) continue;
+      if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+        return value;
+      }
+      const ts = new Date(value).getTime();
+      if (Number.isFinite(ts) && ts > 0) return ts;
+    }
+    return null;
   } catch { return null; }
 }
 
@@ -467,7 +479,9 @@ function isLocalItem(item) {
 // ── Editorial Rank ────────────────────────────────────────────
 function rankItems(enriched) {
   const scored = enriched.map(item => {
-    const hours_since_publish = parseHoursSince(item.publishedAt);
+    const publishedAt = item.publishedAt || item.pubDate || null;
+    const published_ts = parsePublishedTimestamp(item.publishedAt, item.pubDate, item.timestamp);
+    const hours_since_publish = parseHoursSince(publishedAt);
     const se = item.sources_effective ?? Math.min(item.sources_count, 5);
     const seWeighted = Number.isFinite(item.weighted_sources_effective)
       ? item.weighted_sources_effective
@@ -475,10 +489,11 @@ function rankItems(enriched) {
     const arWeighted = Number.isFinite(item.weighted_agreement_ratio)
       ? item.weighted_agreement_ratio
       : item.agreement_ratio;
+    const hours_for_scoring = Number.isFinite(hours_since_publish) ? hours_since_publish : 72;
     const factos_final = convergenceScore(
-      seWeighted, arWeighted, item.contradiction_flag, hours_since_publish
+      seWeighted, arWeighted, item.contradiction_flag, hours_for_scoring
     );
-    const freshness = Math.max(0, 1 - hours_since_publish / 24);
+    const freshness = Math.max(0, 1 - hours_for_scoring / 24);
 
     // Geo-boost: contenido de Corrientes/NEA sube en portada
     const text = normalizeText(`${item.title} ${item.description || ''}`);
@@ -505,12 +520,19 @@ function rankItems(enriched) {
       title: item.title,
       description: item.description || null,
       url: item.link,
-      publishedAt: item.publishedAt,
+      publishedAt,
+      published_ts,
       source: item.source,
     };
   });
 
-  scored.sort((a, b) => b.editorial_score - a.editorial_score);
+  scored.sort((a, b) => {
+    const scoreDiff = b.editorial_score - a.editorial_score;
+    if (scoreDiff !== 0) return scoreDiff;
+    const bt = Number.isFinite(b.published_ts) ? b.published_ts : 0;
+    const at = Number.isFinite(a.published_ts) ? a.published_ts : 0;
+    return bt - at;
+  });
   return scored.map((item, i) => ({ rank: i + 1, ...item }));
 }
 
@@ -572,10 +594,12 @@ export default async function handler(req) {
     // Quality enrich (cluster before dedup so sources_count reflects raw pool)
     const enriched = qualityEnrich(items);
 
-    // Hard recency cap: discard invalid/missing dates and >24h before ranking
+    // Recency: admitir undated (sin timestamp válido); fechas válidas ≤72h
     const recencyFiltered = enriched.filter(item => {
+      const ts = parsePublishedTimestamp(item.publishedAt, item.pubDate, item.timestamp);
+      if (!Number.isFinite(ts) || ts <= 0) return true;
       const hours = parseHoursSince(item.publishedAt);
-      if (!Number.isFinite(hours)) return false;
+      if (!Number.isFinite(hours) || hours < 0) return false;
       return hours <= MAX_AGE_HOURS;
     });
 
@@ -584,6 +608,15 @@ export default async function handler(req) {
 
     // Score and rank
     let ranked = rankItems(deduped);
+
+    console.log(JSON.stringify({
+      qsd_ingest: 'rank',
+      cat: cat || 'all',
+      merged: items.length,
+      afterRecency: recencyFiltered.length,
+      afterDedup: deduped.length,
+      rankedOut: ranked.length,
+    }));
 
     // Filter and limit
     if (minScore > 0) ranked = ranked.filter(r => r.editorial_score >= minScore);
@@ -606,6 +639,12 @@ export default async function handler(req) {
     } else {
       ranked = ranked.slice(0, limit);
     }
+
+    console.log(JSON.stringify({
+      qsd_ingest: 'rank_final',
+      cat: cat || 'all',
+      sentToClient: ranked.length,
+    }));
 
     const generatedAt = new Date().toISOString();
 

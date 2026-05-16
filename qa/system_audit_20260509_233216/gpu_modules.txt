@@ -1,0 +1,11 @@
+### COMMAND
+bash -c lsmod | grep -Ei 'i915|amdgpu|nouveau|nvidia'
+
+### OUTPUT
+i915                 4714496  21
+drm_buddy              24576  1 i915
+ttm                   118784  1 i915
+drm_display_helper    278528  1 i915
+cec                    94208  2 drm_display_helper,i915
+i2c_algo_bit           16384  1 i915
+video                  77824  1 i915

@@ -12,8 +12,8 @@
   <link rel="canonical" href="https://www.quesedice.com.ar/">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="Logo_qsd.png">
-  <link rel="apple-touch-icon" href="Logo_qsd.png">
+  <link rel="icon" type="image/png" href="/Logo_qsd.png">
+  <link rel="apple-touch-icon" href="/Logo_qsd.png">
   <link rel="manifest" href="/manifest.webmanifest">
 
   <!-- Open Graph -->
@@ -39,6 +39,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/qsd-tokens.css">
 
   <!-- JSON-LD -->
   <script type="application/ld+json" id="jsonLd">
@@ -69,7 +70,7 @@
       --bg-card: #111627;
       --bg-card-hover: #161c33;
       --bg-elevated: #1a2040;
-      --bg-glass: rgba(17, 22, 39, 0.85);
+      --bg-glass: rgba(17, 22, 39, 0.96);
 
       --violet-primary: #7a5cff;
       --violet-strong: #8f77ff;
@@ -158,10 +159,10 @@
       height: var(--header-height);
       display: flex;
       align-items: center;
-      background: rgba(11, 14, 26, 0.7);
+      background: rgba(11, 14, 26, 0.94);
       border-bottom: 1px solid var(--border-light);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       z-index: 20;
     }
 
@@ -188,6 +189,12 @@
       opacity: 1;
       transform: translateY(0);
       transition: opacity 200ms ease, transform 200ms ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .site-brand-text {
+      line-height: 1.05;
     }
 
     .site-brand.is-hidden {
@@ -198,7 +205,9 @@
 
     .site-brand img {
       width: 26px;
-      height: auto;
+      height: 26px;
+      object-fit: contain;
+      flex-shrink: 0;
       filter: none;
     }
 
@@ -415,9 +424,9 @@
       top: 0;
       z-index: 100;
       background: var(--bg-glass);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       padding: 0 var(--space-lg);
     }
 
@@ -524,22 +533,254 @@
       z-index: 10;
       width: 100%;
       min-width: 0;
-      max-width: var(--max-width);
+      max-width: min(var(--max-width), 100%);
       margin: 0 auto;
       padding: var(--space-xl) var(--space-lg);
+      background: transparent;
+      border-radius: var(--qsd-radius-lg, 12px);
+      border: 1px solid rgba(136, 144, 174, 0.08);
+      box-shadow: none;
     }
 
     .content-shell {
       position: relative;
       z-index: 10;
-      max-width: var(--max-width);
+      max-width: min(var(--max-width), 1320px);
       margin: 0 auto;
       padding: var(--space-xl) var(--space-lg);
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 320px;
-      gap: var(--space-xl);
+      grid-template-columns: minmax(200px, 248px) minmax(0, 1fr) minmax(260px, 308px);
+      gap: var(--space-lg);
       align-items: start;
     }
+
+    /* ── QSD Stream (wire / señales) ── */
+    .qsd-stream-panel {
+      position: sticky;
+      top: calc(var(--header-height) + 8px);
+      align-self: start;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--qsd-radius-lg, 12px);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      min-width: 0;
+      max-height: calc(100vh - var(--header-height) - 48px);
+      overflow: hidden;
+      box-shadow: var(--qsd-shadow-card, 0 4px 24px rgba(0, 0, 0, 0.22));
+    }
+
+    .qsd-stream-panel.qsd-stream-panel--pulse {
+      animation: qsdStreamPulse 420ms ease-out;
+    }
+
+    @keyframes qsdStreamPulse {
+      0% { opacity: 0.82; }
+      100% { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .qsd-stream-panel.qsd-stream-panel--pulse { animation: none; }
+    }
+
+    @media (max-width: 480px) {
+      .news-card--with-visual {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .news-card--with-visual .qsd-card__visual {
+        width: 100%;
+        margin: var(--space-md) var(--space-md) 0 var(--space-md);
+        max-width: none;
+        aspect-ratio: 21 / 9;
+      }
+
+      .news-card--with-visual .news-card-body {
+        padding-left: var(--space-lg);
+      }
+    }
+
+    .qsd-stream-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding-bottom: var(--space-xs);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    .qsd-stream-title {
+      font-family: var(--font-display);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--violet-dim);
+      margin: 0;
+    }
+
+    .qsd-stream-meta {
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .qsd-stream-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gray-violet) transparent;
+    }
+
+    .qsd-stream-row {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: var(--space-sm);
+      align-items: start;
+      padding: 10px 6px;
+      margin: 0 -6px;
+      border-radius: var(--qsd-radius-sm, 8px);
+      border-bottom: 1px solid rgba(136, 144, 174, 0.08);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.14s ease;
+      min-height: 44px;
+    }
+
+    .qsd-stream-row:last-child {
+      border-bottom: none;
+    }
+
+    .qsd-stream-row:hover {
+      background: rgba(122, 92, 255, 0.06);
+    }
+
+    .qsd-stream-row:active {
+      background: rgba(122, 92, 255, 0.1);
+    }
+
+    .qsd-stream-time {
+      font-size: 0.68rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      padding-top: 2px;
+    }
+
+    .qsd-stream-body {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .qsd-stream-line {
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--text-primary);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .qsd-stream-src {
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(122, 92, 255, 0.88);
+    }
+
+    /* Semantic thumbnails (sin foto de fuente) */
+    .qsd-card__visual {
+      flex-shrink: 0;
+      width: clamp(80px, 22vw, 120px);
+      aspect-ratio: 16 / 9;
+      border-radius: var(--qsd-radius-sm, 8px);
+      overflow: hidden;
+      margin: var(--space-lg) 0 var(--space-lg) var(--space-lg);
+      align-self: center;
+    }
+
+    .qsd-card__semantic {
+      width: 100%;
+      height: 100%;
+      min-height: 68px;
+      position: relative;
+      background: linear-gradient(145deg, var(--sem-a, var(--qsd-semantic-more-a)) 0%, var(--sem-b, var(--qsd-semantic-more-b)) 100%);
+      background-image:
+        linear-gradient(145deg, var(--sem-a, var(--qsd-semantic-more-a)) 0%, var(--sem-b, var(--qsd-semantic-more-b)) 100%),
+        repeating-linear-gradient(-18deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 14px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8px 10px;
+      box-sizing: border-box;
+    }
+
+    .qsd-card__semantic::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 80% 20%, rgba(122, 92, 255, 0.12), transparent 55%);
+      pointer-events: none;
+    }
+
+    .qsd-semantic-kicker {
+      position: relative;
+      z-index: 1;
+      font-size: 0.52rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(232, 228, 220, 0.55);
+    }
+
+    .qsd-semantic-foot {
+      position: relative;
+      z-index: 1;
+      font-size: 0.62rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.06em;
+      color: rgba(232, 228, 220, 0.45);
+    }
+
+    .hero-media--semantic {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px 12px 0 0;
+      overflow: hidden;
+      background: linear-gradient(145deg, var(--sem-a, var(--qsd-semantic-more-a)), var(--sem-b, var(--qsd-semantic-more-b)));
+      position: relative;
+    }
+
+    .hero-media--semantic .qsd-card__semantic {
+      min-height: 140px;
+      border-radius: 0;
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .hero-media--semantic .qsd-semantic-kicker {
+      font-size: 0.62rem;
+    }
+
+    .hero-media--semantic .qsd-semantic-foot {
+      font-size: 0.72rem;
+    }
+
+    .qsd-bucket-argentina { --sem-a: var(--qsd-semantic-argentina-a); --sem-b: var(--qsd-semantic-argentina-b); }
+    .qsd-bucket-mundo { --sem-a: var(--qsd-semantic-mundo-a); --sem-b: var(--qsd-semantic-mundo-b); }
+    .qsd-bucket-more { --sem-a: var(--qsd-semantic-more-a); --sem-b: var(--qsd-semantic-more-b); }
 
     .content-shell .container {
       max-width: none;
@@ -550,11 +791,163 @@
     /* ═══════════════════════════════════════════
        HERO CARD
        ═══════════════════════════════════════════ */
+    /* ── Portada Orbital (AUTO / MANUAL) ─────────────────────── */
+    .qsd-hero-portada {
+      position: relative;
+      margin-bottom: var(--space-2xl);
+    }
+
+    .qsd-portada-mode-toggle {
+      position: absolute;
+      top: var(--space-sm);
+      right: var(--space-sm);
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 136, 0.28);
+      background: rgba(8, 10, 18, 0.82);
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .qsd-portada-mode-toggle:hover {
+      border-color: rgba(201, 149, 58, 0.45);
+      color: var(--text-primary);
+    }
+
+    .qsd-portada-mode-toggle:focus-visible {
+      outline: 2px solid #00ff88;
+      outline-offset: 2px;
+    }
+
+    .qsd-portada-mode-toggle__k { opacity: 0.85; }
+
+    .qsd-portada-mode-toggle__v {
+      color: #00ff88;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    [data-portada-mode="manual"] .qsd-portada-mode-toggle__v {
+      color: #c9953a;
+    }
+
+    .hero-orbital {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 255, 136, 0.14);
+      box-shadow:
+        0 0 0 1px rgba(201, 149, 58, 0.07),
+        0 28px 56px rgba(0, 0, 0, 0.42);
+    }
+
+    .hero-orbital__bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(120% 80% at 12% 18%, rgba(0, 255, 136, 0.14) 0%, transparent 52%),
+        radial-gradient(90% 70% at 88% 12%, rgba(201, 149, 58, 0.12) 0%, transparent 48%),
+        radial-gradient(100% 100% at 50% 100%, rgba(122, 92, 255, 0.08) 0%, transparent 55%),
+        linear-gradient(165deg, #0a0e18 0%, #0b1020 38%, #080a12 100%);
+    }
+
+    .hero-orbital__veil {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(8, 10, 18, 0.05) 0%, rgba(8, 10, 18, 0.55) 100%);
+    }
+
+    .hero-orbital__stage {
+      position: relative;
+      z-index: 2;
+      padding: var(--space-lg);
+    }
+
+    .hero-manual {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-primary);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    .hero-manual__chrome {
+      padding: var(--space-xs) var(--space-md);
+      font-size: 0.58rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(17, 22, 39, 0.65);
+    }
+
+    .hero-manual__chrome span { color: #c9953a; font-weight: 700; }
+
+    .hero-manual__stage {
+      padding: var(--space-md);
+    }
+
+    [data-portada-mode="auto"] .hero-manual {
+      display: none;
+    }
+
+    [data-portada-mode="manual"] .hero-orbital {
+      display: none;
+    }
+
+    [data-portada-mode="manual"] .hero-wheel {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    [data-portada-mode="manual"] .hero-card--main .hero-media {
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    [data-portada-mode="manual"] .hero-card--main .hero-media img.qsd-hero__thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    [data-portada-mode="manual"] .hero-card--secondary .hero-media {
+      aspect-ratio: 16 / 9;
+      max-height: 200px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    [data-portada-mode="manual"] .hero-card--secondary .hero-media img.qsd-hero__thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     .hero-wheel {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
       gap: var(--space-lg);
-      margin-bottom: var(--space-2xl);
+      margin-bottom: 0;
     }
 
     .hero-wheel-main,
@@ -566,10 +959,6 @@
 
     .hero-wheel .hero-card {
       margin-bottom: 0;
-    }
-
-    .hero-wheel.is-rotating .hero-card {
-      opacity: 0.8;
     }
 
     .hero-card {
@@ -767,8 +1156,15 @@
 
     .news-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
       gap: var(--space-lg);
+    }
+
+    @media (max-width: 520px) {
+      .news-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+      }
     }
 
     .redaccion-panel {
@@ -850,7 +1246,6 @@
       width: 100%;
       height: 100%;
       max-width: 100%;
-      height: auto;
       object-fit: cover;
       object-position: 50% 35%;
       display: block;
@@ -905,6 +1300,22 @@
         grid-template-columns: 1fr;
       }
 
+      .qsd-stream-panel {
+        position: relative;
+        top: auto;
+        max-height: none;
+        order: 0;
+        max-width: 100%;
+      }
+
+      .qsd-stream-list {
+        max-height: min(42vh, 320px);
+      }
+
+      .container {
+        order: 1;
+      }
+
       .redaccion-panel {
         order: 2;
         margin-top: var(--space-md);
@@ -954,7 +1365,7 @@
       border: 1px solid var(--border-subtle);
       border-radius: 10px;
       padding: 0;
-      transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+      transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
       text-decoration: none;
       overflow: hidden;
       position: relative;
@@ -966,22 +1377,19 @@
       --left-bar-color: var(--gray-violet);
     }
 
-    .news-card--with-thumb {
+    .news-card--with-visual {
       flex-direction: row;
       align-items: stretch;
     }
 
-    .news-card--with-thumb .qsd-card__thumb {
-      width: clamp(80px, 22vw, 120px);
-      aspect-ratio: 16 / 9;
-      height: auto;
+    .news-card--with-visual .qsd-card__thumb {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      border-radius: 8px;
-      flex-shrink: 0;
-      margin: var(--space-lg) 0 var(--space-lg) var(--space-lg);
+      display: block;
     }
 
-    .news-card--with-thumb .news-card-body {
+    .news-card--with-visual .news-card-body {
       padding-left: var(--space-md);
     }
 
@@ -1072,16 +1480,22 @@
     }
 
     .c-archivo {
-      opacity: 0.65;
+      opacity: 1;
       --left-bar-width: 0px;
       --score-opacity: 0.12;
       --score-hover-opacity: 0.2;
     }
 
     .c-archivo:hover {
-      opacity: 0.85;
+      opacity: 1;
     }
 
+    /* Hard override: archive variant is applied to both <a class="hero-card …"> and <a class="news-card …">.
+       Ensures full opacity even if an older cached stylesheet or extension still injects legacy 0.65. */
+    a.hero-card.c-archivo,
+    a.news-card.c-archivo {
+      opacity: 1 !important;
+    }
 
     .news-card-body {
       padding: var(--space-lg);
@@ -1433,6 +1847,7 @@
 
       .site-brand img {
         width: 22px;
+        height: 22px;
       }
 
       .site-header-meta {
@@ -1563,6 +1978,280 @@
 
     .scroll-top svg { width: 18px; height: 18px; }
 
+    /* ═══════════════════════════════════════════
+       QSD SIGNAL TERMINAL V1 (commercial layer)
+       Evolución visual sobre runtime existente.
+       ═══════════════════════════════════════════ */
+    body.qsd-signal-terminal {
+      --bg-deep: #080a0f;
+      --bg-primary: #0b0e16;
+      --bg-card: #101522;
+      --bg-card-hover: #151a2a;
+      --bg-elevated: #1a2133;
+      --border-subtle: rgba(136, 144, 174, 0.12);
+      --border-light: rgba(136, 144, 174, 0.2);
+      --text-primary: #ece8df;
+      --text-secondary: #9a968c;
+      --text-muted: #5c5a54;
+      --text-bright: #f7f4ec;
+      --violet-primary: #c9a227;
+      --violet-strong: #e0b84a;
+      --violet-dim: rgba(201, 162, 39, 0.45);
+      --violet-soft: rgba(201, 162, 39, 0.12);
+      --amber-primary: #d39a3f;
+      --qsd-sig-urgent: #e24a4a;
+      --qsd-sig-alert: #e8943a;
+      --qsd-sig-trend: #4a8fd9;
+      --qsd-sig-base: #4b5568;
+    }
+
+    body.qsd-signal-terminal .masthead {
+      background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-deep) 100%);
+      border-bottom-color: var(--border-subtle);
+    }
+
+    body.qsd-signal-terminal .site-header {
+      background: rgba(8, 10, 15, 0.97);
+    }
+
+    body.qsd-signal-terminal .nav {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    body.qsd-signal-terminal .nav-btn.active {
+      color: var(--violet-strong);
+      border-bottom-color: var(--violet-primary);
+    }
+
+    body.qsd-signal-terminal .container {
+      border-color: var(--border-subtle);
+      border-radius: 2px;
+      box-shadow: none;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-panel {
+      border-radius: 2px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-light);
+      box-shadow: inset 0 0 0 1px rgba(201, 162, 39, 0.04);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-title {
+      font-family: var(--font-body);
+      letter-spacing: 0.14em;
+      color: var(--violet-strong);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-row {
+      border-radius: 0;
+      border-left: 2px solid transparent;
+      border-bottom-color: var(--border-subtle);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-urgente { border-left-color: var(--qsd-sig-urgent); }
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-alerta { border-left-color: var(--qsd-sig-alert); }
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-tendencia { border-left-color: var(--qsd-sig-trend); }
+    body.qsd-signal-terminal .qsd-stream-row.qsd-sig-base { border-left-color: rgba(75, 85, 104, 0.5); }
+
+    body.qsd-signal-terminal .qsd-stream-time {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      color: var(--violet-strong);
+      font-size: 0.7rem;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-tier {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 1px;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-tier--urgente { background: rgba(226, 74, 74, 0.15); color: var(--qsd-sig-urgent); }
+    body.qsd-signal-terminal .qsd-stream-tier--alerta { background: rgba(232, 148, 58, 0.15); color: var(--qsd-sig-alert); }
+    body.qsd-signal-terminal .qsd-stream-tier--tendencia { background: rgba(74, 143, 217, 0.15); color: var(--qsd-sig-trend); }
+
+    body.qsd-signal-terminal .qsd-stream-cat {
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    body.qsd-signal-terminal .qsd-stream-line {
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    body.qsd-signal-terminal .qsd-stream-src {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .qsd-ticker-shell {
+      position: relative;
+      z-index: 12;
+      background: var(--bg-deep);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .qsd-ticker-inner {
+      max-width: min(var(--max-width), 1320px);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 6px var(--space-lg);
+      min-height: 34px;
+    }
+
+    .qsd-ticker-brand {
+      flex-shrink: 0;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      color: var(--violet-strong);
+    }
+
+    .qsd-ticker-viewport {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+    }
+
+    .qsd-ticker-track {
+      overflow: hidden;
+    }
+
+    .qsd-ticker__marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: qsdTickerMarquee 48s linear infinite;
+    }
+
+    @keyframes qsdTickerMarquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .qsd-tick-item {
+      display: inline;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+
+    .qsd-tick-time {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      color: var(--violet-strong);
+      margin-right: 4px;
+    }
+
+    .qsd-tick-tier {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-right: 6px;
+    }
+
+    .qsd-tick-tier.qsd-tick-urgente { color: var(--qsd-sig-urgent); }
+    .qsd-tick-tier.qsd-tick-alerta { color: var(--qsd-sig-alert); }
+    .qsd-tick-tier.qsd-tick-tendencia { color: var(--qsd-sig-trend); }
+
+    .qsd-tick-sep {
+      display: inline;
+      margin: 0 10px;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .qsd-hub-strip-wrap {
+      position: relative;
+      z-index: 11;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .qsd-hub-strip {
+      max-width: min(var(--max-width), 1320px);
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px var(--space-lg) 10px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .qsd-hub-strip::-webkit-scrollbar { display: none; }
+
+    .qsd-hub-btn {
+      flex: 0 0 auto;
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      background: var(--bg-card);
+      padding: 6px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .qsd-hub-btn:hover {
+      color: var(--text-bright);
+      border-color: var(--violet-dim);
+      background: var(--bg-elevated);
+    }
+
+    .qsd-hub-btn.is-active {
+      color: var(--violet-strong);
+      border-color: var(--violet-primary);
+      background: rgba(201, 162, 39, 0.08);
+    }
+
+    body.qsd-signal-terminal .hero-card--main .hero-title {
+      font-size: clamp(1.35rem, 2.8vw, 2rem);
+      letter-spacing: 0.02em;
+    }
+
+    body.qsd-signal-terminal .hero-terminal-kicker {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--qsd-sig-urgent);
+      margin-bottom: 6px;
+    }
+
+    @media (max-width: 980px) {
+      .qsd-ticker-inner {
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+      }
+      .qsd-hub-strip {
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       * {
         animation: none !important;
@@ -1571,18 +2260,18 @@
     }
   </style>
 </head>
-<body>
+<body class="qsd-signal-terminal">
   <header class="site-header">
     <div class="site-header-inner">
-      <a class="site-brand is-hidden" href="/">
-        <img src="Logo_qsd.png" alt="Qué Se Dice">
-        Qué Se Dice
+      <a class="site-brand is-hidden" href="/" aria-label="Qué Se Dice">
+        <img src="/Logo_qsd.png" alt="" width="26" height="26" decoding="async">
+        <span class="site-brand-text">Qué Se Dice</span>
       </a>
       <div class="site-header-meta">
         <div class="topbar-date" id="currentDate"></div>
         <div class="topbar-live">
           <span class="pulse-dot"></span>
-          En vivo — Actualización automática
+          EN VIVO • Actualización automática
         </div>
         <div class="topbar-actions" id="installArea">
           <button class="tool-btn" id="savedBtn" type="button">Guardados</button>
@@ -1596,7 +2285,7 @@
 
   <!-- Masthead -->
   <header class="masthead">
-    <img src="Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo logo-wave">
+    <img src="/Logo_qsd.png" alt="Qué Se Dice" class="masthead-logo logo-wave">
     <h1 class="masthead-title">Qué Se Dice</h1>
     <p class="masthead-tagline">El pulso informativo de Corrientes y el mundo</p>
     <p class="masthead-subtitle">Agregador editorial con actualización automática de noticias de Corrientes, Argentina y el mundo.</p>
@@ -1610,6 +2299,25 @@
     </div>
   </nav>
 
+  <div class="qsd-ticker-shell" id="qsdTickerShell" hidden>
+    <div class="qsd-ticker-inner">
+      <span class="qsd-ticker-brand">TICKER</span>
+      <div class="qsd-ticker-viewport" role="marquee" aria-live="polite">
+        <div class="qsd-ticker-track" id="qsdTickerTrack"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="qsd-hub-strip-wrap" id="qsdHubWrap">
+    <div class="qsd-hub-strip" id="qsdHubStrip" role="navigation" aria-label="Módulos editoriales">
+      <button type="button" class="qsd-hub-btn" data-hub-cat="deportes">Deportes · motor / NBA</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="economia">Negocios</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="corrientes">Corrientes</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="argentina">NEA · clima</button>
+      <button type="button" class="qsd-hub-btn" data-hub-cat="tecnologia">Tecnología</button>
+    </div>
+  </div>
+
   <!-- Trending -->
   <div class="trending-bar" id="trendingBar" style="display:none;">
     <span class="trending-label">
@@ -1621,6 +2329,13 @@
 
   <!-- Main Content -->
   <div class="content-shell">
+    <aside class="qsd-stream-panel" id="qsdStreamPanel" aria-labelledby="qsdStreamHeading">
+      <div class="qsd-stream-head">
+        <h2 class="qsd-stream-title" id="qsdStreamHeading">QSD Stream</h2>
+        <span class="qsd-stream-meta" id="qsdStreamMeta">Señales</span>
+      </div>
+      <div class="qsd-stream-list" id="qsdStreamList"></div>
+    </aside>
     <main class="container" id="mainContent">
       <div class="loading-state" id="loadingState">
         <div class="loading-spinner"></div>
@@ -1644,7 +2359,7 @@
     <p class="footer-names">Antonio & Gonzalo Haedo</p>
     <p class="footer-since">Desde 2004 · Corrientes, Argentina</p>
     <p class="footer-location">Taetanoticias → Corrientes Dice → Qué Se Dice</p>
-    <p class="footer-links"><a href="/sobre-qsd">Sobre QSD</a></p>
+    <p class="footer-links"><a href="/sobre-qsd">Quiénes somos</a> · <a href="/redaccion/">Redacción QSD</a></p>
     <p class="footer-tech">Actualización automática cada 10 minutos</p>
   </footer>
 
@@ -1702,7 +2417,15 @@
     let currentCategory = 'portada';
     let categories = [];
     let refreshTimer = null;
+    let feedRequestSeq = 0;
     const debugUi = new URLSearchParams(window.location.search).get('debug_ui') === '1';
+    /** ?qsd_debug_boot=1 — traza BOOT → SW → FETCH → RENDER en consola (solo diagnóstico). */
+    const qsdDebugBoot = new URLSearchParams(window.location.search).get('qsd_debug_boot') === '1';
+    function qsdBootLog(label, detail = {}) {
+      if (!qsdDebugBoot) return;
+      const sw = navigator.serviceWorker?.controller?.scriptURL ?? null;
+      console.log('[QSD_BOOT]', label, new Date().toISOString(), { ...detail, sw_controller: sw });
+    }
 
     // ── Date Formatting ──
     function formatDate() {
@@ -1726,6 +2449,94 @@
       if (diffHr < 24) return `Hace ${diffHr}h`;
       if (diffDay < 7) return `Hace ${diffDay}d`;
       return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+    }
+
+    function formatClock(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      if (Number.isNaN(d.getTime())) return '—';
+      return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    function semanticBucketClass(item) {
+      const k = classifyItem(item);
+      if (k === 'argentina') return 'qsd-bucket-argentina';
+      if (k === 'mundo') return 'qsd-bucket-mundo';
+      return 'qsd-bucket-more';
+    }
+
+    function semanticBucketLabel(item) {
+      const k = classifyItem(item);
+      if (k === 'argentina') return 'Argentina · Región';
+      if (k === 'mundo') return 'Mundo';
+      return 'Señales';
+    }
+
+    function renderSemanticFill(item) {
+      const bucketClass = semanticBucketClass(item);
+      const label = semanticBucketLabel(item);
+      const clock = formatClock(item.pubDate);
+      return `<div class="qsd-card__semantic ${bucketClass}" role="img" aria-label="Visual editorial sin fotografía de la fuente"><span class="qsd-semantic-kicker">${escapeHtml(label)}</span><span class="qsd-semantic-foot">${escapeHtml(clock)} · contextual</span></div>`;
+    }
+
+    function renderCardVisual(item, itemThumbUrl) {
+      if (itemThumbUrl) {
+        return `<div class="qsd-card__visual"><img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" /></div>`;
+      }
+      return `<div class="qsd-card__visual">${renderSemanticFill(item)}</div>`;
+    }
+
+    function renderHeroVisual(item, heroThumbUrl, variant) {
+      const isMain = variant === 'main';
+      if (heroThumbUrl) {
+        return `
+            <div class="hero-media">
+              <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
+              <div class="hero-overlay ${isMain ? 'hero-overlay--main' : 'hero-overlay--secondary'}"></div>
+            </div>`;
+      }
+      const bc = semanticBucketClass(item);
+      return `
+            <div class="hero-media hero-media--semantic ${bc}">
+              ${renderSemanticFill(item)}
+            </div>`;
+    }
+
+    function renderStream(items) {
+      const listEl = document.getElementById('qsdStreamList');
+      const panel = document.getElementById('qsdStreamPanel');
+      const metaEl = document.getElementById('qsdStreamMeta');
+      if (!listEl || !panel) return;
+      const slice = items.slice(0, 22).filter(isRenderableItem);
+      if (metaEl) metaEl.textContent = slice.length ? `${slice.length} señales` : '';
+      listEl.innerHTML = slice.map((item) => {
+        const redirectUrl = buildRedirectUrl(item.link, item.title, {
+          source: item.source,
+          pubDate: item.pubDate,
+          description: item.description,
+          score: getEditorialScore(item),
+          sources: getSourcesCount(item),
+        });
+        const sig = signalUrgencyFromScore(item);
+        const bucket = streamBucketLabel(item);
+        const tierHtml = sig.label
+          ? `<span class="qsd-stream-tier qsd-stream-tier--${sig.tierKey}">${escapeHtml(sig.label)}</span>`
+          : '';
+        return `
+          <a class="qsd-stream-row ${sig.rowClass}" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+             data-item-id="${escapeAttr(item.item_id)}">
+            <span class="qsd-stream-time">${escapeHtml(formatClock(item.pubDate))}</span>
+            <span class="qsd-stream-body">
+              <span class="qsd-stream-meta-row">${tierHtml}<span class="qsd-stream-cat">${escapeHtml(bucket)}</span></span>
+              <span class="qsd-stream-line">${escapeHtml(item.title)}</span>
+              <span class="qsd-stream-src">${escapeHtml(item.source || '')}</span>
+            </span>
+          </a>`;
+      }).join('');
+      panel.classList.remove('qsd-stream-panel--pulse');
+      window.requestAnimationFrame(() => {
+        panel.classList.add('qsd-stream-panel--pulse');
+      });
     }
 
     // ── Share Functions ──
@@ -2222,35 +3033,63 @@
       const cards = document.querySelectorAll(`a[data-item-id="${item.item_id}"]`);
       cards.forEach(card => {
         if (card.classList.contains('hero-card')) {
-          if (card.querySelector('.hero-media img')) return;
+          if (card.querySelector('.hero-media img.qsd-hero__thumb')) return;
           const overlayClass = card.classList.contains('hero-card--main') ? 'hero-overlay--main' : 'hero-overlay--secondary';
           const heroMedia = document.createElement('div');
           heroMedia.className = 'hero-media';
           heroMedia.innerHTML = `
-            <img class="qsd-hero__thumb" src="${escapeAttr(imageUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.parentNode && this.parentNode.remove()" />
+            <img class="qsd-hero__thumb" src="${escapeAttr(imageUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />
             <div class="hero-overlay ${overlayClass}"></div>
           `;
+          const existing = card.querySelector('.hero-media');
           const body = card.querySelector('.hero-body');
-          if (body) card.insertBefore(heroMedia, body);
+          if (existing) existing.replaceWith(heroMedia);
+          else if (body) card.insertBefore(heroMedia, body);
           return;
         }
-        if (card.querySelector('img.qsd-card__thumb')) return;
+        if (card.querySelector('.qsd-card__visual img.qsd-card__thumb')) return;
+        const visual = card.querySelector('.qsd-card__visual');
         const body = card.querySelector('.news-card-body');
-        if (!body) return;
-        const img = document.createElement('img');
-        img.className = 'qsd-card__thumb';
-        img.src = imageUrl;
-        img.alt = '';
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.width = 640;
-        img.height = 360;
-        img.onerror = () => {
-          card.classList.remove('news-card--with-thumb');
+        if (!visual || !body) return;
+        visual.innerHTML = `<img class="qsd-card__thumb" src="${escapeAttr(imageUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" />`;
+        card.classList.add('news-card--with-visual');
+      });
+    }
+
+    function wireThumbFallbacks(scope) {
+      const root = scope || document;
+      root.querySelectorAll('.qsd-card__thumb').forEach((img) => {
+        if (img.dataset.qsdFallbackWired === '1') return;
+        img.dataset.qsdFallbackWired = '1';
+        img.addEventListener('error', () => {
+          const card = img.closest('a[data-qsd-bucket]');
+          const visual = img.closest('.qsd-card__visual');
+          if (!visual) return;
           img.remove();
-        };
-        card.classList.add('news-card--with-thumb');
-        card.insertBefore(img, body);
+          const bucket = (card && card.dataset.qsdBucket) || 'more';
+          const pub = card && card.dataset.pub ? card.dataset.pub : '';
+          const clock = formatClock(pub);
+          const label = bucket === 'argentina' ? 'Argentina · Región' : bucket === 'mundo' ? 'Mundo' : 'Señales';
+          const bucketClass = bucket === 'argentina' ? 'qsd-bucket-argentina' : bucket === 'mundo' ? 'qsd-bucket-mundo' : 'qsd-bucket-more';
+          visual.innerHTML = `<div class="qsd-card__semantic ${bucketClass}" role="img" aria-label="Visual editorial sin fotografía de la fuente"><span class="qsd-semantic-kicker">${escapeHtml(label)}</span><span class="qsd-semantic-foot">${escapeHtml(clock)} · contextual</span></div>`;
+        }, { once: true });
+      });
+
+      root.querySelectorAll('.qsd-hero__thumb').forEach((img) => {
+        if (img.dataset.qsdFallbackWired === '1') return;
+        img.dataset.qsdFallbackWired = '1';
+        img.addEventListener('error', () => {
+          const card = img.closest('a[data-qsd-bucket]');
+          const hm = img.closest('.hero-media');
+          if (!hm || !card) return;
+          const bucket = card.dataset.qsdBucket || 'more';
+          const pub = card.dataset.pub || '';
+          const clock = formatClock(pub);
+          const label = bucket === 'argentina' ? 'Argentina · Región' : bucket === 'mundo' ? 'Mundo' : 'Señales';
+          const bucketClass = bucket === 'argentina' ? 'qsd-bucket-argentina' : bucket === 'mundo' ? 'qsd-bucket-mundo' : 'qsd-bucket-more';
+          hm.className = `hero-media hero-media--semantic ${bucketClass}`;
+          hm.innerHTML = `<div class="qsd-card__semantic ${bucketClass}" role="img" aria-label="Visual editorial sin fotografía de la fuente"><span class="qsd-semantic-kicker">${escapeHtml(label)}</span><span class="qsd-semantic-foot">${escapeHtml(clock)} · contextual</span></div>`;
+        }, { once: true });
       });
     }
 
@@ -2388,6 +3227,115 @@
       return Math.min(100, Math.max(0, score));
     }
 
+    /** Urgencia determinística desde score editorial 0–100 (sin datos falsos). */
+    function signalUrgencyFromScore(item) {
+      const s = getEditorialScore(item);
+      if (!Number.isFinite(s)) {
+        return { rowClass: 'qsd-sig-base', tierKey: '', label: '' };
+      }
+      if (s > 75) return { rowClass: 'qsd-sig-urgente', tierKey: 'urgente', label: 'URGENTE' };
+      if (s > 55) return { rowClass: 'qsd-sig-alerta', tierKey: 'alerta', label: 'ALERTA' };
+      if (s > 35) return { rowClass: 'qsd-sig-tendencia', tierKey: 'tendencia', label: 'TENDENCIA' };
+      return { rowClass: 'qsd-sig-base', tierKey: '', label: '' };
+    }
+
+    function streamBucketLabel(item) {
+      const b = classifyItem(item);
+      if (b === 'argentina') return 'REGIÓN';
+      if (b === 'mundo') return 'MUNDO';
+      return 'SEÑAL';
+    }
+
+    function syncHubStripActive() {
+      const strip = document.getElementById('qsdHubStrip');
+      if (!strip) return;
+      strip.querySelectorAll('.qsd-hub-btn').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.hubCat === currentCategory);
+      });
+    }
+
+    function wireHubStrip() {
+      const strip = document.getElementById('qsdHubStrip');
+      if (!strip) return;
+      strip.querySelectorAll('[data-hub-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentCategory = btn.dataset.hubCat;
+          const inner = document.getElementById('navInner');
+          if (inner) {
+            inner.querySelectorAll('.nav-btn').forEach(b => {
+              b.classList.toggle('active', b.dataset.cat === currentCategory);
+            });
+          }
+          syncHubStripActive();
+          loadFeed(currentCategory);
+        });
+      });
+    }
+
+    /**
+     * TASK-0002: operational freshness watchdog (homepage hero >24h).
+     * Console + CustomEvent hook + at most one IndexedDB ledger line per local calendar day.
+     */
+    function runFreshnessWatchdog(heroItem) {
+      const main = document.getElementById('mainContent');
+      if (main) delete main.dataset.qsdHeroStale;
+
+      if (currentCategory !== 'portada' || !heroItem) return;
+
+      const hours = Number.isFinite(heroItem.hours_since_publish)
+        ? heroItem.hours_since_publish
+        : hoursSince(heroItem);
+
+      if (hours == null || hours <= 24) return;
+
+      if (main) main.dataset.qsdHeroStale = '1';
+
+      const detail = {
+        age_hours: Math.round(hours * 10) / 10,
+        item_id: heroItem.item_id || null,
+        title_snip: (heroItem.title || '').slice(0, 120),
+      };
+      console.warn('[QSD] Freshness watchdog: hero editorial >24h', detail);
+
+      try {
+        window.dispatchEvent(new CustomEvent('qsd:freshness-stale', { detail }));
+      } catch (err) { /* ignore */ }
+
+      const dayKey = `qsd_fw_ledger_${new Date().toISOString().slice(0, 10)}`;
+      try {
+        if (!localStorage.getItem(dayKey)) {
+          void ledgerAppend(buildEvent('freshness_stale', heroItem, {
+            age_hours: detail.age_hours,
+            watchdog: true,
+            surface: 'homepage_hero',
+          }));
+          localStorage.setItem(dayKey, '1');
+        }
+      } catch (err) { /* private mode / quota */ }
+    }
+
+    function renderSignalTicker(items) {
+      const shell = document.getElementById('qsdTickerShell');
+      const track = document.getElementById('qsdTickerTrack');
+      if (!shell || !track) return;
+      const top = items.slice(0, 18).filter(isRenderableItem);
+      if (!top.length) {
+        shell.hidden = true;
+        track.innerHTML = '';
+        return;
+      }
+      const seg = top.map(item => {
+        const sig = signalUrgencyFromScore(item);
+        const clk = formatClock(item.pubDate);
+        const tier = sig.label && sig.tierKey
+          ? `<span class="qsd-tick-tier qsd-tick-${sig.tierKey}">${escapeHtml(sig.label)}</span>`
+          : '';
+        return `<span class="qsd-tick-item">${tier}<span class="qsd-tick-time">${escapeHtml(clk)}</span> ${escapeHtml(item.title)}</span><span class="qsd-tick-sep">·</span>`;
+      }).join('');
+      track.innerHTML = `<div class="qsd-ticker__marquee">${seg}${seg}</div>`;
+      shell.hidden = false;
+    }
+
     function getSourcesCount(item) {
       const count = Number(item?.sources_count);
       return Number.isFinite(count) && count > 0 ? count : null;
@@ -2448,9 +3396,11 @@
           currentCategory = btn.dataset.cat;
           inner.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
+          syncHubStripActive();
           loadFeed(currentCategory);
         });
       });
+      syncHubStripActive();
     }
 
     function renderTrending(trending) {
@@ -2496,15 +3446,12 @@
            data-editorial-score="${item.editorial_score ?? ''}"
            data-factos-final="${item.factos_final ?? ''}"
            data-sources-count="${item.sources_count ?? ''}"
-           data-hours="${item.hours_since_publish ?? ''}">
-          ${heroThumbUrl ? `
-            <div class="hero-media">
-              <img class="qsd-hero__thumb" src="${escapeAttr(heroThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.parentNode && this.parentNode.remove()" />
-              <div class="hero-overlay ${isMain ? 'hero-overlay--main' : 'hero-overlay--secondary'}"></div>
-
-            </div>
-          ` : ''}
+           data-hours="${item.hours_since_publish ?? ''}"
+           data-qsd-bucket="${escapeAttr(classifyItem(item))}"
+           data-pub="${escapeAttr(item.pubDate || '')}">
+          ${renderHeroVisual(item, heroThumbUrl, variant)}
           <div class="hero-body">
+            ${isMain ? '<div class="hero-terminal-kicker">En foco</div>' : ''}
             ${heroKicker ? `
               <div class="hero-badge">
                 <span class="hero-badge-dot"></span>
@@ -2515,7 +3462,7 @@
             ${isMain && item.description ? `<p class="hero-desc">${escapeHtml(item.description)}</p>` : ''}
             <div class="hero-meta">
               <span class="hero-source">${escapeHtml(item.source)}</span>
-              <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+              <img src="/Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
               <span>${timeAgo(item.pubDate)}</span>
               <div class="hero-share" data-link="${escapeAttr(item.link)}">
                 ${shareButtons(item.title, heroShareUrl, item.source, item.description)}
@@ -2525,6 +3472,43 @@
           </div>
         </a>
       `;
+    }
+
+    function getPortadaMode() {
+      try {
+        return localStorage.getItem('qsd_mode') === 'manual' ? 'manual' : 'auto';
+      } catch {
+        return 'auto';
+      }
+    }
+
+    function setPortadaMode(mode) {
+      try {
+        localStorage.setItem('qsd_mode', mode === 'manual' ? 'manual' : 'auto');
+      } catch { /* ignore */ }
+    }
+
+    function initPortadaModeToggle() {
+      if (window.__qsdPortadaModeToggleBound) return;
+      window.__qsdPortadaModeToggleBound = true;
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#qsdPortadaModeToggle');
+        if (!btn) return;
+        e.preventDefault();
+        const shell = document.getElementById('qsdHeroPortada');
+        const orbital = document.getElementById('qsdHeroOrbitalStage');
+        const manual = document.getElementById('qsdHeroManualStage');
+        const label = document.getElementById('qsdPortadaModeLabel');
+        const wheel = document.querySelector('[data-hero-wheel]');
+        if (!shell || !orbital || !manual || !wheel || !label) return;
+        const next = shell.dataset.portadaMode === 'auto' ? 'manual' : 'auto';
+        shell.dataset.portadaMode = next;
+        setPortadaMode(next);
+        label.textContent = next === 'manual' ? 'MANUAL' : 'AUTO';
+        btn.setAttribute('aria-pressed', next === 'manual' ? 'true' : 'false');
+        if (next === 'auto') orbital.appendChild(wheel);
+        else manual.appendChild(wheel);
+      });
     }
 
     function renderHeroWheelInner(items) {
@@ -2541,7 +3525,31 @@
     }
 
     function renderHeroWheel(items) {
-      return `<section class="hero-wheel" data-hero-wheel>${renderHeroWheelInner(items)}</section>`;
+      const mode = getPortadaMode();
+      const inner = renderHeroWheelInner(items);
+      const wheelHtml = `<section class="hero-wheel" data-hero-wheel>${inner}</section>`;
+      const label = mode === 'manual' ? 'MANUAL' : 'AUTO';
+      const ariaPressed = mode === 'manual' ? 'true' : 'false';
+      return `
+<section class="qsd-hero-portada" data-portada-mode="${mode}" id="qsdHeroPortada">
+  <button type="button" class="qsd-portada-mode-toggle" id="qsdPortadaModeToggle" aria-pressed="${ariaPressed}" title="Alternar entre portada orbital (AUTO) y portada clásica (MANUAL)">
+    <span class="qsd-portada-mode-toggle__k">Modo</span>
+    <span class="qsd-portada-mode-toggle__v" id="qsdPortadaModeLabel">${label}</span>
+  </button>
+  <div class="hero-orbital">
+    <div class="hero-orbital__bg" aria-hidden="true"></div>
+    <div class="hero-orbital__veil" aria-hidden="true"></div>
+    <div class="hero-orbital__stage" id="qsdHeroOrbitalStage">
+      ${mode === 'auto' ? wheelHtml : ''}
+    </div>
+  </div>
+  <div class="hero-manual">
+    <div class="hero-manual__chrome"><span>16:9 · Portada clásica</span></div>
+    <div class="hero-manual__stage" id="qsdHeroManualStage">
+      ${mode === 'manual' ? wheelHtml : ''}
+    </div>
+  </div>
+</section>`;
     }
 
     function wireHeroActions(items) {
@@ -2631,6 +3639,8 @@
           <div class="loading-state">
             <div class="loading-text">No hay noticias disponibles en este momento</div>
           </div>`;
+        renderStream([]);
+        renderSignalTicker([]);
         return;
       }
 
@@ -2678,9 +3688,11 @@
             const variantClass = getEditorialVariant(item, { index: i, hours: itemHours });
             const urgentDot = variantClass === 'c-urgent' ? '<span class="urgent-dot" aria-hidden="true"></span>' : '';
             sectionHtml += `
-              <a class="news-card ${variantClass}${itemThumbUrl ? ' news-card--with-thumb' : ''}" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
+              <a class="news-card news-card--with-visual ${variantClass}" href="${escapeAttr(redirectUrl)}" target="${LINK_TARGET}" rel="noopener noreferrer"
                  style="--score-width: ${getScoreWidth(editorialScore)};"
                  data-item-id="${escapeAttr(item.item_id)}"
+                 data-qsd-bucket="${escapeAttr(classifyItem(item))}"
+                 data-pub="${escapeAttr(item.pubDate || '')}"
                  data-original-url="${escapeAttr(item.link)}"
                  data-title="${escapeAttr(item.title)}"
                  data-source="${escapeAttr(item.source || '')}"
@@ -2688,9 +3700,7 @@
                  data-factos-final="${item.factos_final ?? ''}"
                  data-sources-count="${item.sources_count ?? ''}"
                  data-hours="${item.hours_since_publish ?? ''}">
-                ${itemThumbUrl ? `
-                  <img class="qsd-card__thumb" src="${escapeAttr(itemThumbUrl)}" alt="" loading="lazy" decoding="async" width="640" height="360" onerror="this.closest('.news-card')?.classList.remove('news-card--with-thumb'); this.remove()" />
-                ` : ''}
+                ${renderCardVisual(item, itemThumbUrl)}
                 <div class="news-card-body">
                   <div class="news-card-meta">
                     <span class="news-card-source">${escapeHtml(item.source)}</span>
@@ -2701,7 +3711,7 @@
                   ${item.description ? `<p class="news-card-desc">${escapeHtml(item.description)}</p>` : ''}
                   <div class="news-card-footer">
                     <div class="news-card-timegroup">
-                      <img src="Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
+                      <img src="/Logo_qsd.png" alt="QSD" class="card-logo-watermark" />
                       ${urgentDot}
                       <span class="news-card-time">${timeAgo(item.pubDate)}</span>
                     </div>
@@ -2735,9 +3745,13 @@
         setupHeroWheelRotation(heroItems);
       });
 
+      renderStream(items);
+      renderSignalTicker(items);
       void resolveItemImages(items);
       logItemsSeen(items);
       wireItemActions(items);
+      wireThumbFallbacks(main);
+      runFreshnessWatchdog(heroItems[0]);
     }
 
     function logItemsSeen(items) {
@@ -2791,6 +3805,19 @@
           showToast('Guardado');
         });
       });
+
+      const streamList = document.getElementById('qsdStreamList');
+      if (streamList) {
+        streamList.querySelectorAll('.qsd-stream-row').forEach(link => {
+          link.addEventListener('click', () => {
+            const itemId = link.dataset.itemId;
+            const item = itemMap.get(itemId);
+            if (item) {
+              void ledgerAppend(buildEvent('item_opened', item, { category: currentCategory, via: 'stream' }));
+            }
+          });
+        });
+      }
     }
 
     async function renderSavedList() {
@@ -2813,6 +3840,8 @@
     // ── Data Loading ──
     async function loadFeed(category) {
       const main = document.getElementById('mainContent');
+      const requestSeq = ++feedRequestSeq;
+      qsdBootLog('loadFeed_start', { category, requestSeq });
       main.innerHTML = `
         <div class="loading-state">
           <div class="loading-spinner"></div>
@@ -2824,9 +3853,18 @@
         let endpoint = '';
 
         if (category === 'portada') {
-          const rankRes = await fetch('/api/rank?limit=30');
+          const rankRes = await fetch('/api/rank?limit=30', {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+          });
           if (rankRes.ok) {
             const payload = await rankRes.json();
+            qsdBootLog('rank_json_parsed', {
+              generatedAt: payload.generatedAt ?? null,
+              itemCount: Array.isArray(payload.items) ? payload.items.length : 0,
+              firstPublishedAt: payload.items?.[0]?.publishedAt ?? null,
+              firstTitle: (payload.items?.[0]?.title || '').slice(0, 80),
+            });
             const rankItems = (payload.items || []).map(item => ({
               title: item.title,
               link: item.url,
@@ -2838,32 +3876,56 @@
               sources_count: item.sources_count,
               hours_since_publish: item.hours_since_publish,
             }));
-            data = { items: rankItems, trending: [], categories };
-            endpoint = 'rank';
-            const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
-            void ledgerAppend(buildEvent('rank_generated', null, {
-              count: rankItems.length,
-              min_score: scores.length ? Math.min(...scores) : null,
-              max_score: scores.length ? Math.max(...scores) : null,
-            }));
+            if (rankItems.length > 0) {
+              data = { items: rankItems, trending: [], categories };
+              endpoint = 'rank';
+              const scores = rankItems.map(i => i.editorial_score ?? i.factos_final).filter(v => typeof v === 'number');
+              void ledgerAppend(buildEvent('rank_generated', null, {
+                count: rankItems.length,
+                min_score: scores.length ? Math.min(...scores) : null,
+                max_score: scores.length ? Math.max(...scores) : null,
+              }));
+            } else {
+              console.warn('[QSD] /api/rank devolvió 0 ítems; portada usa fallback /api/feeds');
+            }
+          } else {
+            console.warn('[QSD] /api/rank no OK (' + rankRes.status + '); portada usa fallback /api/feeds');
           }
         }
 
         if (!data) {
-          const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`);
+          const res = await fetch(`${API_BASE}?cat=${encodeURIComponent(category)}`, { cache: 'no-store' });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           data = await res.json();
           endpoint = 'feeds';
         }
+        if (requestSeq !== feedRequestSeq) return;
 
-        // Store categories for nav
-        if (data.categories && categories.length === 0) {
+        // Store categories for nav (solo si la API devolvió lista no vacía).
+        // Portada vía /api/rank usa data.categories = categories global, que sigue [] —
+        // sin este guard, renderNav([]) vacía #navInner y borra el menú.
+        if (Array.isArray(data.categories) && data.categories.length > 0 && categories.length === 0) {
           categories = data.categories;
           renderNav(categories);
         }
 
+        const safeItems = Array.isArray(data.items) ? data.items.filter(isRenderableItem) : [];
+        if (safeItems.length === 0) {
+          throw new Error('No hay datos validos para renderizar');
+        }
+        data.items = safeItems;
+
+        qsdBootLog('before_render', {
+          endpoint,
+          category,
+          count: data.items.length,
+          firstPubDate: data.items[0]?.pubDate || null,
+          firstTitle: (data.items[0]?.title || '').slice(0, 80),
+        });
+
         renderTrending(data.trending);
         await renderFeed(data);
+        qsdBootLog('after_render', { endpoint, category });
         resolveItemUrls(data.items); // Background URL resolve
 
         void ledgerAppend(buildEvent('feed_fetch', null, {
@@ -2872,6 +3934,7 @@
           count: data.items ? data.items.length : 0,
         }));
       } catch (err) {
+        if (requestSeq !== feedRequestSeq) return;
         console.error('Feed load error:', err);
         main.innerHTML = `
           <div class="loading-state">
@@ -3094,6 +4157,9 @@
       { key: 'espectaculos', label: 'Espectáculos' },
     ];
     renderNav(defaultCats);
+    wireHubStrip();
+    syncHubStripActive();
+    initPortadaModeToggle();
     loadFeed(currentCategory);
     loadRedaccion();
     startAutoRefresh();

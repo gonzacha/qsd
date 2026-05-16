@@ -1,0 +1,13 @@
+### COMMAND
+lsblk
+
+### OUTPUT
+NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS
+sda      8:0    0 232,9G  0 disk 
+├─sda1   8:1    0     1M  0 part 
+├─sda2   8:2    0   513M  0 part 
+└─sda3   8:3    0 232,4G  0 part 
+sdb      8:16   0 223,6G  0 disk 
+├─sdb1   8:17   0     1M  0 part 
+├─sdb2   8:18   0   513M  0 part /boot/efi
+└─sdb3   8:19   0 223,1G  0 part /

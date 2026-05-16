@@ -1,0 +1,51 @@
+/**
+ * QSD — tokens compartidos (home, redacción, institucional)
+ * No frameworks; solo variables CSS.
+ */
+:root {
+  --qsd-bg-deep: #080a12;
+  --qsd-bg-primary: #0b0e1a;
+  --qsd-bg-card: #111627;
+  --qsd-bg-card-hover: #161c33;
+  --qsd-bg-elevated: #1a2040;
+
+  --qsd-text-bright: #f5f2ec;
+  --qsd-text-primary: #e8e4dc;
+  --qsd-text-secondary: #9a968e;
+  --qsd-text-muted: #6d6a62;
+
+  --qsd-violet: #7a5cff;
+  --qsd-violet-strong: #8f77ff;
+  --qsd-violet-dim: rgba(122, 92, 255, 0.45);
+  --qsd-violet-soft: rgba(122, 92, 255, 0.14);
+  --qsd-amber: #d39a3f;
+  /* Portada Orbital (AUTO) — acentos editoriales */
+  --qsd-emerald: #00ff88;
+  --qsd-orbital-gold: #c9953a;
+  --qsd-border: rgba(136, 144, 174, 0.14);
+  --qsd-border-light: rgba(136, 144, 174, 0.22);
+
+  --qsd-radius-lg: 12px;
+  --qsd-radius-md: 10px;
+  --qsd-radius-sm: 8px;
+  --qsd-shadow-card: 0 4px 24px rgba(0, 0, 0, 0.22);
+  --qsd-shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.28);
+
+  --qsd-font-display: 'Playfair Display', Georgia, serif;
+  --qsd-font-headline: 'Libre Baskerville', Georgia, serif;
+  --qsd-font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+
+  --qsd-space-xs: 0.25rem;
+  --qsd-space-sm: 0.5rem;
+  --qsd-space-md: 1rem;
+  --qsd-space-lg: 1.5rem;
+  --qsd-space-xl: 2rem;
+
+  /* Bloques semánticos (sin foto) — gradientes por bucket */
+  --qsd-semantic-argentina-a: #1a3260;
+  --qsd-semantic-argentina-b: #0c182d;
+  --qsd-semantic-mundo-a: #2a2048;
+  --qsd-semantic-mundo-b: #120c22;
+  --qsd-semantic-more-a: #1a2838;
+  --qsd-semantic-more-b: #0c121a;
+}

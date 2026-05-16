@@ -125,7 +125,7 @@ const FEEDS = {
 };
 
 // ── XML Parser (lightweight, edge-compatible) ─────────────────
-function parseRSSItems(xml) {
+function parseRSSItems(xml, ingestStats) {
   const items = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match;
@@ -141,18 +141,10 @@ function parseRSSItems(xml) {
     const sourceUrl = extractAttr(block, 'source', 'url');
 
     if (title && link) {
+      if (ingestStats) ingestStats.rawTitleLink++;
       const normalizedTitle = normalizeTitle(decodeEntities(title));
 
-      // Determine source domain for .gob.ar filter
       const sourceDomain = source ? decodeEntities(source).toLowerCase() : extractDomain(link);
-
-      // Filter .gob.ar/.gov.ar sources (institutional spam)
-      if (sourceDomain.includes('gob.ar') ||
-          sourceDomain.includes('gov.ar') ||
-          sourceDomain.includes('gob.') ||
-          sourceDomain.includes('gov.')) {
-        continue; // Skip this item
-      }
 
       items.push({
         title: normalizedTitle,
@@ -171,6 +163,7 @@ function parseRSSItems(xml) {
   const filteredItems = items.filter(item => {
     const gate = feed_gate(item, seenUrls);
     if (!gate.pass) {
+      if (ingestStats) ingestStats.tunnelReject++;
       // Log para auditoría (no bloquea el pipeline)
       console.log(`[TUNEL] REJECT reason=${gate.reason} url=${item.link || item.url}`);
       return false;
@@ -179,7 +172,21 @@ function parseRSSItems(xml) {
   });
 
   // [ PURGATORIO ] Render gate (técnico)
-  return filteredItems.filter(item => isRenderReady(item));
+  return filteredItems.filter(item => {
+    const ok = isRenderReady(item);
+    if (!ok && ingestStats) {
+      ingestStats.renderReject++;
+      const link = item && item.link ? String(item.link).trim() : '';
+      let urlOk = false;
+      try {
+        const u = new URL(link);
+        urlOk = u.protocol === 'http:' || u.protocol === 'https:';
+      } catch { /* invalid */ }
+      if (!urlOk) ingestStats.invalidUrl++;
+      else ingestStats.renderRejectOther++;
+    }
+    return ok;
+  });
 }
 
 function extractTag(xml, tag) {
@@ -256,15 +263,6 @@ function detectCorrientesEdition(text) {
   return 'corrientes';
 }
 
-function isCorreintesRelevant(text) {
-  const normalized = normalizeText(text);
-  // Al menos 1 hit del diccionario general O 1 hit de capital/provincia
-  const generalHits = countHits(normalized, DICT_CORRIENTES_GENERAL_NORM);
-  const capitalHits = countHits(normalized, DICT_CAPITAL_NORM);
-  const provinciaHits = countHits(normalized, DICT_PROVINCIA_NORM);
-  return generalHits >= 1 || capitalHits >= 1 || provinciaHits >= 1;
-}
-
 function isRepeatedTitle(title) {
   const normalized = title.toLowerCase().trim();
   const separators = [' - ', ' | ', ' — ', ' – ', ' · '];
@@ -282,11 +280,11 @@ function isRepeatedTitle(title) {
 //
 //  [ INGESTA ]    fetch RSS raw desde fuentes configuradas
 //       ↓
-//  [ TÚNEL ]      feed_gate() — pre-filtro: fuente, idioma, dedup temprana
-//                 Sin lógica editorial. Solo: ¿este item merece procesarse?
+//  [ TÚNEL ]      feed_gate() — pre-filtro: URL, dedup, allow/block list
+//                 Sin curación de estilo/idioma (eso es ranking/scoring).
 //       ↓
 //  [ PURGATORIO ] isRenderReady() — gate técnico (render-ready)
-//                 Reglas de estructura, campos requeridos, fecha válida
+//                 Reglas de estructura y URL; pubDate opcional (undated pasa al scoring)
 //       ↓
 //  [ SCORING ]    scoreItem() — ranking factos + editorial_score
 //                 Convergencia de fuentes, frescura, relevancia
@@ -314,15 +312,6 @@ const ALLOWED_DOMAINS = [
   // Si se define, solo estos dominios pasan
 ];
 
-// Stopwords español — determinístico, sin deps, sin APIs externas
-const SPANISH_STOPWORDS = new Set([
-  'de','la','el','en','y','a','los','las','del','un','una','con',
-  'por','para','que','se','su','al','es','lo','como','más','pero',
-  'fue','son','hay','le','no','si','ya','o','este','esta','esto',
-  'también','cuando','muy','años','gobierno','provincia','ciudad',
-  'nacional','municipal','presidente','gobernador','intendente'
-]);
-
 function getDomain(url) {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
@@ -331,19 +320,7 @@ function getDomain(url) {
   }
 }
 
-function isSpanish(text) {
-  if (!text) return true;
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(w => w.length > 1);
-  if (words.length < 4) return true; // título muy corto → no filtrar
-  const hits = words.filter(w => SPANISH_STOPWORDS.has(w)).length;
-  return hits >= 2;
-}
-
-// [ TÚNEL ] — Primera capa del pipeline. Sin lógica editorial.
-// Pregunta: ¿este item merece entrar al pipeline?
+// [ TÚNEL ] — Integridad estructural y dedup temprana solamente.
 function feed_gate(item, seenUrls) {
   // 1. URL requerida
   if (!item.link && !item.url) return { pass: false, reason: 'no_url' };
@@ -354,18 +331,15 @@ function feed_gate(item, seenUrls) {
   if (seenUrls.has(url)) return { pass: false, reason: 'duplicate_url' };
   seenUrls.add(url);
 
-  // 3. Repeated title check (structural dedup)
-  if (isRepeatedTitle(item.title || '')) return { pass: false, reason: 'repeat_title' };
+  // 3. Repeated title check — TEMP OFF (evitar falsos negativos coyuntura regional)
+  // if (isRepeatedTitle(item.title || '')) return { pass: false, reason: 'repeat_title' };
 
-  // 3. Source filter
+  // 4. Blocked / optional allowlist (domain)
   const domain = getDomain(url);
   if (domain && BLOCKED_DOMAINS.includes(domain))
     return { pass: false, reason: 'blocked_domain' };
   if (ALLOWED_DOMAINS.length > 0 && domain && !ALLOWED_DOMAINS.includes(domain))
     return { pass: false, reason: 'not_in_allowlist' };
-
-  // 4. Language filter
-  if (!isSpanish(item.title)) return { pass: false, reason: 'lang_en' };
 
   return { pass: true };
 }
@@ -394,34 +368,15 @@ function isRenderReady(item) {
   const source = item && typeof item.source === 'string' ? item.source.trim() : '';
   if (!source) return false;
   const pubDate = item && item.pubDate ? new Date(item.pubDate) : null;
-  if (!pubDate || Number.isNaN(pubDate.getTime())) return false;
+  if (!pubDate || Number.isNaN(pubDate.getTime())) return true;
   const hoursAgo = (Date.now() - pubDate.getTime()) / 3600000;
-  if (hoursAgo < 0 || hoursAgo > 72) return false;
+  if (!Number.isFinite(hoursAgo)) return false;
+  if (hoursAgo < 0) return false;
+  if (hoursAgo > 72) return false;
   return true;
 }
 
-// DEPRECATED function validateItem(item) {
-// DEPRECATED   const title = item && item.title ? item.title.trim() : '';
-// DEPRECATED   if (title.length < 15) return false;
-// DEPRECATED   const link = item && item.link ? String(item.link).trim() : '';
-// DEPRECATED   if (!link) return false;
-// DEPRECATED   try {
-// DEPRECATED     const u = new URL(link);
-// DEPRECATED     if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-// DEPRECATED     const host = (u.hostname || '').toLowerCase();
-// DEPRECATED     // Structural institutional filter (domain-based), not semantic (title-based)
-// DEPRECATED     if (host.endsWith('.gob.ar') || host.endsWith('.gov.ar') || host.includes('.gob.') || host.includes('.gov.')) {
-// DEPRECATED       return false;
-// DEPRECATED     }
-// DEPRECATED   } catch {
-// DEPRECATED     return false;
-// DEPRECATED   }
-// DEPRECATED   // Keep only the explicit institutional spam phrase in title (optional).
-// DEPRECATED   // If you want *zero* semantic filtering, delete this line too.
-// DEPRECATED   if (/portal del ciudadano/i.test(title)) return false;
-// DEPRECATED   if (isRepeatedTitle(title)) return false;
-// DEPRECATED   return true;
-// DEPRECATED }
+// Validación previa al scoring: feed_gate() + isRenderReady() (sin filtros de estilo/idioma).
 
 function stripHtml(str) {
   return str.replace(/<[^>]*>/g, '').trim();
@@ -459,8 +414,8 @@ function deduplicateItems(items) {
       }
     }
 
-    if (!isDupe && words.size > 0) {
-      seen.add(words);
+    if (!isDupe) {
+      if (words.size > 0) seen.add(words);
       unique.push(item);
     }
   }
@@ -532,6 +487,14 @@ export default async function handler(req) {
   }
 
   try {
+    const ingestStats = {
+      rawTitleLink: 0,
+      tunnelReject: 0,
+      renderReject: 0,
+      invalidUrl: 0,
+      renderRejectOther: 0,
+    };
+
     // Fetch all feeds in parallel
     const feedPromises = feedConfig.feeds.map(async (feedUrl) => {
       try {
@@ -550,7 +513,7 @@ export default async function handler(req) {
 
         if (!response.ok) return [];
         const xml = await response.text();
-        return parseRSSItems(xml);
+        return parseRSSItems(xml, ingestStats);
       } catch (err) {
         console.error(`Feed error: ${feedUrl}`, err.message);
         return [];
@@ -559,35 +522,42 @@ export default async function handler(req) {
 
     const feedResults = await Promise.all(feedPromises);
     let allItems = feedResults.flat();
+    const afterParseFlat = allItems.length;
 
     // Sort by date (newest first)
     allItems.sort((a, b) => b.timestamp - a.timestamp);
 
     // Deduplicate
     allItems = deduplicateItems(allItems);
+    const afterDedup = allItems.length;
 
-    // ── Age Filter ─────────────────────────────────────────────────
-    const MAX_AGE_HOURS = 72; // 3 días
+    // ── Age Filter (72h; undated timestamp<=0 admitido) ────────────
+    const MAX_AGE_HOURS = 72;
     const now = Date.now();
+    let undatedAdmitted = 0;
 
     allItems = allItems.filter(item => {
-      // Keep items without timestamp (edge case)
-      if (!item.timestamp || item.timestamp === 0) {
-        console.warn(`[AGE_FILTER] Item sin timestamp: ${item.title?.substring(0, 50)}`);
+      const ts = item.timestamp;
+      if (!Number.isFinite(ts)) return false;
+      if (ts <= 0) {
+        undatedAdmitted++;
         return true;
       }
-
-      const ageHours = (now - item.timestamp) / (1000 * 60 * 60);
-
-      if (ageHours > MAX_AGE_HOURS) {
-        console.log(`[AGE_FILTER] REJECT age=${ageHours.toFixed(1)}h title="${item.title?.substring(0, 50)}"`);
-        return false;
-      }
-
-      return true;
+      const ageHours = (now - ts) / (1000 * 60 * 60);
+      if (!Number.isFinite(ageHours) || ageHours < 0) return false;
+      return ageHours <= MAX_AGE_HOURS;
     });
+    const afterAge = allItems.length;
 
-    console.log(`[AGE_FILTER] Kept ${allItems.length} items within ${MAX_AGE_HOURS}h window`);
+    console.log(JSON.stringify({
+      qsd_ingest: 'feeds',
+      cat: category,
+      afterParseFlat,
+      afterDedup,
+      undatedAdmitted,
+      afterAge,
+      ingestStats,
+    }));
 
     // Extract trending from all items
     const trending = extractTrending(allItems);
@@ -601,16 +571,13 @@ export default async function handler(req) {
       return { ...item, edition: category };
     });
 
-    // Filter Corrientes items by relevance
-    if (category === 'corrientes') {
-      mappedItems = mappedItems.filter(item => {
-        const text = `${item.title} ${item.description || ''}`.trim();
-        return isCorreintesRelevant(text);
-      });
-    }
-
     // Limit results
     const items = mappedItems.slice(0, 50);
+    console.log(JSON.stringify({
+      qsd_ingest: 'feeds_final',
+      cat: category,
+      sentToClient: items.length,
+    }));
 
     return new Response(JSON.stringify({
       category,

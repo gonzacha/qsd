@@ -1,0 +1,4 @@
+### COMMAND
+bash -c journalctl -k | grep -Ei 'out of memory|oom|killed process|lockup|hung task' | tail -200
+
+### OUTPUT

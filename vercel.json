@@ -7,6 +7,19 @@
       ]
     },
     {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/service-worker.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
       "source": "/(.*).html",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
@@ -24,10 +37,25 @@
     }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/story/:id", "destination": "/api/story?id=:id" },
-    { "source": "/story/:id/:slug", "destination": "/api/story?id=:id" },
-    { "source": "/r", "destination": "/api/r" },
-    { "source": "/", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/story/:id",
+      "destination": "/api/story?id=:id"
+    },
+    {
+      "source": "/story/:id/:slug",
+      "destination": "/api/story?id=:id"
+    },
+    {
+      "source": "/r",
+      "destination": "/api/r"
+    },
+    {
+      "source": "/((?!api/|css/|redaccion/|sobre-qsd/|rqsd/|qa/|lib/|icons/|manifest\\.webmanifest|Logo_qsd\\.png|og_qsd_1200x630_v1\\.png|service-worker\\.js|offline\\.html|r\\.html|robots\\.txt|favicon\\.ico).*)",
+      "destination": "/index.html"
+    }
   ]
 }

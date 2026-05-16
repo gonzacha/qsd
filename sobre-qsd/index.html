@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sobre QSD — Qué Se Dice</title>
-  <meta name="description" content="Qué Se Dice es un proyecto editorial digital con foco en Corrientes, Argentina y el contexto regional e internacional. Curaduría, claridad y lectura simple.">
+  <title>Quiénes somos — Qué Se Dice</title>
+  <meta name="description" content="Qué Se Dice: proyecto editorial digital con foco en Corrientes y la región. Equipo, legado periodístico y propuesta reader-first.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.quesedice.com.ar/sobre-qsd">
 
@@ -12,14 +12,15 @@
   <link rel="apple-touch-icon" href="/Logo_qsd.png">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Sobre QSD — Qué Se Dice">
+  <meta property="og:title" content="Quiénes somos — Qué Se Dice">
   <meta property="og:description" content="Proyecto editorial digital con foco en Corrientes, Argentina y el contexto regional e internacional.">
   <meta property="og:url" content="https://www.quesedice.com.ar/sobre-qsd">
   <meta property="og:image" content="https://www.quesedice.com.ar/og_qsd_1200x630_v1.png?v=2">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/qsd-tokens.css">
 
   <script type="application/ld+json">
   {
@@ -39,14 +40,15 @@
 
   <style>
     :root {
-      --bg: #0b0e1a;
-      --card: #111627;
-      --text: #e8e4dc;
-      --muted: #9a968e;
-      --accent: #d39a3f;
-      --border: rgba(136, 144, 174, 0.18);
-      --font-display: "Playfair Display", Georgia, serif;
-      --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+      --bg: var(--qsd-bg-primary, #0b0e1a);
+      --card: var(--qsd-bg-card, #111627);
+      --text: var(--qsd-text-primary, #e8e4dc);
+      --muted: var(--qsd-text-secondary, #9a968e);
+      --accent: var(--qsd-amber, #d39a3f);
+      --border: var(--qsd-border, rgba(136, 144, 174, 0.18));
+      --font-display: var(--qsd-font-display, "Playfair Display", Georgia, serif);
+      --font-headline: var(--qsd-font-headline, "Libre Baskerville", Georgia, serif);
+      --font-body: var(--qsd-font-body, "Source Sans 3", "Segoe UI", sans-serif);
     }
 
     * { box-sizing: border-box; }
@@ -55,24 +57,25 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-body);
-      line-height: 1.65;
+      line-height: 1.7;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
     .page {
-      max-width: 860px;
+      max-width: 720px;
       margin: 0 auto;
-      padding: 48px 20px 72px;
+      padding: 48px 22px 88px;
     }
 
     .masthead {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 36px;
+      margin-bottom: 40px;
     }
 
     .masthead img {
@@ -91,29 +94,57 @@
     .card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 32px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      border-radius: var(--qsd-radius-lg, 12px);
+      padding: 36px 36px 40px;
+      box-shadow: var(--qsd-shadow-card, 0 4px 24px rgba(0, 0, 0, 0.22));
     }
 
     h1 {
       font-family: var(--font-display);
-      font-size: clamp(2rem, 4vw, 2.6rem);
-      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 2.5rem);
+      font-weight: 700;
+      margin: 0 0 16px;
+      letter-spacing: 0.02em;
     }
 
     .lead {
-      font-size: 1.05rem;
+      font-family: var(--font-headline);
+      font-size: 1.08rem;
       color: var(--muted);
-      margin-bottom: 20px;
+      margin-bottom: 28px;
+      line-height: 1.65;
     }
 
-    p { margin: 0 0 16px; }
+    p {
+      margin: 0 0 1.15em;
+      font-size: 1.02rem;
+    }
+
+    .about-section {
+      margin-top: 2.25rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .about-section h2 {
+      font-family: var(--font-headline);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .about-section p {
+      font-size: 0.98rem;
+      color: var(--text);
+    }
 
     .signature {
-      margin-top: 28px;
+      margin-top: 32px;
       font-size: 0.95rem;
       color: var(--muted);
+      font-style: italic;
     }
 
     .back-link {
@@ -122,7 +153,7 @@
       gap: 8px;
       font-size: 0.9rem;
       color: var(--muted);
-      margin-top: 32px;
+      margin-top: 36px;
     }
   </style>
 </head>
@@ -136,10 +167,17 @@
     <main class="card">
       <h1>Qué Se Dice</h1>
       <p class="lead">Qué Se Dice es un proyecto editorial digital orientado a organizar, jerarquizar y presentar información de interés público con foco en Corrientes, Argentina y el contexto regional e internacional.</p>
-      <p>QSD combina curaduría, estructura editorial y una experiencia de lectura simple para ayudar a entender mejor qué está pasando, qué importa y por qué.</p>
-      <p>No funciona solo como un feed de enlaces: busca construir una capa editorial clara, reader-first y territorial, capaz de ordenar señales dispersas y convertirlas en una portada útil.</p>
+      <p>QSD combina curaduría, estructura editorial y una experiencia de lectura clara para ayudar a entender mejor qué está pasando, qué importa y por qué.</p>
+      <p>No funciona solo como un feed de enlaces: busca construir una capa editorial reader-first y territorial, capaz de ordenar señales dispersas y convertirlas en una portada útil.</p>
+
+      <section class="about-section" aria-labelledby="about-legacy">
+        <h2 id="about-legacy">Raíces y continuidad</h2>
+        <p>El oficio periodístico marcó la vida familiar detrás de QSD. Antonio Haedo —padre del proyecto y referencia para quienes lo impulsan hoy— dejó una impronta en la manera de contar la provincia: con rigor, cercanía y respeto por el lector. Su legado está presente en la impronta editorial del medio.</p>
+        <p>La continuidad es hoy un compromiso editorial: honrar esa trayectoria sin detener el pulso de la actualidad. El equipo trabaja para que la mirada local siga encontrando forma en un producto digital estable, legible y honesto.</p>
+      </section>
+
       <p>El proyecto es impulsado por Gonzalo Haedo desde Nordia, con base operativa en Corrientes, Argentina.</p>
-      <p>Su enfoque prioriza claridad, consistencia editorial, bajo mantenimiento técnico y una relación más directa entre información, contexto y lectura.</p>
+      <p>Su enfoque prioriza claridad, consistencia editorial, bajo mantenimiento técnico y una relación directa entre información, contexto y lectura.</p>
       <p class="signature">QSD es un medio editorial digital independiente con foco local y mirada regional.</p>
       <a class="back-link" href="/">← Volver a la portada</a>
     </main>
