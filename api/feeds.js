@@ -164,8 +164,6 @@ function parseRSSItems(xml, ingestStats) {
     const gate = feed_gate(item, seenUrls);
     if (!gate.pass) {
       if (ingestStats) ingestStats.tunnelReject++;
-      // Log para auditoría (no bloquea el pipeline)
-      console.log(`[TUNEL] REJECT reason=${gate.reason} url=${item.link || item.url}`);
       return false;
     }
     return true;
@@ -571,20 +569,24 @@ export default async function handler(req) {
       return { ...item, edition: category };
     });
 
-    // Limit results
+    // Limit results (defensive cap)
     const items = mappedItems.slice(0, 50);
+    const safeItems = Array.isArray(items) ? items : [];
+    const safeTrending = Array.isArray(trending) ? trending : [];
+
     console.log(JSON.stringify({
       qsd_ingest: 'feeds_final',
       cat: category,
-      sentToClient: items.length,
+      sentToClient: safeItems.length,
+      tunnelReject: ingestStats.tunnelReject,
     }));
 
     return new Response(JSON.stringify({
       category,
       label: feedConfig.label,
-      items,
-      trending,
-      total: items.length,
+      items: safeItems,
+      trending: safeTrending,
+      total: safeItems.length,
       timestamp: new Date().toISOString(),
       categories: Object.entries(FEEDS).map(([key, val]) => ({ key, label: val.label })),
     }), {

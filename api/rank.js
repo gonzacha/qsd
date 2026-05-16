@@ -550,7 +550,8 @@ export default async function handler(req) {
 
   const params  = new URL(req.url).searchParams;
   const cat      = params.get('cat') || params.get('category') || '';
-  const limit    = Math.max(1, parseInt(params.get('limit') || '30', 10));
+  const limitRaw = parseInt(params.get('limit') || '30', 10);
+  const limit    = Math.min(100, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : 30));
   const minScore = parseFloat(params.get('min') || '0');
   const format   = params.get('format') || 'json';
 
@@ -647,10 +648,11 @@ export default async function handler(req) {
     }));
 
     const generatedAt = new Date().toISOString();
+    const safeRanked = Array.isArray(ranked) ? ranked : [];
 
     if (format === 'jsonl') {
       return new Response(
-        ranked.map(r => JSON.stringify(r)).join('\n'),
+        safeRanked.map(r => JSON.stringify(r)).join('\n'),
         {
           status: 200,
           headers: {
@@ -664,7 +666,7 @@ export default async function handler(req) {
     }
 
     return new Response(
-      JSON.stringify({ generatedAt, items: ranked }),
+      JSON.stringify({ generatedAt, items: safeRanked }),
       {
         status: 200,
         headers: {
